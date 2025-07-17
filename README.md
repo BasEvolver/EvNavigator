@@ -1,2 +1,2 @@
 # EvNavigator
-Evolver Navigator
+EV Navigator
