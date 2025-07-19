@@ -78,17 +78,6 @@ function renderInitialWorkstreamCards(companyId) {
     </div>`;
 }
 
-function renderSuggestedPrompts(questions) {
-    if (!questions || questions.length === 0) return '';
-    const promptsHTML = questions.map(q => `<button data-action="run-suggested-prompt" data-question="${q}" class="suggested-prompt-button">${q}</button>`).join('');
-    return `
-        <div class="suggested-prompts-list">
-            <h4 class="list-header">Suggested Questions</h4>
-            ${promptsHTML}
-        </div>
-    `;
-}
-
 function renderSuggestedActions(actions) {
     if (!actions || actions.length === 0) return '';
     const actionsHTML = actions.map(a => `
@@ -108,28 +97,26 @@ function renderSuggestedActions(actions) {
 
 function getAdvancedPromptBoxHTML(followUpQuestions = []) {
     const state = loadState();
-    const promptsHTML = followUpQuestions.map(q => `<button data-action="run-suggested-prompt" data-question="${q}" class="suggested-prompt-button">${q}</button>`).join('');
+    const promptsHTML = followUpQuestions.map(q => `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${q}">${q}</button>`).join('');
 
     return `
         <div id="aria-prompt-container" class="mt-6">
-            <div class="prompt-box-container">
-                ${promptsHTML.length > 0 ? `
-                <div class="p-4">
-                    <div class="suggested-prompts-list">
-                        <h4 class="list-header">Follow-up Questions</h4>
-                        ${promptsHTML}
-                    </div>
+            <div class="prompt-area-large-v4">
+                 ${promptsHTML.length > 0 ? `
+                <div class="suggestion-pills-container">
+                   ${promptsHTML}
                 </div>
                 ` : ''}
-                <div class="prompt-input-area">
+                <textarea id="aria-prompt-input" class="prompt-textarea" rows="3" placeholder="Ask a follow-up..."></textarea>
+                <div id="file-attachment-display" class="file-attachment-display"></div>
+                <div class="prompt-actions-bottom-bar">
                     <div class="prompt-actions-left">
-                        <button data-action="attach-file" class="prompt-action-button" title="Attach File"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        <button data-action="attach-file" class="prompt-action-button" title="Attach File"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
                         <div class="relative">
                             <button data-action="toggle-settings-modal" class="prompt-action-button" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg></button>
                             ${renderSettingsModal(state.ariaSettings)}
                         </div>
                     </div>
-                    <textarea id="aria-prompt-input" class="prompt-input" rows="1" placeholder="Ask a follow-up..."></textarea>
                     <div class="prompt-actions-right">
                         <button data-action="restart-conversation" class="prompt-action-button" title="Restart Conversation"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></button>
                         <button class="prompt-send-button" data-action="ask-aria" title="Send"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
@@ -423,34 +410,27 @@ function initializeAriaEventListeners() {
                 
                 const conversationContainer = document.getElementById('aria-conversation-container');
                 
-                // Remove any previous chat bubbles, but not the workstream cards
-                //const chatBubbles = conversationContainer.querySelectorAll('.aria-response-bubble, .user-prompt-bubble, #aria-prompt-container');
-                //chatBubbles.forEach(bubble => bubble.remove());
-
-                // This block was ADDED to ensure only the old input box is removed:
-const oldPromptContainer = document.getElementById('aria-prompt-container');
-if (oldPromptContainer) {
-    oldPromptContainer.remove();
-}
+                // Clear previous conversation elements
+                const elementsToRemove = conversationContainer.querySelectorAll('.aria-response-bubble, .user-prompt-bubble, #aria-prompt-container');
+                elementsToRemove.forEach(el => el.remove());
 
                 const companyWorkstreamData = companyDataMap[state.selectedCompanyId]?.workstreamData || [];
                 const workstreamData = companyWorkstreamData.find(w => w.id === workstreamId);
                 
                 if (workstreamData) {
                     const introId = `aria-intro-bubble`;
-                    // Remove previous intro bubble if it exists
-                    document.getElementById(introId)?.remove();
-
                     const introHTML = `
                         <div id="${introId}" class="aria-response-bubble">
                             <div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">A</div><p class="font-semibold">Aria</p></div>
                             <div class="pl-11">
                                 <p class="response-text">Ok, let's dive into ${workstreamData.title}. What would you like to know? Here are some starting points:</p>
-                                <div class="mt-4">${renderSuggestedPrompts(workstreamData.suggestedQuestions)}</div>
                             </div>
                         </div>`;
                     conversationContainer.insertAdjacentHTML('beforeend', introHTML);
-                    document.getElementById(introId).scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    
+                    // Immediately render the advanced prompt box
+                    conversationContainer.insertAdjacentHTML('beforeend', getAdvancedPromptBoxHTML(workstreamData.suggestedQuestions));
+                    document.getElementById('aria-prompt-container').scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
                 break;
 
@@ -561,7 +541,16 @@ if (oldPromptContainer) {
     document.getElementById('file-attachment-input').click();
     break;
 case 'remove-file':
-    target.closest('.file-pill').remove();
+    const filePill = target.closest('.file-pill');
+    const fileName = filePill.dataset.filename;
+    filePill.remove();
+    
+    // Also remove from state if you are tracking attached files
+    let currentState = loadState();
+    if (currentState.ariaAttachedFiles && currentState.ariaAttachedFiles[fileName]) {
+        delete currentState.ariaAttachedFiles[fileName];
+        saveState(currentState);
+    }
     break;
         }
     });
@@ -631,4 +620,3 @@ function handleFileAttachment(e) {
     displayContainer.innerHTML += filePillHTML;
     e.target.value = ''; // Clear input to allow re-selecting the same file
 }
-

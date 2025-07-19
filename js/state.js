@@ -8,7 +8,8 @@ function getInitialState() {
         diligenceWorkspace: {
             keyRisks: {},
             valueLevers: [],
-            strategicNotes: [], itemSelections: {} // NEW: Tracks { 'lever1': { vcp: true, ic: false } }
+            strategicNotes: [], 
+            itemSelections: {} // NEW: Tracks { 'lever1': { vcp: true, ic: false } }
         },
         
         cloudvantageAria: {
@@ -75,11 +76,29 @@ function saveState(state) {
 }
 
 function loadState() {
-    const savedState = localStorage.getItem('navigatorAppState');
-    if (savedState) {
-        return JSON.parse(savedState);
-    }
     const initialState = getInitialState();
+    const savedStateJSON = localStorage.getItem('navigatorAppState');
+    
+    if (savedStateJSON) {
+        try {
+            const savedState = JSON.parse(savedStateJSON);
+            // Deep merge to handle nested objects correctly
+            const mergedState = {
+                ...initialState,
+                ...savedState,
+                diligenceWorkspace: { ...initialState.diligenceWorkspace, ...savedState.diligenceWorkspace },
+                cloudvantageAria: { ...initialState.cloudvantageAria, ...savedState.cloudvantageAria },
+                techflowAria: { ...initialState.techflowAria, ...savedState.techflowAria },
+                ariaSettings: { ...initialState.ariaSettings, ...savedState.ariaSettings },
+                modeling: { ...initialState.modeling, ...savedState.modeling }
+            };
+            return mergedState;
+        } catch (e) {
+            console.error("Error parsing saved state, returning initial state.", e);
+            return initialState;
+        }
+    }
+    
     saveState(initialState);
     return initialState;
 }

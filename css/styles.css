@@ -29,6 +29,7 @@
     --alert-border: #F87171; /* red-400 */
     --alert-text: #991B1B; /* red-800 */
     --alert-icon-color: #F87171; /* red-400 */
+    --accent-blue-translucent: rgba(72, 170, 221, 0.1); /* 10% opacity of your light mode blue */
 }
 
 [data-theme="dark"] {
@@ -57,6 +58,8 @@
     --alert-border: #ef4444; /* red-500 */
     --alert-text: #fecaca; /* red-200 */
     --alert-icon-color: #ef4444; /* red-500 */
+     --accent-blue-translucent: rgba(96, 165, 250, 0.15); /* 15% opacity of your dark mode blue */
+
 }
 
 
@@ -95,7 +98,8 @@ html, body {
 #sidebar {
     background-color: var(--bg-card);
     border-right-color: var(--border-color);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease;   
+     height: 100%;
 }
 
 #sidebar .border-b, #sidebar .border-t {
@@ -126,7 +130,7 @@ header {
 
 
 /* =================================================================
-   THEME TOGGLE & SETTINGS ICON (FINAL - CORRECTED)
+   SIDEBAR FOOTER & THEME TOGGLE (RESTORED)
    ================================================================= */
 .sidebar-footer {
     padding: 1rem;
@@ -163,12 +167,19 @@ header {
 
 .theme-toggle-button .sun-icon,
 .theme-toggle-button .moon-icon {
-    color: inherit; /* Make icon color same as button text color */
+    color: inherit;
 }
 
-/* Hide the inactive icon */
+/* This is the magic for showing/hiding the correct icon */
 [data-theme="light"] .moon-icon { display: none; }
 [data-theme="dark"] .sun-icon { display: none; }
+
+/* Active nav link style */
+.nav-link.active {
+    background-color: var(--accent-blue-translucent); /* This now works for both themes */
+    color: var(--accent-blue);
+    font-weight: 600;
+}
 
 
 /* =================================================================
@@ -402,6 +413,7 @@ header {
 /* =================================================================
    PORTCO PAGE STYLES
    ================================================================= */
+/* Use portfolio-container for consistent padding and max-width */
 .portco-container {
     padding: 1.5rem 2rem;
     display: flex;
@@ -793,7 +805,7 @@ header {
 }
 
 /* Suggested Prompts & Actions */
-.suggested-prompts-list, .suggested-actions-list {
+.suggested-actions-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -806,7 +818,7 @@ header {
     letter-spacing: 0.05em;
     margin-bottom: 0.5rem;
 }
-.suggested-prompt-button, .suggested-action-card {
+.suggested-action-card {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
@@ -817,7 +829,12 @@ header {
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
 }
-.suggested-prompt-button:hover, .suggested-action-card:hover {
+
+.suggested-action-card:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-blue);
+}
+.suggested-action-card:hover {
     background-color: var(--bg-hover);
     border-color: var(--accent-blue);
 }
@@ -963,14 +980,7 @@ header {
 .timeline-phase-title { font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent-blue); }
 .timeline-items { list-style-type: disc; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem; space-y: 0.5rem; }
 
-/* Prompt Input Area */
-.prompt-input-area {
-    border-top: 1px solid var(--border-color);
-    padding: 0.5rem;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem; flex-wrap: wrap;
-}
+/* New Prompt Input Area styles are handled by .prompt-area-large-v4 */
 .prompt-input {
     flex-grow: 1;
     background: transparent;
@@ -1696,3 +1706,993 @@ input:checked + .slider:before {
 .ws-narrative-placeholder {
     color: var(--text-muted);
 }
+
+/* =================================================================
+   HOME PAGE V2 STYLES (AI-NATIVE REDESIGN)
+   ================================================================= */
+
+.home-v2-container {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto; /* Center the content */
+}
+
+/* --- AI Briefing Card --- */
+.ai-briefing-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    border-left: 4px solid var(--accent-blue);
+}
+
+.briefing-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.briefing-header svg {
+    color: var(--accent-blue);
+}
+
+.briefing-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.briefing-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.briefing-text strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* --- Large Prompt Area --- */
+.prompt-area-large {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.suggestion-pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.suggestion-pill {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.375rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-pill:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.prompt-textarea {
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.125rem; /* Larger font for typing */
+    resize: none;
+    padding: 0.5rem;
+}
+
+.prompt-textarea:focus {
+    outline: none;
+}
+
+.prompt-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.prompt-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.prompt-button-primary {
+    background-color: var(--accent-blue);
+    color: white;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.2s;
+}
+
+.prompt-button-primary:hover {
+    opacity: 0.9;
+}
+
+/* --- Data Deep Dive Section --- */
+.data-deep-dive {
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.data-deep-dive .section-title {
+    margin-bottom: 0;
+}
+
+#deep-dive-content.hidden {
+    display: none;
+}
+
+#deep-dive-chevron.rotate-180 {
+    transform: rotate(180deg);
+}
+.nav-link .nav-icon {
+    margin-right: 0.75rem; /* 12px */
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.nav-link.active .nav-icon,
+.nav-link:hover .nav-icon {
+    color: var(--accent-blue);
+}
+/* =================================================================
+   PORTFOLIO PAGE (HOME V3) STYLES
+   ================================================================= */
+
+.portfolio-container {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.portfolio-chart-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.chart-header {
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.chart-wrapper {
+    height: 350px;
+    position: relative;
+}
+
+.chart-narrative {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.chart-narrative strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Advanced Prompt Box V2 */
+.prompt-area-large-v2 {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.prompt-input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.prompt-input-wrapper:focus-within {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 1px var(--accent-blue);
+}
+
+.prompt-area-large-v2 .prompt-textarea {
+    padding: 0.5rem;
+    border: none;
+    flex-grow: 1;
+    font-size: 1rem;
+}
+
+.prompt-area-large-v2 .prompt-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.prompt-area-large-v2 .prompt-send-button {
+    background-color: var(--accent-blue);
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.625rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.prompt-area-large-v2 .prompt-send-button:hover {
+    opacity: 0.9;
+}
+/* =================================================================
+   PORTFOLIO PAGE (CONVERSATIONAL V4) STYLES
+   ================================================================= */
+
+.portfolio-container {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Advanced Prompt Box V3 - Aligned with ARIA page */
+.prompt-area-large-v3 {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.prompt-input-wrapper {
+    display: flex;
+    align-items: center; /* Vertically center items */
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.prompt-input-wrapper:focus-within {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 1px var(--accent-blue);
+}
+
+.prompt-area-large-v3 .prompt-textarea {
+    padding: 0.5rem;
+    border: none;
+    flex-grow: 1;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.prompt-area-large-v3 .prompt-actions-left,
+.prompt-area-large-v3 .prompt-actions-right {
+    display: flex;
+    align-items: center;
+    align-self: flex-end; /* Align buttons to the bottom of the text area */
+    gap: 0.5rem;
+}
+
+.prompt-area-large-v3 .prompt-send-button {
+    background-color: var(--accent-blue);
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.625rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.prompt-area-large-v3 .prompt-send-button:hover { opacity: 0.9; }
+
+/* New Response Card Styles */
+.portfolio-response-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Scenario Model Styles */
+.scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+.scenario-card {
+    background-color: var(--bg-secondary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+.scenario-card.scenario-highlight {
+    border: 2px solid var(--accent-blue);
+}
+.scenario-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.scenario-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.scenario-metric:last-child {
+    border-bottom: none;
+}
+.scenario-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+.scenario-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+/* =================================================================
+   PORTFOLIO PAGE (CONVERSATIONAL V5) STYLES
+   ================================================================= */
+
+/* --- Compact Company Strip --- */
+.company-strip-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem; /* For scrollbar spacing */
+}
+.company-strip-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    min-width: 250px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.company-strip-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-hover);
+}
+.company-strip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.company-strip-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.company-strip-kpis {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+.company-strip-kpis li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+}
+.company-strip-kpis li span:last-child {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* --- Refined Prompt Box (V4) --- */
+.prompt-area-large-v4 {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.prompt-area-large-v4 .prompt-textarea {
+    background: transparent;
+    border: none;
+    resize: none;
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    padding: 0.5rem;
+    width: 100%;
+}
+.prompt-area-large-v4 .prompt-textarea:focus {
+    outline: none;
+}
+.prompt-actions-bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+.prompt-actions-bottom-bar .prompt-action-button {
+    color: var(--text-muted);
+}
+.prompt-actions-bottom-bar .prompt-action-button:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+}
+
+/* =================================================================
+   PORTFOLIO PAGE (CONVERSATIONAL V5) STYLES
+   ================================================================= */
+
+/* --- Compact Company Strip --- */
+.company-strip-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem; /* For scrollbar spacing */
+}
+.company-strip-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    min-width: 250px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.company-strip-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-hover);
+}
+.company-strip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.company-strip-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.company-strip-kpis {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+.company-strip-kpis li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+}
+.company-strip-kpis li span:last-child {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* --- Refined Prompt Box (V4) --- */
+.prompt-area-large-v4 {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.prompt-area-large-v4 .prompt-textarea {
+    background: transparent;
+    border: none;
+    resize: none;
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    padding: 0.5rem;
+    width: 100%;
+}
+.prompt-area-large-v4 .prompt-textarea:focus {
+    outline: none;
+}
+.prompt-actions-bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+.prompt-actions-bottom-bar .prompt-action-button {
+    color: var(--text-muted);
+}
+.prompt-actions-bottom-bar .prompt-action-button:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+}
+/* --- Compact Company Strip (V2) --- */
+.company-strip-status {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* --- Recommended Actions & Follow-ups --- */
+.recommended-actions-container, .follow-up-container {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+.actions-list, .fup-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+.action-button, .fup-button {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.action-button:hover, .fup-button:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+.action-button {
+    background-color: var(--accent-blue-translucent);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+/* --- FUP Response: People Grid --- */
+.people-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+.person-card {
+    background-color: var(--bg-secondary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+.person-card h4 { font-weight: 600; }
+.person-card p { font-size: 0.875rem; color: var(--text-muted); }
+.person-card span { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem; display: block; }
+
+/* =================================================================
+   PORTFOLIO PAGE (CONVERSATIONAL V5) - NEW STYLES
+   ================================================================= */
+
+/* --- Style for the compact company cards with status text --- */
+.company-strip-status {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* --- Layout for the new 'Recommended Actions' section --- */
+.recommended-actions-container {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* --- Styles for the 'Key Employees' follow-up response --- */
+.people-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.person-card {
+    background-color: var(--bg-secondary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.person-card h4 {
+    font-weight: 600;
+}
+
+.person-card p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.person-card span {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    display: block;
+}
+/* =================================================================
+   PORTCO PAGE (DILIGENCE HUB) STYLES
+   ================================================================= */
+
+.diligence-hub-container {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.diligence-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.diligence-pills .pill {
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.diligence-pills .pill:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.diligence-pills .pill.active {
+    background-color: var(--accent-blue-translucent);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.diligence-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.workstream-synthesis {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.synthesis-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.synthesis-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.synthesis-text strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.finding-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.finding-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.finding-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.finding-card-body {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    flex-grow: 1;
+}
+.finding-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+}
+
+.card-action-button {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.card-action-button:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.open-questions-box {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.open-questions-list {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.project-plan-container {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.plan-phase {
+    margin-bottom: 1.5rem;
+}
+.plan-phase:last-child {
+    margin-bottom: 0;
+}
+.plan-phase-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+.plan-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.plan-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--bg-secondary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+.plan-item-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.status-completed { background-color: var(--status-success); }
+.status-in-progress { background-color: var(--status-info); }
+.status-blocked { background-color: var(--status-error); }
+.status-not-started { background-color: var(--text-muted); }
+
+.plan-item-id {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.plan-item-title {
+    flex-grow: 1;
+    color: var(--text-secondary);
+}
+.plan-item-workstream {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.125rem 0.5rem;
+    border-radius: 99px;
+    background-color: var(--bg-hover);
+    color: var(--text-secondary);
+}
+/* =================================================================
+   PORTCO PAGE (DILIGENCE HUB) STYLES
+   ================================================================= */
+
+.diligence-hub-container {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.diligence-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.diligence-pills .pill {
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.diligence-pills .pill:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.diligence-pills .pill.active {
+    background-color: var(--accent-blue-translucent);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.diligence-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.workstream-synthesis {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.synthesis-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.synthesis-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.synthesis-text strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.finding-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.finding-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.finding-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.finding-card-body {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    flex-grow: 1;
+}
+.finding-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+}
+
+.card-action-button {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2
