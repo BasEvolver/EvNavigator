@@ -1,6 +1,40 @@
 // js/shared.js - Shared utilities, state, component loading, and navigation
 
 // =================================================================
+// NEW: UTILS OBJECT
+// =================================================================
+const Utils = {
+    generateScenario(capabilityId, state, capabilities, capabilityScenarios) {
+        const assessment = state.modeling.assessmentData[capabilityId];
+        if (!assessment) return { actions: [], insight: 'Assessment data not found.' };
+
+        const { current, target } = assessment;
+        if (target <= current) return { actions: [], insight: 'Target state is not higher than current state.' };
+
+        let actions = [];
+        let lastInsight = 'No specific actions generated for this gap.';
+
+        for (let i = current; i < target; i++) {
+            const scenarioStep = capabilityScenarios[capabilityId]?.[i]?.[i + 1];
+            if (scenarioStep) {
+                actions.push(...scenarioStep.actions);
+                lastInsight = scenarioStep.insight;
+            }
+        }
+        
+        const capability = capabilities.find(c => c.id === capabilityId);
+        const title = capability ? `Uplift Plan for ${capability.name}` : 'Uplift Plan';
+
+        return {
+            id: capabilityId,
+            title: title,
+            actions: actions,
+            insight: lastInsight
+        };
+    }
+};
+
+// =================================================================
 // THEME MANAGEMENT (FINAL)
 // =================================================================
 function updateLogoForTheme(theme) {
@@ -53,24 +87,8 @@ const ComponentLoader = {
     async loadSidebar() { return this.loadComponent('components/sidebar.html'); }
 };
 
-async function loadSharedComponents() {
-    const sidebarContainer = document.getElementById('sidebar-container');
-    const headerContainer = document.getElementById('header-container');
-    
-    if (sidebarContainer) {
-        sidebarContainer.innerHTML = await ComponentLoader.loadSidebar();
-    }
-    if (headerContainer) {
-        headerContainer.innerHTML = await ComponentLoader.loadHeader();
-    }
-    
-    initializeTheme();
-    Navigation.updateAll();
-}
-
-
 // =================================================================
-// NAVIGATION
+// NAVIGATION (REBUILT AND CORRECTED)
 // =================================================================
 const Navigation = {
     getCurrentPage() {
@@ -85,12 +103,24 @@ const Navigation = {
         const page = this.getCurrentPage();
         const state = loadState(); 
         
-        let title = 'Portfolio';
-        if (page === 'index') title = 'Portfolio Overview';
-        if (page === 'portco') title = state.selectedCompanyId === 'techflow-solutions' ? 'TechFlow Solutions' : 'CloudVantage';
-        if (page === 'aria') title = 'ARIA';
-        if (page === 'workspace') title = 'Diligence Workspace';
-        if (page === 'modeling') title = 'Capability Modeling';
+        let title = 'Portfolio'; // Default title
+        if (page === 'index') {
+            title = 'Portfolio Overview';
+        } else if (page === 'portco') {
+            const companyId = state.selectedCompanyId;
+            if (companyId && companyId !== 'all') {
+                // Capitalize each word in the company ID for a clean title
+                title = companyId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            } else {
+                title = 'Portfolio Company'; // Fallback
+            }
+        } else if (page === 'aria') {
+            title = 'ARIA';
+        } else if (page === 'workspace') {
+            title = 'Diligence Workspace';
+        } else if (page === 'modeling') {
+            title = 'Capability Modeling';
+        }
         
         titleElement.textContent = title;
     },
@@ -121,12 +151,12 @@ const Navigation = {
     },
 
     updateActiveNavigation() {
-        const currentPage = this.getCurrentPage().replace('index', 'home');
+        const currentPage = this.getCurrentPage();
         const navLinks = document.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
             link.classList.remove('active');
             const linkPage = link.getAttribute('data-page');
-            if (linkPage === currentPage || (currentPage === 'home' && (linkPage === 'index'))) {
+            if (linkPage === currentPage) {
                  link.classList.add('active');
             }
         });
@@ -138,13 +168,15 @@ const Navigation = {
 
         navLinks.forEach(link => {
             const page = link.dataset.page;
-            if (page === 'index' || page === 'home') {
+            if (page === 'index') {
                 link.href = 'index.html';
                 return; 
             }
             if (selectedCompanyId && selectedCompanyId !== 'all') {
                 link.href = `${page}.html?company=${selectedCompanyId}`;
             } else {
+                // If no company is selected, link to the page without a specific company param.
+                // The page's own logic will handle the "no company" state.
                 link.href = `${page}.html`;
             }
         });
@@ -157,3 +189,18 @@ const Navigation = {
         this.updateNavigationLinks();
     }
 };
+
+async function loadSharedComponents() {
+    const sidebarContainer = document.getElementById('sidebar-container');
+    const headerContainer = document.getElementById('header-container');
+    
+    if (sidebarContainer) {
+        sidebarContainer.innerHTML = await ComponentLoader.loadSidebar();
+    }
+    if (headerContainer) {
+        headerContainer.innerHTML = await ComponentLoader.loadHeader();
+    }
+    
+    initializeTheme();
+    Navigation.updateAll();
+}

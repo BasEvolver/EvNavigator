@@ -1,5 +1,83 @@
 // js/data.js - Centralized Application Data - COMPLETE AND CORRECTED
 
+const diligencePlan_v3 = [
+    // Business & Strategy
+    { id: "DD-1", name: "Company Overview & History", duration: 0.2, dependencies: [], startDay: 1, workstream: "Business & Strategy", category: "Company & Team", critical: true },
+    { id: "DD-2", name: "Organization Review", duration: 0.2, dependencies: ["DD-1"], startDay: 1, workstream: "Business & Strategy", category: "Company & Team", critical: true },
+    { id: "DD-3", name: "Management Assessment", duration: 0.5, dependencies: ["DD-1", "DD-2"], startDay: 1, workstream: "Business & Strategy", category: "Company & Team", critical: true },
+    { id: "DD-4", name: "Comp Incentives Analysis", duration: 0.3, dependencies: ["DD-2", "DD-3"], startDay: 2, workstream: "Business & Strategy", category: "Company & Team", critical: false },
+    { id: "DD-5", name: "HR Growth Plans", duration: 0.4, dependencies: ["DD-2", "DD-3"], startDay: 2, workstream: "Business & Strategy", category: "Company & Team", critical: false },
+    { id: "DD-6", name: "Acquisition History", duration: 0.3, dependencies: ["DD-1"], startDay: 1, workstream: "Business & Strategy", category: "Company & Team", critical: false },
+    { id: "DD-7", name: "Addressable Market", duration: 0.4, dependencies: [], startDay: 1, workstream: "Business & Strategy", category: "Market & Competition", critical: true },
+    { id: "DD-8", name: "Barriers to Entry", duration: 0.3, dependencies: ["DD-7"], startDay: 2, workstream: "Business & Strategy", category: "Market & Competition", critical: false },
+    { id: "DD-9", name: "Macro Trends", duration: 0.2, dependencies: ["DD-7"], startDay: 2, workstream: "Business & Strategy", category: "Market & Competition", critical: false },
+    { id: "DD-10", name: "Competitive Dynamics", duration: 0.4, dependencies: ["DD-7", "DD-8", "DD-9"], startDay: 2, workstream: "Business & Strategy", category: "Market & Competition", critical: true },
+    { id: "DD-11", name: "Market Positioning", duration: 0.3, dependencies: ["DD-7", "DD-8", "DD-10"], startDay: 3, workstream: "Business & Strategy", category: "Market & Competition", critical: true },
+    // Technology & Operations
+    { id: "DD-12", name: "Development Process", duration: 0.3, dependencies: [], startDay: 2, workstream: "Technology & Operations", category: "Products and Technology", critical: true },
+    { id: "DD-13", name: "Architecture Review", duration: 0.4, dependencies: ["DD-12"], startDay: 3, workstream: "Technology & Operations", category: "Products and Technology", critical: true },
+    { id: "DD-14", name: "Product Roadmap", duration: 0.3, dependencies: ["DD-12"], startDay: 3, workstream: "Technology & Operations", category: "Products and Technology", critical: false },
+    { id: "DD-15", name: "Product Management", duration: 0.3, dependencies: ["DD-12", "DD-14"], startDay: 3, workstream: "Technology & Operations", category: "Products and Technology", critical: false },
+    { id: "DD-16", name: "Code Scan", duration: 0.4, dependencies: ["DD-13"], startDay: 4, workstream: "Technology & Operations", category: "Products and Technology", critical: false },
+    { id: "DD-17", name: "Documentation", duration: 0.3, dependencies: ["DD-13", "DD-16"], startDay: 4, workstream: "Technology & Operations", category: "Products and Technology", critical: false },
+    { id: "DD-18", name: "QA Testing Review", duration: 0.3, dependencies: ["DD-15", "DD-16", "DD-17"], startDay: 5, workstream: "Technology & Operations", category: "Products and Technology", critical: false },
+    { id: "DD-19", name: "Release Management", duration: 0.2, dependencies: ["DD-15", "DD-18"], startDay: 5, workstream: "Technology & Operations", category: "Products and Technology", critical: false },
+    // Commercial & Customer
+    { id: "DD-20", name: "Pipeline Review", duration: 0.3, dependencies: [], startDay: 2, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: true },
+    { id: "DD-21", name: "Quota Attainment Analysis", duration: 0.2, dependencies: ["DD-20"], startDay: 2, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-22", name: "Turnover Analysis", duration: 0.2, dependencies: ["DD-4", "DD-5", "DD-21"], startDay: 3, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-23", name: "Distributors / Channel Partners", duration: 0.5, dependencies: [], startDay: 2, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-24", name: "Sales Effectiveness", duration: 0.4, dependencies: ["DD-20", "DD-21", "DD-23"], startDay: 3, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: true },
+    { id: "DD-25", name: "Lead Funnel Metrics", duration: 0.2, dependencies: [], startDay: 2, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-26", name: "Conversion Trends", duration: 0.2, dependencies: ["DD-9", "DD-25"], startDay: 3, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-27", name: "Pricing Strategy", duration: 0.4, dependencies: ["DD-10", "DD-11", "DD-26"], startDay: 4, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: true },
+    { id: "DD-28", name: "Brand Assessment", duration: 0.3, dependencies: ["DD-11"], startDay: 3, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-29", name: "Yield on Sales & Marketing $", duration: 0.3, dependencies: ["DD-20", "DD-23", "DD-24", "DD-25", "DD-26"], startDay: 4, workstream: "Commercial & Customer", category: "Sales & Marketing", critical: false },
+    { id: "DD-30", name: "Detailed Transaction Analysis", duration: 0.2, dependencies: [], startDay: 3, workstream: "Commercial & Customer", category: "Customers", critical: true },
+    { id: "DD-31", name: "Cohort Analysis", duration: 0.2, dependencies: ["DD-30"], startDay: 3, workstream: "Commercial & Customer", category: "Customers", critical: false },
+    { id: "DD-32", name: "Customer Concentration over time", duration: 0.2, dependencies: ["DD-30"], startDay: 3, workstream: "Commercial & Customer", category: "Customers", critical: true },
+    { id: "DD-33", name: "Churn Analysis", duration: 0.2, dependencies: ["DD-31", "DD-32"], startDay: 4, workstream: "Commercial & Customer", category: "Customers", critical: false },
+    { id: "DD-34", name: "Net Promoter Score", duration: 0.3, dependencies: ["DD-28", "DD-33"], startDay: 4, workstream: "Commercial & Customer", category: "Customers", critical: false },
+    { id: "DD-35", name: "Lifetime Value", duration: 0.2, dependencies: ["DD-30", "DD-31", "DD-33"], startDay: 4, workstream: "Commercial & Customer", category: "Customers", critical: true },
+    { id: "DD-36", name: "Customer Segmentation", duration: 0.2, dependencies: ["DD-31", "DD-35"], startDay: 5, workstream: "Commercial & Customer", category: "Customers", critical: false },
+    { id: "DD-37", name: "Annual Contract Value Trends", duration: 0.2, dependencies: ["DD-30"], startDay: 4, workstream: "Commercial & Customer", category: "Customers", critical: true },
+    { id: "DD-38", name: "Survey Analysis", duration: 0.4, dependencies: ["DD-28", "DD-34", "DD-36"], startDay: 5, workstream: "Commercial & Customer", category: "Customers", critical: false },
+    { id: "DD-39", name: "Interview w Top Customers", duration: 3, dependencies: ["DD-34", "DD-38"], startDay: 5, workstream: "Commercial & Customer", category: "Customers", critical: false },
+    // Financial & Risk
+    { id: "DD-40", name: "Financial Statement Analysis", duration: 0.3, dependencies: [], startDay: 4, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-41", name: "Expense Breakdown", duration: 0.2, dependencies: ["DD-29", "DD-40"], startDay: 5, workstream: "Financial & Risk", category: "Financial & Accounting", critical: false },
+    { id: "DD-42", name: "Capex Projections", duration: 0.2, dependencies: ["DD-41"], startDay: 8, workstream: "Financial & Risk", category: "Financial & Accounting", critical: false },
+    { id: "DD-43", name: "Pro-Forma Financial Model", duration: 0.5, dependencies: ["DD-6", "DD-14", "DD-35", "DD-41", "DD-42"], startDay: 8, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-44", name: "Gross Margin Analysis", duration: 0.3, dependencies: ["DD-27", "DD-40", "DD-41"], startDay: 8, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-45", name: "Growth Assumptions Review", duration: 0.3, dependencies: ["DD-6", "DD-9", "DD-42", "DD-43"], startDay: 9, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-46", name: "Quality of Revenue Analysis", duration: 0.4, dependencies: ["DD-27", "DD-32", "DD-37", "DD-40", "DD-44"], startDay: 9, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-47", name: "Accounting Policies", duration: 0.2, dependencies: [], startDay: 4, workstream: "Financial & Risk", category: "Financial & Accounting", critical: false },
+    { id: "DD-48", name: "Audited Financials", duration: 0.3, dependencies: ["DD-40", "DD-47"], startDay: 10, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-49", name: "Contingent Liabilities", duration: 0.3, dependencies: [], startDay: 11, workstream: "Financial & Risk", category: "Financial & Accounting", critical: false },
+    { id: "DD-50", name: "Tax Analysis", duration: 0.2, dependencies: ["DD-47"], startDay: 5, workstream: "Financial & Risk", category: "Financial & Accounting", critical: false },
+    { id: "DD-51", name: "Working Capital Review", duration: 0.2, dependencies: ["DD-40", "DD-50"], startDay: 8, workstream: "Financial & Risk", category: "Financial & Accounting", critical: false },
+    { id: "DD-52", name: "Quality of Earnings", duration: 0.4, dependencies: ["DD-37", "DD-40", "DD-44", "DD-46", "DD-48", "DD-51"], startDay: 11, workstream: "Financial & Risk", category: "Financial & Accounting", critical: true },
+    { id: "DD-53", name: "Corporate Documentation Review", duration: 0.2, dependencies: [], startDay: 1, workstream: "Financial & Risk", category: "Legal", critical: false },
+    { id: "DD-54", name: "Patent Analysis", duration: 0.3, dependencies: ["DD-53"], startDay: 1, workstream: "Financial & Risk", category: "Legal", critical: false },
+    { id: "DD-55", name: "Contract Analysis", duration: 0.4, dependencies: ["DD-53", "DD-54"], startDay: 10, workstream: "Financial & Risk", category: "Legal", critical: false },
+    { id: "DD-56", name: "Litigation Review", duration: 0.3, dependencies: ["DD-49", "DD-55"], startDay: 11, workstream: "Financial & Risk", category: "Legal", critical: false },
+    { id: "DD-57", name: "Capitalization Analysis", duration: 0.2, dependencies: ["DD-49", "DD-53", "DD-56"], startDay: 12, workstream: "Financial & Risk", category: "Legal", critical: false },
+    { id: "DD-58", name: "FCPA Audit", duration: 0.4, dependencies: ["DD-57"], startDay: 12, workstream: "Financial & Risk", category: "Legal", critical: false },
+    // Synthesis & Finalization
+    { id: "DD-59", name: "Executive Summary & Key Findings", duration: 0.3, dependencies: ["DD-52"], startDay: 11, workstream: "Synthesis", category: "Synthesis & Planning", critical: false },
+    { id: "DD-60", name: "Risk Matrix & Mitigation Plan", duration: 0.4, dependencies: ["DD-52", "DD-56", "DD-57", "DD-58"], startDay: 12, workstream: "Synthesis", category: "Synthesis & Planning", critical: false },
+    { id: "DD-61", name: "Synergy Identification", duration: 0.3, dependencies: ["DD-11", "DD-24", "DD-46"], startDay: 11, workstream: "Synthesis", category: "Synthesis & Planning", critical: false },
+    { id: "DD-62", name: "100-Day Integration Plan", duration: 0.5, dependencies: ["DD-59", "DD-60", "DD-61"], startDay: 12, workstream: "Synthesis", category: "Synthesis & Planning", critical: false },
+    { id: "DD-63", name: "Value Creation Plan", duration: 0.5, dependencies: ["DD-43", "DD-45", "DD-61"], startDay: 12, workstream: "Value Creation", category: "Value Creation", critical: false },
+    { id: "DD-64", name: "Operating Model Design", duration: 0.4, dependencies: ["DD-3", "DD-11", "DD-62"], startDay: 15, workstream: "Value Creation", category: "Value Creation", critical: false },
+    { id: "DD-65", name: "Investment Committee Memo", duration: 0.4, dependencies: ["DD-59", "DD-63"], startDay: 12, workstream: "Investment Committee", category: "IC Prep", critical: false },
+    { id: "DD-66", name: "Financial Model Scenarios", duration: 0.3, dependencies: ["DD-43", "DD-63"], startDay: 12, workstream: "Investment Committee", category: "IC Prep", critical: false },
+    { id: "DD-67", name: "Deal Terms Recommendation", duration: 0.2, dependencies: ["DD-60", "DD-65"], startDay: 15, workstream: "Investment Committee", category: "IC Prep", critical: false },
+    { id: "DD-68", name: "Comprehensive DD Report", duration: 0.5, dependencies: ["DD-59", "DD-67"], startDay: 16, workstream: "Final Deliverables", category: "Final Deliverables", critical: false },
+    { id: "DD-69", name: "Management Presentation", duration: 0.3, dependencies: ["DD-65", "DD-68"], startDay: 16, workstream: "Final Deliverables", category: "Final Deliverables", critical: false },
+    { id: "DD-70", name: "Data Room Archive", duration: 0.2, dependencies: [], startDay: 16, workstream: "Final Deliverables", category: "Final Deliverables", critical: false }
+];
+
 const menuItems = [
     { id: 'home', label: 'Home', icon: `<svg>...</svg>`},
     { id: 'portco', label: 'PortCo', icon: `<svg>...</svg>`},
@@ -7,28 +85,10 @@ const menuItems = [
     { id: 'workspace', label: "Workspace", icon: `<svg>...</svg>`},
     { id: 'modeling', label: 'Modeling', icon: `<svg>...</svg>`}
 ];
-const diligencePlan = [
-    { lineItemID: 1, workstream: "Business & Strategy", topic: "Company Foundation", id_1: "DD-1", ellement: "Company Overview and History", description: "The company overview provides a comprehensive background...", questionsAnswered: "What is the company's history and mission? What are its key milestones?", status: "Completed" },
-    { lineItemID: 2, workstream: "Business & Strategy", topic: "Leadership Team", id_1: "DD-2", ellement: "Organization Review", description: "An analysis of the company's organizational structure...", questionsAnswered: "How is the company structured? Who are the key personnel?", status: "Completed" },
-    { lineItemID: 3, workstream: "Business & Strategy", topic: "Leadership Team", id_1: "DD-3", ellement: "Management Assessment", description: "Evaluation of the management team's experience...", questionsAnswered: "What is the management team's track record?", status: "In Progress" },
-    { lineItemID: 10, workstream: "Business & Strategy", topic: "Competitive Intelligence", id_1: "DD-10", ellement: "Competitive Dynamics", description: "Looks at the competitive landscape...", questionsAnswered: "Who are the main competitors?", status: "Blocked" },
-    { lineItemID: 12, workstream: "Technology & Operations", topic: "Operational Processes", id_1: "DD-12", ellement: "Development Process", description: "Provides an overview of the product development lifecycle...", questionsAnswered: "How does the company develop its products?", status: "Completed" },
-    { lineItemID: 13, workstream: "Technology & Operations", topic: "Technical Infrastructure", id_1: "DD-13", ellement: "Architecture Review", description: "Evaluates the technical architecture of the company's products...", questionsAnswered: "What is the technical architecture of the products?", status: "In Progress" },
-    { lineItemID: 14, workstream: "Technology & Operations", topic: "Product Development", id_1: "DD-14", ellement: "Product Roadmap", description: "Outlines the future plans for product development...", questionsAnswered: "What are the future product development plans?", status: "In Progress" },
-    { lineItemID: 16, workstream: "Technology & Operations", topic: "Technical Infrastructure", id_1: "DD-16", ellement: "Code Scan", description: "Involves a thorough review of the codebase...", questionsAnswered: "What is the quality and security of the codebase?", status: "Not Started" },
-    { lineItemID: 20, workstream: "Commercial & Customer", topic: "Sales Performance", id_1: "DD-20", ellement: "Pipeline Review", description: "Analyzes the sales pipeline...", questionsAnswered: "What does the sales pipeline look like?", status: "Completed" },
-    { lineItemID: 27, workstream: "Commercial & Customer", topic: "Marketing & Growth", id_1: "DD-27", ellement: "Pricing Strategy", description: "Reviews the company's pricing strategy...", questionsAnswered: "What is the company's pricing strategy?", status: "In Progress" },
-    { lineItemID: 32, workstream: "Commercial & Customer", topic: "Customer Analytics", id_1: "DD-32", ellement: "Customer Concentration over time", description: "Analyzes the concentration of revenue from key customers...", questionsAnswered: "How has customer concentration changed over time?", status: "Not Started" },
-    { lineItemID: 33, workstream: "Commercial & Customer", topic: "Customer Experience", id_1: "DD-33", ellement: "Churn Analysis", description: "Examines customer churn rates...", questionsAnswered: "What are the customer churn rates and reasons?", status: "Not Started" },
-    { lineItemID: 40, workstream: "Financial & Risk", topic: "Core Financials", id_1: "DD-40", ellement: "Financial Statement Analysis", description: "Reviews the company's financial statements...", questionsAnswered: "What do the financial statements reveal?", status: "Completed" },
-    { lineItemID: 46, workstream: "Financial & Risk", topic: "Core Financials", id_1: "DD-46", ellement: "Quality of Revenue Analysis", description: "Analyzes the quality and sustainability of the company's revenue...", questionsAnswered: "How sustainable is the revenue?", status: "In Progress" },
-    { lineItemID: 49, workstream: "Financial & Risk", topic: "Risk Assessment", id_1: "DD-49", ellement: "Contingent Liabilities", description: "Identifies potential contingent liabilities...", questionsAnswered: "What are the potential contingent liabilities?", status: "Not Started" },
-    { lineItemID: 52, workstream: "Financial & Risk", topic: "Core Financials", id_1: "DD-52", ellement: "Quality of Earnings", description: "Examines the quality of the company's earnings...", questionsAnswered: "How reliable are the earnings?", status: "Not Started" },
-    { lineItemID: 56, workstream: "Financial & Risk", topic: "Legal & Compliance", id_1: "DD-56", ellement: "Litigation Review", description: "Examines any ongoing or past litigation...", questionsAnswered: "What litigation is the company involved in?", status: "Not Started" }
-];
 
 
-// MODIFIED: Added 'workstream' property to each finding
+
+// MODIFIED: Added 'workstream' property to each finding and removed duplicate declaration
 const techflow_anomalies = [
     { id: 'arr-comp', workstream: 'Financial & Risk', title: 'Anomaly #1: Non-Standard ARR Composition', issue: 'ARR includes projected perpetual revenue spread over 18 months', severity: 'CRITICAL', sourceDocuments: ['Financial_Statements_2024.pdf', 'Revenue_Recognition_Policy.pdf'], impact: 'Overstated recurring revenue metrics', analysis: 'The reported $12M ARR is composed of multiple revenue streams that do not align with generally accepted ARR definitions. Our analysis found that approximately 23% ($2.76M) of the reported ARR consists of projected perpetual license revenue spread over 18 months post-contract signing. Additionally, maintenance fees on legacy perpetual contracts comprise another 18% ($2.16M). Only 59% ($7.08M) represents true committed subscription revenue. This composition significantly overstates the company\'s recurring revenue quality and predictability, which is a key metric for SaaS valuations.' },
     { id: 'maint-fee', workstream: 'Financial & Risk', title: 'Anomaly #2: Inconsistent Maintenance Fee Structure', issue: 'Maintenance fees vary from 12% to 28% of contract value', severity: 'HIGH', sourceDocuments: ['Contract_Analysis_2023-2024.xlsx', 'Customer_Agreements_Sample.pdf'], impact: 'Revenue predictability and pricing strategy concerns', analysis: 'Our contract analysis revealed significant inconsistencies in maintenance fee structures across the customer base. Of the 247 perpetual license contracts reviewed, 34% charge maintenance fees below the industry minimum of 17%, with some as low as 12%. This suggests either aggressive pricing to win deals or lack of pricing discipline. The wide variance (12%-28%) indicates inconsistent value delivery or negotiation practices. Industry benchmarks typically see maintenance fees between 18-22% for mature software companies, making TechFlow\'s structure both below market and highly variable.' },
@@ -39,11 +99,6 @@ const otherObservations_v2 = [
     { id: 'obs1', workstream: 'Business & Strategy', text: 'Management team is technically strong but lacks experience scaling a sales organization.' },
     { id: 'obs2', workstream: 'Technology & Operations', text: 'The core product has a loyal customer base but an aging user interface.' },
     { id: 'obs3', workstream: 'Commercial & Customer', text: 'Company has no formal channel partnership program, representing an untapped growth vector.' }
-];
-const techflow_anomalies = [
-    { id: 'arr-comp', title: 'Anomaly #1: Non-Standard ARR Composition', issue: 'ARR includes projected perpetual revenue spread over 18 months', severity: 'CRITICAL', sourceDocuments: ['Financial_Statements_2024.pdf', 'Revenue_Recognition_Policy.pdf'], impact: 'Overstated recurring revenue metrics', analysis: 'The reported $12M ARR is composed of multiple revenue streams that do not align with generally accepted ARR definitions. Our analysis found that approximately 23% ($2.76M) of the reported ARR consists of projected perpetual license revenue spread over 18 months post-contract signing. Additionally, maintenance fees on legacy perpetual contracts comprise another 18% ($2.16M). Only 59% ($7.08M) represents true committed subscription revenue. This composition significantly overstates the company\'s recurring revenue quality and predictability, which is a key metric for SaaS valuations.' },
-    { id: 'maint-fee', title: 'Anomaly #2: Inconsistent Maintenance Fee Structure', issue: 'Maintenance fees vary from 12% to 28% of contract value', severity: 'HIGH', sourceDocuments: ['Contract_Analysis_2023-2024.xlsx', 'Customer_Agreements_Sample.pdf'], impact: 'Revenue predictability and pricing strategy concerns', analysis: 'Our contract analysis revealed significant inconsistencies in maintenance fee structures across the customer base. Of the 247 perpetual license contracts reviewed, 34% charge maintenance fees below the industry minimum of 17%, with some as low as 12%. This suggests either aggressive pricing to win deals or lack of pricing discipline. The wide variance (12%-28%) indicates inconsistent value delivery or negotiation practices. Industry benchmarks typically see maintenance fees between 18-22% for mature software companies, making TechFlow\'s structure both below market and highly variable.' },
-    { id: 'product-launch', title: 'Anomaly #3: Failed Recent Product Launches', issue: 'Zero sales recorded for 3 most recent product launches', severity: 'CRITICAL', sourceDocuments: ['Product_Launch_Reports_2024-2025.pdf', 'Sales_Pipeline_Analysis.xlsx'], impact: 'Innovation capacity and market fit concerns', analysis: "Three recent product launches have generated zero revenue to date: 'TechFlow Analytics Pro' (launched March 2024), 'TechFlow Mobile Suite' (launched September 2024), and 'TechFlow AI Assistant' (launched February 2025). Combined R&D investment for these products totaled $3.2M over 18 months. This pattern suggests potential issues with product-market fit, go-to-market execution, or competitive positioning. The lack of any sales traction, even pilot programs or trials, raises questions about the company's innovation pipeline and ability to expand beyond its core offerings. This could significantly impact future growth projections and the sustainability of R&D investments." }
 ];
 
 const techflow_minorObservations = [
@@ -135,7 +190,7 @@ const techflow_ariaResponses = {
                         <h3 class="response-title">Minor Observations (${techflow_minorObservations.length})</h3>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon ${minorObsExpanded ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
                     </button>
-                    <div class="minor-observations-content ${minorObsExpanded ? 'expanded' : 'collapsed'}">
+                    <div class="minor-observations-content ${minorObsExpanded ? 'expanded' : ''}">
                         <div class="minor-observations-grid">${techflow_minorObservations.map(renderMinorObservation).join('')}</div>
                     </div>
                 </div>
@@ -426,139 +481,15 @@ const techflow_ariaResponses = {
 };
 
 const cloudvantage_ariaResponses = {
-    "Generate a 100-day integration plan for the NewCo acquisition.": {
-        id: '100-day-plan',
-        title: "100-Day Integration Plan: NewCo Acquisition",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">100-Day Integration Plan: NewCo</h3><p class="response-subtitle">Generated by Aria based on the PE Integration Playbook.</p></div>
-            <div class="build-item"><div class="timeline-container">
-                <div class="timeline-phase"><div class="timeline-phase-title">Phase 1: Day 0-30 (Stabilize & Communicate)</div><ul class="timeline-items" data-animate-list><li>Launch internal and external communication plan.</li><li>Confirm key NewCo leadership and employee retention packages.</li><li>Establish joint steering committee and define integration workstreams.</li><li>Secure all IT systems and begin data backup and migration planning.</li></ul></div>
-                <div class="timeline-phase"><div class="timeline-phase-title">Phase 2: Day 31-60 (Assess & Plan)</div><ul class="timeline-items" data-animate-list><li>Complete detailed assessment of NewCo's technology stack and product roadmap.</li><li>Develop joint GTM strategy, including sales training on cross-selling.</li><li>Finalize synergy targets and create detailed tracking dashboards.</li><li>Conduct cultural assessment and plan team-building activities.</li></ul></div>
-                <div class="timeline-phase"><div class="timeline-phase-title">Phase 3: Day 61-100 (Execute & Integrate)</div><ul class="timeline-items" data-animate-list><li>Begin execution of priority technology integration projects.</li><li>Launch first joint marketing campaign and enable sales team with new collateral.</li><li>Consolidate financial reporting into CloudVantage's ERP system.</li><li>Report initial synergy wins and 100-day progress to the board.</li></ul></div>
-            </div></div>
-            <div class="build-item judgement-box success"><p class="judgement-title">Judgement (High Confidence - 90%):</p><p class="judgement-text" data-typing-text="This plan follows industry best practices for a smooth integration, focusing on early communication, strategic alignment, and disciplined execution to maximize synergy capture and minimize disruption."></p></div>
-        </div>`,
-        followUpQuestions: ["Identify key integration risks.", "Create a synergy tracking dashboard.", "Draft a communication plan to NewCo customers about the acquisition."]
-    },
-    "Analyze the cross-sell opportunities between CloudVantage and NewCo products.": {
-        id: 'cross-sell-opps',
-        title: "Cross-Sell Opportunity Analysis",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Cross-Sell Opportunity Analysis</h3><p class="response-subtitle">Source Documents: CloudVantage_Customer_List.csv, NewCo_Customer_List.csv</p></div>
-            <div class="build-item"><p class="response-section-title">Analysis:</p><p class="response-text" data-typing-text="There is a significant cross-sell opportunity. **72%** of NewCo's enterprise customers do not use an existing CloudVantage product, representing a total whitespace ARR of **$18.5M**. The most immediate opportunity is to sell CloudVantage's 'Analytics Suite' into the NewCo customer base, as it directly complements NewCo's core data management offering."></p></div>
-            <div class="build-item judgement-box success"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="Launch a targeted sales campaign in the next 30 days focused on the top 20 NewCo accounts. A pilot program offering a 15% discount on the 'Analytics Suite' could accelerate adoption."></p></div>
-        </div>`,
-        followUpQuestions: ["Draft a revised sales comp plan.", "Generate talking points for the sales team about top pipeline risks."]
-    },
     "Process the renewals for the NewCo acquisition customers.": {
         id: 'newco-renewals',
-        title: "NewCo Acquisition Renewal Analysis",
-        renderFunc: () => {
-            const renewalOpportunities = [
-                { account: 'Global Enterprises Inc.', segment: 'Gold', value: 3245000, date: 'July 15, 2025', circumstance: 'Business Success' },
-                { account: 'Apex Solutions', segment: 'Gold', value: 2780000, date: 'August 3, 2025', circumstance: 'Technical Success' },
-                { account: 'Stellar Technologies', segment: 'Silver', value: 925000, date: 'July 28, 2025', circumstance: 'Business Success' },
-                { account: 'Fusion Micro', segment: 'Bronze', value: 125000, date: 'September 14, 2025', circumstance: 'Technical Success' },
-                { account: 'Horizon Solutions', segment: 'Bronze', value: 95000, date: 'July 25, 2025', circumstance: 'Struggler' },
-            ];
-            const segmentColors = { Gold: 'var(--status-warning)', Silver: 'var(--text-muted)', Bronze: '#cd7f32' };
-            return `<div class="aria-response-content">
-                <div class="build-item"><p class="response-text" data-typing-text="I've analyzed the upcoming renewals for the recently acquired 'NewCo' customers. Based on their current contract values and our standard pricing playbook, I've identified several uplift opportunities."></p></div>
-                <div class="build-item data-table-container"><table class="data-table">
-                    <thead><tr><th>Account</th><th>Segment</th><th>Contract Value</th><th>Renewal Date</th><th>Circumstance</th></tr></thead>
-                    <tbody>${renewalOpportunities.map(c => `<tr><td>${c.account}</td><td><span class="status-badge" style="background-color:${segmentColors[c.segment]}20; color:${segmentColors[c.segment]}">${c.segment}</span></td><td>$${c.value.toLocaleString()}</td><td>${c.date}</td><td>${c.circumstance}</td></tr>`).join('')}</tbody>
-                </table></div>
-                <div class="build-item analysis-box">
-                    <h4 class="response-section-title">Pricing Playbook Recommendation:</h4>
-                    <ul class="list-disc list-outside pl-5 space-y-1 text-sm" data-animate-list>
-                        <li><strong>20% uplift</strong> for Gold customers with "Business Success".</li>
-                        <li><strong>10% uplift</strong> for Silver customers with "Business" or "Technical Success".</li>
-                        <li><strong>25% uplift</strong> for all Bronze customers to align with standard pricing.</li>
-                    </ul>
-                </div>
-            </div>`;
-        },
-        followUpQuestions: ["Apply the recommended uplifts and show the financial impact.", "Generate conversation guides for the sales team.", "Which customers are at the highest risk of churning with this increase?"]
-    },
-    "Analyze the current sales compensation plan for the Enterprise team.": {
-        id: 'sales-comp-analysis',
-        title: "Sales Comp Plan Analysis",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Sales Compensation Plan Analysis</h3><p class="response-subtitle">Source Documents: Sales_Comp_Plan_FY25.pdf, ...</p></div>
-            <div class="build-item"><p class="response-section-title">Key Findings:</p><ul class="list-disc pl-5 text-sm" data-animate-list><li>The current plan is 100% focused on New Business ARR, with no incentive for renewals or expansion.</li><li>Accelerators for over-performance are below market benchmarks, potentially capping motivation.</li><li>The plan does not include a component for selling newly acquired 'NewCo' products.</li></ul></div>
-            <div class="build-item judgement-box warning"><p class="judgement-title">Judgement (Medium Confidence - 85%):</p><p class="judgement-text" data-typing-text="The current compensation plan is misaligned with the strategic goal of increasing Net Revenue Retention (NRR). It actively discourages the sales team from focusing on the existing customer base and cross-selling opportunities."></p></div>
-        </div>`,
-        followUpQuestions: ["Draft a revised sales comp plan.", "Model the financial impact of the new plan.", "What are the benchmarks for sales accelerators?"]
-    },
-    "What are the key drivers behind our current NPS score?": {
-        id: 'nps-drivers',
-        title: "NPS Driver Analysis",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">NPS Driver Analysis (Score: 52)</h3><p class="response-subtitle">Source Documents: NPS_Survey_Results_Q2.csv, ...</p></div>
-            <div class="build-item grid md:grid-cols-2 gap-4">
-                <div><h4 class="response-section-title text-success">Top Promoters (Score 9-10)</h4><ul class="list-disc pl-5 text-sm" data-animate-list><li>"Excellent customer support"</li><li>"Platform is reliable and always available"</li><li>"Deep domain expertise of the team"</li></ul></div>
-                <div><h4 class="response-section-title text-error">Top Detractors (Score 0-6)</h4><ul class="list-disc pl-5 text-sm" data-animate-list><li>"Lack of key features compared to competitors"</li><li>"The user interface feels outdated"</li><li>"Integration with our other tools is difficult"</li></ul></div>
-            </div>
-            <div class="build-item judgement-box success"><p class="judgement-title">Judgement (High Confidence - 92%):</p><p class="judgement-text" data-typing-text="The high NPS score is primarily driven by strong customer service and reliability, not product superiority. While this is a strength, it's a fragile position. The feedback from detractors clearly indicates a growing product gap that needs to be addressed to maintain customer loyalty long-term."></p></div>
-        </div>`,
-        followUpQuestions: ["Which features are detractors asking for most?", "What is the status of the UI refresh project?", "How can we improve the integration experience?"]
-    },
-    "Generate a board-level summary of Q2 financial performance.": {
-        id: 'q2-summary',
-        title: "Q2 Financial Performance Summary",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Q2 2025 Financial Summary</h3><p class="response-subtitle">Source Documents: Q2_Financial_Package.xlsx, ...</p></div>
-            <div class="build-item kpi-grid">${[
-                { label: 'ARR', value: '$78M', change: '+4% QoQ', changeColor: 'var(--status-success)' },
-                { label: 'NRR', value: '128%', change: '+3% vs Target', changeColor: 'var(--status-success)' },
-                { label: 'EBITDA Margin', value: '31%', change: '-1% vs Target', changeColor: 'var(--status-error)' },
-                { label: 'Rule of 40', value: '58%', change: 'Healthy', changeColor: 'var(--text-muted)' }
-            ].map(kpi => `<div class="kpi-card"><p class="kpi-label">${kpi.label}</p><p class="kpi-value">${kpi.value}</p><p class="kpi-detail" style="color: ${kpi.changeColor};">${kpi.change}</p></div>`).join('')}</div>
-            <div class="build-item"><p class="response-section-title">Executive Summary:</p><p class="response-text" data-typing-text="CloudVantage delivered a strong Q2, exceeding ARR targets driven by robust Net Revenue Retention of 128%. This indicates strong product stickiness and successful expansion within the existing customer base. EBITDA margin was slightly below target due to planned investments in the 'NewCo' integration and R&D for the upcoming AI feature. Overall, the business remains healthy and is tracking well against the annual plan."></p></div>
-        </div>`,
-        followUpQuestions: ["Analyze the key drivers of our Net Revenue Retention.", "What caused the dip in EBITDA margin?", "What is the forecast for Q3?"]
-    },
-    "Draft a revised sales comp plan.": {
-        id: 'draft-sales-comp',
-        title: "Draft Sales Comp Plan",
+        title: "NewCo Customer Renewal Process",
         renderFunc: () => `<div class="aria-response-content build-item card-base">
-            <h4 class="response-title">Draft: Revised Sales Comp Plan</h4>
-            <ul class="list-disc pl-5 space-y-2 text-sm" data-animate-list>
-                <li><strong>Structure:</strong> 70% Base / 30% Variable</li>
-                <li><strong>Commission:</strong> 60% New Business ARR, 30% Expansion ARR (Upsell/Cross-sell), 10% Renewal Rate Modifier.</li>
-                <li><strong>NewCo Kicker:</strong> 1.25x commission multiplier on all NewCo products sold for the first 12 months.</li>
-                <li><strong>Accelerators:</strong> Tiered accelerators starting at 101% of quota, with a 2x multiplier for deals >200% of quota.</li>
-            </ul>
+            <h4 class="response-title">Renewal Process Initiated</h4>
+            <p class="response-text" data-typing-text="I have processed the renewal data for the 52 customers acquired from NewCo. 48 have been successfully renewed automatically. 4 require manual intervention due to non-standard terms. I have flagged these in the workspace and assigned them to the legal team for review."></p>
         </div>`,
-        followUpQuestions: []
-    },
-    "Model the financial impact of a 5% price increase on the legacy NewCo customer base.": {
-        id: 'model-price-increase',
-        title: "Price Increase Impact Model",
-        renderFunc: () => `<div class="aria-response-content build-item card-base">
-            <h4 class="response-title">Scenario: 5% Price Increase on NewCo Base</h4>
-            <div class="data-table-container"><table class="data-table">
-                <thead><tr><th>Metric</th><th>Current</th><th>Projected</th><th>Impact</th></tr></thead>
-                <tbody>
-                    <tr><td>NewCo Customer ARR</td><td>$15.2M</td><td>$15.5M</td><td class="text-success">+$0.3M</td></tr>
-                    <tr><td>Assumed Churn Increase</td><td>0%</td><td>2%</td><td class="text-error">-$0.3M</td></tr>
-                    <tr><td>Net ARR Impact</td><td></td><td class="font-bold">$0</td><td>Neutral</td></tr>
-                </tbody>
-            </table></div>
-            <p class="response-subtitle mt-2" data-typing-text="**Note:** The model assumes a 2% increase in churn directly attributable to the price increase, resulting in a net-neutral ARR impact. This suggests the price increase is too low to offset the potential churn risk."></p>
-        </div>`,
-        followUpQuestions: ["What if we model a 10% increase?", "Can we segment customers to apply the increase selectively?"]
-    },
-    "Draft a communication plan to NewCo customers about the acquisition.": {
-        id: 'draft-comm-plan',
-        title: "Draft Customer Communication",
-        renderFunc: () => `<div class="aria-response-content build-item card-base">
-            <p><span class="font-semibold">To:</span> Valued NewCo Customer</p>
-            <p><span class="font-semibold">Subject:</span> Exciting News: NewCo is Joining CloudVantage!</p>
-            <hr class="my-2 border-border-color">
-            <div class="response-text" data-typing-text="Dear [Customer Name],\n\nWe are thrilled to announce that NewCo has been acquired by CloudVantage, a leader in the enterprise software space. This partnership will bring together the best of both companies, accelerating innovation and delivering even more value to you.\n\nThere will be no immediate changes to your service, and your current points of contact will remain the same. We are committed to a smooth transition and will be sharing more details about the exciting future ahead in the coming weeks.\n\nSincerely,\nThe CloudVantage & NewCo Teams"></div>
-        </div>`,
-        followUpQuestions: []
+        followUpQuestions: ["Show me the 4 customers that need manual review.", "What is the total ARR of the renewed customers?"],
+        suggestedActions: []
     }
 };
 
@@ -628,10 +559,4 @@ const flaggedAnomalies = [
     { id: 'arr-comp', title: 'Non-Standard ARR Composition', severity: 'CRITICAL' },
     { id: 'product-launch', title: 'Failed Recent Product Launches', severity: 'CRITICAL' },
     { id: 'maint-fee', title: 'Inconsistent Maintenance Fee Structure', severity: 'HIGH' }
-];
-
-const otherObservations_v2 = [
-    { id: 'obs1', text: 'Management team is technically strong but lacks experience scaling a sales organization.' },
-    { id: 'obs2', text: 'The core product has a loyal customer base but an aging user interface.' },
-    { id: 'obs3', text: 'Company has no formal channel partnership program, representing an untapped growth vector.' }
 ];

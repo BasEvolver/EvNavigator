@@ -2492,6 +2492,7 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .card-action-button:hover {
     background-color: var(--bg-hover);
     border-color: var(--accent-blue);
@@ -2695,4 +2696,245 @@ input:checked + .slider:before {
     font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2
+    transition: all 0.2s ease;
+}
+
+/* =================================================================
+   PORTCO PAGE (DILIGENCE HUB V3 - GANTT CHART) STYLES
+   ================================================================= */
+
+.gantt-container-v3 {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.gantt-header-v3 {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.gantt-header-titles {
+    display: grid;
+    grid-template-columns: 50px 120px 1fr;
+    align-items: end;
+    padding: 0 0.5rem;
+}
+
+.gantt-header-title {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.gantt-timeline-header {
+    display: grid;
+    grid-template-columns: repeat(17, 1fr);
+    gap: 2px;
+}
+
+.gantt-day-header {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+.gantt-day-header span {
+    display: block;
+}
+.gantt-day-header.weekend {
+    opacity: 0.5;
+}
+.gantt-day-header.today span:last-child {
+    background-color: var(--accent-blue);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    margin: 0 auto;
+}
+
+.gantt-body-v3 {
+    position: relative;
+}
+
+.gantt-today-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--purple);
+    z-index: 20;
+    /* Position is set via inline style in the HTML */
+    left: calc( (100% - 380px) / 17 * 6.5 + 340px );
+}
+
+.gantt-phase-header {
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.75rem 0.5rem;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.gantt-phase-header .chevron-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.gantt-phase-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+}
+.gantt-phase-content.expanded {
+    max-height: 2000px; /* Adjust if needed */
+    transition: max-height 0.4s ease-in;
+}
+
+.gantt-task-row {
+    display: grid;
+    grid-template-columns: 340px 1fr 40px;
+    border-bottom: 1px solid var(--border-color);
+}
+.gantt-task-row:hover {
+    background-color: var(--bg-hover);
+}
+
+.gantt-task-details {
+    display: grid;
+    grid-template-columns: 50px 120px 1fr;
+    align-items: center;
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-secondary);
+}
+.gantt-task-id {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.gantt-task-category {
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gantt-task-element {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.gantt-task-bar-container {
+    display: grid;
+    grid-template-columns: repeat(17, 1fr);
+    gap: 2px;
+    padding: 4px 0;
+    align-items: center;
+}
+
+.gantt-bar {
+    height: 20px;
+    border-radius: 4px;
+    opacity: 0.8;
+}
+
+/* Workstream Colors for Gantt Bars */
+.ws-business { background-color: var(--accent-blue); }
+.ws-commercial { background-color: var(--accent-teal); }
+.ws-technology { background-color: var(--purple); }
+.ws-financial { background-color: var(--status-warning); }
+.ws-synthesis, .ws-value, .ws-investment, .ws-final { background-color: var(--text-secondary); }
+
+
+.gantt-task-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: relative;
+}
+.status-indicator.status-completed { background-color: var(--status-success); }
+.status-indicator.status-in-progress { background-color: var(--status-info); }
+.status-indicator.status-upcoming { background-color: var(--text-muted); }
+.status-indicator.status-late, .status-indicator.status-blocked { background-color: var(--status-error); }
+
+/* AI Commentary Tooltip */
+.has-tooltip {
+    position: relative;
+}
+.aria-commentary-tooltip {
+    visibility: hidden;
+    width: 280px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    text-align: left;
+    border-radius: 6px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 20;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -140px; /* Half of width */
+    opacity: 0;
+    transition: opacity 0.3s;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow-hover);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+.has-tooltip:hover .aria-commentary-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.gantt-legend {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.legend-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.legend-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+.legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+.legend-swatch.is-status {
+    border-radius: 50%;
+}

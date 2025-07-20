@@ -82,15 +82,15 @@ function loadState() {
     if (savedStateJSON) {
         try {
             const savedState = JSON.parse(savedStateJSON);
-            // Deep merge to handle nested objects correctly
+            // Deep merge to handle nested objects correctly and prevent errors
             const mergedState = {
                 ...initialState,
                 ...savedState,
-                diligenceWorkspace: { ...initialState.diligenceWorkspace, ...savedState.diligenceWorkspace },
-                cloudvantageAria: { ...initialState.cloudvantageAria, ...savedState.cloudvantageAria },
-                techflowAria: { ...initialState.techflowAria, ...savedState.techflowAria },
-                ariaSettings: { ...initialState.ariaSettings, ...savedState.ariaSettings },
-                modeling: { ...initialState.modeling, ...savedState.modeling }
+                diligenceWorkspace: { ...initialState.diligenceWorkspace, ...(savedState.diligenceWorkspace || {}) },
+                cloudvantageAria: { ...initialState.cloudvantageAria, ...(savedState.cloudvantageAria || {}) },
+                techflowAria: { ...initialState.techflowAria, ...(savedState.techflowAria || {}) },
+                ariaSettings: { ...initialState.ariaSettings, ...(savedState.ariaSettings || {}) },
+                modeling: { ...initialState.modeling, ...(savedState.modeling || {}) }
             };
             return mergedState;
         } catch (e) {
