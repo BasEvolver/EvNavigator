@@ -1,9 +1,43 @@
 // js/portco.js - Logic for the individual PortCo dashboards
 
-// --- DATE & PROJECT PLAN CALCULATION UTILS ---
+// --- NEW: DYNAMIC DATE CALCULATION ---
+const PROJECT_DAY_FOR_TODAY = 7; // This defines that today's real date is the 7th business day of the project.
+
+/**
+ * Calculates the project's start date by working backwards from today's actual date.
+ * @param {Date} today The actual current date.
+ * @param {number} projectDayForToday The business day number that today represents.
+ * @returns {Date} The calculated start date of the project.
+ */
+function calculateStartDate(today, projectDayForToday) {
+    let startDate = new Date(today);
+    let businessDaysToGoBack = projectDayForToday - 1;
+
+    while (businessDaysToGoBack > 0) {
+        startDate.setDate(startDate.getDate() - 1);
+        const dayOfWeek = startDate.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not a Sunday or Saturday
+            businessDaysToGoBack--;
+        }
+    }
+    return startDate;
+}
+
+const todayDate = new Date(); // Get the actual current date.
+const PROJECT_START_DATE = calculateStartDate(todayDate, PROJECT_DAY_FOR_TODAY);
+const CURRENT_PROJECT_DAY = PROJECT_DAY_FOR_TODAY;
+// --- END OF DYNAMIC DATE CALCULATION ---
+
+
+// --- CONSTANTS AND UTILS ---
+const FILTER_DATA = {
+    workstreams: [ { label: 'Business & Strategy' }, { label: 'Commercial & Customer' }, { label: 'Technology & Operations' }, { label: 'Financial & Risk' }, { label: 'Synthesis' }, { label: 'Value Creation' }, { label: 'Investment Committee' }, { label: 'Final Deliverables' } ],
+    statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
+};
+
 const projectPlanUtils = {
-    PROJECT_START_DATE: new Date('2025-07-11T12:00:00Z'),
-    CURRENT_PROJECT_DAY: 7,
+    PROJECT_START_DATE: PROJECT_START_DATE,
+    CURRENT_PROJECT_DAY: CURRENT_PROJECT_DAY,
 
     mapBusinessDayToDate: (dayNumber, projectStartDate) => {
         let currentDate = new Date(projectStartDate);
@@ -103,7 +137,7 @@ const projectPlanUtils = {
     }
 };
 
-// --- NEW: SIMULATED RESPONSE ENGINE FOR PORTCO PAGE ---
+// --- SIMULATED RESPONSE ENGINE FOR PORTCO PAGE ---
 const portcoResponses = {
     "Replan the project assuming the market data arrives on Thursday.": {
         renderFunc: () => {
@@ -124,7 +158,6 @@ const portcoResponses = {
     }
 };
 
-
 // --- MAIN SCRIPT ---
 document.addEventListener('DOMContentLoaded', async () => {
     await loadSharedComponents();
@@ -140,8 +173,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     state.selectedCompanyId = companyId;
     if (!state.diligenceFilters) {
         state.diligenceFilters = {
-            workstreams: ["Business & Strategy", "Technology & Operations", "Commercial & Customer", "Financial & Risk", "Synthesis", "Value Creation", "Investment Committee", "Final Deliverables"],
-            statuses: ["Completed", "In Progress", "Upcoming", "Blocked", "Late"]
+            workstreams: FILTER_DATA.workstreams.map(w => w.label),
+            statuses: [...FILTER_DATA.statuses]
         };
     }
     saveState(state);
@@ -156,11 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializePortcoEventListeners();
 });
 
-
-// =================================================================
-// AGENTIC DILIGENCE HUB (for TechFlow)
-// =================================================================
-
+// --- RENDERING FUNCTIONS ---
 function renderDiligenceHub(companyId) {
     const mainContent = document.getElementById('main-content');
     const pills = ['Plan', 'Business & Strategy', 'Commercial & Customer', 'Technology & Operations', 'Financial & Risk'];
@@ -198,8 +227,6 @@ function renderDiligenceTabContent(tabName, companyId) {
 
 function renderPlanTab(keepFilterOpen = false, planData = diligencePlan_v3) {
     const state = loadState();
-    const projectStartDate = projectPlanUtils.PROJECT_START_DATE;
-    const currentProjectDay = projectPlanUtils.CURRENT_PROJECT_DAY;
     
     const planWithDates = projectPlanUtils.calculateTaskDates(planData);
     const contentArea = document.getElementById('diligence-content-area');
@@ -245,13 +272,8 @@ function renderPlanTab(keepFilterOpen = false, planData = diligencePlan_v3) {
         phase.categories = Object.values(phase.categories).filter(cat => cat.tasks.length > 0);
     });
 
-    const timelineDates = Array.from({ length: 17 }, (_, i) => projectPlanUtils.mapBusinessDayToDate(i + 1, projectStartDate));
-    const today = projectPlanUtils.mapBusinessDayToDate(currentProjectDay, projectStartDate);
-
-    const filterData = {
-        workstreams: [ { label: 'Business & Strategy' }, { label: 'Commercial & Customer' }, { label: 'Technology & Operations' }, { label: 'Financial & Risk' }, { label: 'Synthesis' }, { label: 'Value Creation' }, { label: 'Investment Committee' }, { label: 'Final Deliverables' } ],
-        statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
-    };
+    const timelineDates = Array.from({ length: 17 }, (_, i) => projectPlanUtils.mapBusinessDayToDate(i + 1, PROJECT_START_DATE));
+    const today = projectPlanUtils.mapBusinessDayToDate(CURRENT_PROJECT_DAY, PROJECT_START_DATE);
 
     let leftPaneHTML = '';
     let rightPaneHTML = '';
@@ -287,7 +309,7 @@ function renderPlanTab(keepFilterOpen = false, planData = diligencePlan_v3) {
                 const statusClass = `status-${commentary.status.toLowerCase().replace(/ /g, '-')}`;
                 const taskEndDay = task.startDay + Math.ceil(task.duration) - 1;
                 const extensionStart = taskEndDay + 1;
-                const extensionEnd = currentProjectDay + 1;
+                const extensionEnd = CURRENT_PROJECT_DAY + 1;
                 const workstreamColor = workstreamColors[task.workstream] || 'var(--status-error)';
                 
                 leftPaneHTML += `<div class="gantt-row ${phaseId} ${categoryId}" data-row-id="${task.id}"><div class="gantt-row-left" data-action="show-task-details" data-task-id="${task.id}"><div class="gantt-task-details"><div class="gantt-task-id">${task.id}</div><div class="gantt-task-element">${task.name}</div><div class="gantt-task-status"><div class="status-pill-column ${statusClass}">${commentary.status}</div></div></div></div></div>`;
@@ -296,7 +318,7 @@ function renderPlanTab(keepFilterOpen = false, planData = diligencePlan_v3) {
         });
     });
 
-    const todayBandLeft = (currentProjectDay - 1) * 42;
+    const todayBandLeft = (CURRENT_PROJECT_DAY - 1) * 42;
 
     contentArea.innerHTML = `
         <div class="gantt-container-v7">
@@ -328,14 +350,37 @@ function renderPlanTab(keepFilterOpen = false, planData = diligencePlan_v3) {
                 <div class="gantt-modal-content">
                     <h4 class="gantt-modal-title">Filter Plan</h4>
                     <div class="filter-modal-grid">
-                        <!-- FIX: Swapped the order of these two blocks -->
                         <div class="filter-group">
-                            <h5 class="filter-group-title">Workstream</h5>
-                            ${filterData.workstreams.map(item => `<label class="filter-checkbox-item"><input type="checkbox" data-action="filter" data-type="workstreams" data-value="${item.label}" ${state.diligenceFilters.workstreams.includes(item.label) ? 'checked' : ''}><span>${item.label}</span></label>`).join('')}
+                            <div class="filter-group-header">
+                                <h5 class="filter-group-title">Workstreams</h5>
+                                <div class="filter-group-actions">
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="workstreams" data-mode="select">All</button>
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="workstreams" data-mode="deselect">None</button>
+                                </div>
+                            </div>
+                            ${FILTER_DATA.workstreams.map(item => `
+                                <label class="custom-checkbox-wrapper">
+                                    <input type="checkbox" data-action="filter" data-type="workstreams" data-value="${item.label}" ${state.diligenceFilters.workstreams.includes(item.label) ? 'checked' : ''}>
+                                    <span class="custom-checkbox"></span>
+                                    <span class="checkbox-label">${item.label}</span>
+                                </label>
+                            `).join('')}
                         </div>
                         <div class="filter-group">
-                            <h5 class="filter-group-title">Status</h5>
-                            ${filterData.statuses.map(item => `<label class="filter-checkbox-item"><input type="checkbox" data-action="filter" data-type="statuses" data-value="${item}" ${state.diligenceFilters.statuses.includes(item) ? 'checked' : ''}><span>${item}</span></label>`).join('')}
+                            <div class="filter-group-header">
+                                <h5 class="filter-group-title">Status</h5>
+                                <div class="filter-group-actions">
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="statuses" data-mode="select">All</button>
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="statuses" data-mode="deselect">None</button>
+                                </div>
+                            </div>
+                            ${FILTER_DATA.statuses.map(item => `
+                                <label class="custom-checkbox-wrapper">
+                                    <input type="checkbox" data-action="filter" data-type="statuses" data-value="${item}" ${state.diligenceFilters.statuses.includes(item) ? 'checked' : ''}>
+                                    <span class="custom-checkbox"></span>
+                                    <span class="checkbox-label">${item}</span>
+                                </label>
+                            `).join('')}
                         </div>
                     </div>
                 </div>
@@ -349,14 +394,13 @@ function renderPlanTab(keepFilterOpen = false, planData = diligencePlan_v3) {
         if (chartArea) {
             const totalWidth = chartArea.scrollWidth;
             const visibleWidth = chartArea.clientWidth;
-            const todayPosition = (totalWidth / 17) * (currentProjectDay - 0.5);
+            const todayPosition = (totalWidth / 17) * (CURRENT_PROJECT_DAY - 0.5);
             chartArea.scrollLeft = todayPosition - (visibleWidth / 2) + 420;
         }
     }, 0);
 
     initializeGanttHover();
 }
-
 function initializeGanttHover() {
     const container = document.querySelector('.gantt-grid-container');
     if (!container) return;
@@ -538,6 +582,22 @@ function initializePortcoEventListeners() {
         let state = loadState();
 
         switch(action) {
+            case 'filter-all': {
+                const { type, mode } = target.dataset;
+                if (mode === 'select') {
+                    if (type === 'workstreams') {
+                        state.diligenceFilters.workstreams = FILTER_DATA.workstreams.map(w => w.label);
+                    } else {
+                        state.diligenceFilters.statuses = [...FILTER_DATA.statuses];
+                    }
+                } else {
+                    state.diligenceFilters[type] = [];
+                }
+                saveState(state);
+                renderPlanTab(true);
+                break;
+            }
+
             case 'populate-prompt': {
                 const promptText = target.dataset.prompt;
                 const promptInput = document.getElementById('portco-prompt-input');
@@ -562,7 +622,6 @@ function initializePortcoEventListeners() {
                 break;
             }
 
-            // --- All other cases remain the same ---
             case 'switch-diligence-tab':
                 mainContent.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
                 target.classList.add('active');
@@ -659,8 +718,8 @@ function initializePortcoEventListeners() {
     });
 
     mainContent.addEventListener('change', e => {
-        const target = e.target;
-        if (target.dataset.action === 'filter') {
+        const target = e.target.closest('input[data-action="filter"]');
+        if (target) {
             let state = loadState();
             const { type, value } = target.dataset;
             const filterArray = state.diligenceFilters[type];
@@ -677,12 +736,11 @@ function initializePortcoEventListeners() {
     });
 
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.gantt-modal-content, [data-action="toggle-filter-modal"]')) {
+        if (!e.target.closest('.gantt-modal, [data-action="toggle-filter-modal"]')) {
             document.querySelectorAll('.gantt-modal').forEach(modal => modal.classList.remove('visible'));
         }
     });
 }
-
 function initializeDataViewListeners(companyId) {
     if (companyId === 'cloudvantage') {
         initializeCloudVantageTabInteractions();
