@@ -2418,7 +2418,6 @@ input:checked + .slider:before {
     padding: 1rem;
     font-family: 'Inter', sans-serif;
     position: relative;
-     position: relative; /* <<< ADD THIS LINE */
 }
 
 .gantt-controls {
@@ -2440,34 +2439,30 @@ input:checked + .slider:before {
 }
 .gantt-control-btn:hover { background-color: var(--bg-hover); color: var(--text-primary); }
 
-/* The main scroll container for BOTH axes */
 .gantt-scroll-wrapper {
     max-height: 75vh;
     overflow: auto;
     position: relative;
 }
 
-/* Grid container needs a minimum width for horizontal scrolling */
 .gantt-grid-container {
     display: grid;
     grid-template-columns: 420px 1fr;
     min-width: 1120px;
 }
 
-/* The entire left pane is sticky to the left */
 .gantt-left-pane {
     position: -webkit-sticky;
     position: sticky;
     left: 0;
     z-index: 30;
-    background-color: var(--bg-card); /* Prevents right side from showing through on scroll */
+    background-color: var(--bg-card);
 }
 
 .gantt-right-pane {
     width: 100%;
 }
 
-/* Both headers are sticky to the top */
 .gantt-left-header, .gantt-right-header {
     position: -webkit-sticky;
     position: sticky;
@@ -2475,27 +2470,26 @@ input:checked + .slider:before {
     z-index: 20;
     background-color: var(--bg-card);
     border-bottom: 2px solid var(--border-color);
+    height: 41px;
+    display: grid;
+    align-items: end;
+    padding-bottom: 0.5rem;
 }
 
-/* The left header needs a higher z-index to sit on top of the right header in the corner */
 .gantt-left-header {
-    z-index: 40; /* HIGHEST z-index */
-    display: grid;
+    z-index: 40;
     grid-template-columns: 50px 1fr 100px;
-    align-items: end;
-    padding: 0 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
     font-weight: 600;
     font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
-    height: 41px;
 }
 
 .gantt-right-header {
-    display: grid;
     grid-template-columns: repeat(17, 1fr);
     gap: 2px;
-    padding-bottom: 0.5rem; /* Re-add padding here */
 }
 
 .gantt-day-header { text-align: center; font-size: 0.7rem; color: var(--text-muted); }
@@ -2511,8 +2505,7 @@ input:checked + .slider:before {
     position: absolute;
     top: 0;
     bottom: 0;
-    background-color: rgba(100, 116, 139, 0.05);
-    border-left: 3px dashed var(--accent-blue);
+    background-color: var(--accent-blue-translucent);
     z-index: 1;
     pointer-events: none;
 }
@@ -2586,7 +2579,6 @@ input:checked + .slider:before {
     );
 }
 
-/* Workstream Colors for Gantt Bars */
 .ws-business { background-color: var(--accent-blue); }
 .ws-commercial { background-color: var(--accent-teal); }
 .ws-technology { background-color: var(--purple); }
@@ -2599,21 +2591,6 @@ input:checked + .slider:before {
 .gantt-phase-content, .gantt-category-content { display: contents; }
 .gantt-row.collapsed { display: none; }
 
-
-
-
-
-/* ... find and REPLACE the existing .filter-checkbox-item rule with this: */
-.filter-checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem; /* Slightly smaller, more refined font size (13px) */
-    color: var(--text-secondary);
-    padding: 0.25rem 0;
-    cursor: pointer;
-}
-
 /* Filter Modal */
 .gantt-modal {
     position: absolute; 
@@ -2624,47 +2601,67 @@ input:checked + .slider:before {
     border-radius: 0.75rem;
     box-shadow: 0 10px 25px var(--shadow-hover);
     z-index: 50; 
-    width: 440px; /* WIDER: Increased width to prevent wrapping */
+    width: 440px;
     opacity: 0; 
     visibility: hidden;
     transform: translateY(10px);
     transition: all 0.2s ease;
 }
-
 .gantt-modal.visible {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
-
-.gantt-modal-content {
-    padding: 1.5rem;
-}
-
+.gantt-modal-content { padding: 1.5rem; }
 .gantt-modal-title {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 1.5rem;
 }
-
 .filter-modal-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
 }
-
+.filter-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.filter-group-header .filter-group-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
 .filter-group-title {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
     text-transform: none;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
 }
-
-/* Custom Checkbox Styling */
+.filter-group-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+.filter-action-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+.filter-action-btn:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
 .custom-checkbox-wrapper {
     display: flex;
     align-items: center;
@@ -2672,11 +2669,7 @@ input:checked + .slider:before {
     padding: 0.375rem 0;
     cursor: pointer;
 }
-
-.custom-checkbox-wrapper input[type="checkbox"] {
-    display: none;
-}
-
+.custom-checkbox-wrapper input[type="checkbox"] { display: none; }
 .custom-checkbox {
     width: 18px;
     height: 18px;
@@ -2688,69 +2681,110 @@ input:checked + .slider:before {
     flex-shrink: 0;
     transition: all 0.2s ease;
 }
-
 .checkbox-label {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-secondary);
     transition: color 0.2s ease;
 }
-
-/* Hover State */
-.custom-checkbox-wrapper:hover .custom-checkbox {
-    border-color: var(--accent-blue);
-}
-.custom-checkbox-wrapper:hover .checkbox-label {
-    color: var(--text-primary);
-}
-
-/* Checked State */
+.custom-checkbox-wrapper:hover .custom-checkbox { border-color: var(--accent-blue); }
+.custom-checkbox-wrapper:hover .checkbox-label { color: var(--text-primary); }
 .custom-checkbox-wrapper input:checked + .custom-checkbox {
     background-color: var(--accent-blue);
     border-color: var(--accent-blue);
 }
-
-/* The Checkmark Icon (SVG embedded in CSS) */
 .custom-checkbox-wrapper input:checked + .custom-checkbox::after {
     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
     width: 12px;
     height: 12px;
-    display: block; /* FIX: Ensures proper block-level rendering */
-    line-height: 1; /* FIX: Corrects vertical alignment */
+    display: block;
+    line-height: 1;
 }
-.filter-group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
+
+/* Task Detail Modal */
+.gantt-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(9, 26, 45, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; opacity: 0; visibility: hidden; transition: all 0.2s ease;
+}
+.gantt-modal-overlay.visible { opacity: 1; visibility: visible; }
+.gantt-task-modal {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    width: 90%; max-width: 600px;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+}
+.gantt-modal-overlay.visible .gantt-task-modal { transform: scale(1); }
+.gantt-modal-header {
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center;
 }
-
-.filter-group-header .filter-group-title {
-    margin-bottom: 0; /* Remove margin from title since header handles it */
-    padding-bottom: 0;
-    border-bottom: none;
+.gantt-modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+.gantt-modal-header .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+.gantt-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.modal-section-title { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-info-item p:first-child { font-weight: 500; color: var(--text-secondary); }
+.modal-info-item p:last-child { font-weight: 600; color: var(--text-primary); }
+.modal-description p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+.modal-dependencies ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.modal-dependencies li { font-size: 0.875rem; color: var(--text-secondary); }
+.modal-dependencies li.none { color: var(--text-muted); }
+.modal-status-assessment {
+    background-color: var(--bg-secondary);
+    border-left: 3px solid var(--accent-blue);
+    padding: 1rem;
+    border-radius: 0.5rem;
 }
-
-.filter-group-actions {
+.modal-suggested-actions {
     display: flex;
     gap: 0.75rem;
+    margin-top: 0.75rem;
 }
-
-.filter-action-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 0.75rem; /* Small and unobtrusive */
-    font-weight: 600;
-    color: var(--accent-blue);
+.modal-action-button {
+    background-color: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+    transition: all 0.2s ease;
 }
-
-.filter-action-btn:hover {
-    opacity: 1;
-    text-decoration: underline;
+.modal-action-button:hover {
+    background-color: var(--accent-blue-translucent);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+.dependency-item.completed {
+    color: var(--status-success);
+    font-weight: 500;
+}
+.dependency-item.completed::before {
+    content: '✓ ';
+    font-weight: 700;
+}
+.modal-aria-button {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--accent-blue);
+    color: white;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.modal-aria-button:hover {
+    opacity: 0.9;
 }
