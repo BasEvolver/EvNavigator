@@ -6,13 +6,16 @@
     <title>Navigator - Modeling</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ADD CHART.JS FOR RADAR CHARTS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
         <div id="sidebar-container"></div>
         <div class="main-content-wrapper">
             <div id="header-container"></div>
-            <main id="main-content" class="p-6 sm:p-8">
+            <main id="main-content">
+                <!-- Content will be dynamically rendered by modeling.js -->
                 <div class="flex items-center justify-center h-full">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
@@ -22,8 +25,9 @@
 
     <!-- Load scripts in the CORRECT order -->
     <script src="js/data.js"></script>
+    <script src="js/MaturityModel.js"></script> <!-- THE NEW KNOWLEDGE BASE -->
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
-    <script src="js/modeling.js"></script>
+    <script src="js/modeling.js"></script> <!-- THE NEW PAGE LOGIC -->
 </body>
 </html>

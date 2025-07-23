@@ -1,41 +1,88 @@
 // js/shared.js - Shared utilities, state, component loading, and navigation
 
 // =================================================================
-// NEW: UTILS OBJECT
+// GENERATIVE UTILITIES (NEW & ENHANCED)
 // =================================================================
 const Utils = {
-    generateScenario(capabilityId, state, capabilities, capabilityScenarios) {
-        const assessment = state.modeling.assessmentData[capabilityId];
-        if (!assessment) return { actions: [], insight: 'Assessment data not found.' };
+    /**
+     * Generates a detailed, structured uplift plan based on a capability's maturity gap.
+     * This is the core of the "generative" experience in the Modeling tab.
+     * @param {string} capabilityId - The ID of the capability to generate a plan for.
+     * @param {object} state - The current global application state.
+     * @returns {object|null} A structured plan object or null if not applicable.
+     */
+    generateUpliftInitiative(capabilityId, state) {
+        const { assessmentData } = state.modeling;
+        const companyId = state.selectedCompanyId;
+        const capability = this.findCapability(capabilityId);
+        if (!capability) return null;
 
-        const { current, target } = assessment;
-        if (target <= current) return { actions: [], insight: 'Target state is not higher than current state.' };
-
-        let actions = [];
-        let lastInsight = 'No specific actions generated for this gap.';
-
-        for (let i = current; i < target; i++) {
-            const scenarioStep = capabilityScenarios[capabilityId]?.[i]?.[i + 1];
-            if (scenarioStep) {
-                actions.push(...scenarioStep.actions);
-                lastInsight = scenarioStep.insight;
-            }
-        }
+        const domainsInCapability = Object.values(capability.domains);
         
-        const capability = capabilities.find(c => c.id === capabilityId);
-        const title = capability ? `Uplift Plan for ${capability.name}` : 'Uplift Plan';
+        // Find all domains within this capability that have a maturity gap.
+        const relevantDomains = domainsInCapability.filter(d => 
+            assessmentData[d.id] && assessmentData[d.id].target > assessmentData[d.id].current
+        );
+
+        if (relevantDomains.length === 0) {
+            return {
+                id: `INIT-${capability.id}`,
+                title: `No Uplift Required for ${capability.name}`,
+                rationale: "The current and target maturity levels are the same across all domains. No new actions are needed.",
+                actions: [],
+                kpis: [],
+                risks: [],
+                budget: { software: '$0', headcount: '$0' }
+            };
+        }
+
+        let allActions = [];
+        // This is a placeholder for a more sophisticated lookup, but demonstrates the principle.
+        // In a real LLM-powered version, this would be far more dynamic.
+        relevantDomains.forEach(domain => {
+            const { current, target } = assessmentData[domain.id];
+            for (let i = current; i < target; i++) {
+                allActions.push(`[${domain.name}] Action to progress from Level ${i} ('${domain.levels[i-1]}') to Level ${i + 1} ('${domain.levels[i]}').`);
+            }
+        });
+        
+        // Generate a differentiated rationale based on the company's strategic context.
+        let rationale = `This initiative is designed to mature the '${capability.name}' capability. `;
+        if (companyId === 'techflow-solutions') {
+            rationale += "It directly addresses critical diligence findings related to operational inefficiency and market risk, forming a key part of the 100-Day Plan to stabilize and prepare the asset for growth.";
+        } else {
+            rationale += "It aligns with the strategic objective of achieving 'Rule of 60' by enhancing scalability and optimizing for growth, forming a key pillar of the long-term Value Creation Plan.";
+        }
 
         return {
-            id: capabilityId,
-            title: title,
-            actions: actions,
-            insight: lastInsight
+            id: `INIT-${capability.id}`,
+            title: `Uplift Initiative: ${capability.name}`,
+            rationale: rationale,
+            actions: allActions.slice(0, 5), // Limiting to 5 for demo clarity
+            kpis: ["Reduce related operational costs by 15%", "Improve team efficiency score by 20 points", "Increase customer satisfaction in this area by 10%"],
+            risks: ["Potential for disruption to current operations during implementation.", "Requires significant buy-in and change management from department heads."],
+            budget: { software: '$15,000', headcount: '$90,000' }
         };
+    },
+
+    /**
+     * Helper function to find a capability object by its ID from the main maturity model.
+     * @param {string} capabilityId - The ID to search for (e.g., 'C110').
+     * @returns {object|null} The capability object or null if not found.
+     */
+    findCapability(capabilityId) {
+        for (const discipline of Object.values(maturityModel.disciplines)) {
+            if (discipline.capabilities[capabilityId]) {
+                return discipline.capabilities[capabilityId];
+            }
+        }
+        return null;
     }
 };
 
+
 // =================================================================
-// THEME MANAGEMENT (FINAL)
+// THEME MANAGEMENT (UNCHANGED)
 // =================================================================
 function updateLogoForTheme(theme) {
     const logo = document.getElementById('sidebar-logo');
@@ -70,7 +117,7 @@ function initializeTheme() {
 
 
 // =================================================================
-// COMPONENT LOADER
+// COMPONENT LOADER (UNCHANGED)
 // =================================================================
 const ComponentLoader = {
     async loadComponent(path) {
@@ -88,7 +135,7 @@ const ComponentLoader = {
 };
 
 // =================================================================
-// NAVIGATION (REBUILT AND CORRECTED)
+// NAVIGATION (UNCHANGED)
 // =================================================================
 const Navigation = {
     getCurrentPage() {
@@ -109,10 +156,9 @@ const Navigation = {
         } else if (page === 'portco') {
             const companyId = state.selectedCompanyId;
             if (companyId && companyId !== 'all') {
-                // Capitalize each word in the company ID for a clean title
                 title = companyId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
             } else {
-                title = 'Portfolio Company'; // Fallback
+                title = 'Portfolio Company';
             }
         } else if (page === 'aria') {
             title = 'ARIA';
@@ -175,8 +221,6 @@ const Navigation = {
             if (selectedCompanyId && selectedCompanyId !== 'all') {
                 link.href = `${page}.html?company=${selectedCompanyId}`;
             } else {
-                // If no company is selected, link to the page without a specific company param.
-                // The page's own logic will handle the "no company" state.
                 link.href = `${page}.html`;
             }
         });
