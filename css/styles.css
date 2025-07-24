@@ -2229,62 +2229,6 @@ input:checked + .slider:before {
 .person-card span { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem; display: block; }
 
 /* =================================================================
-   PORTCO PAGE (CONVERSATIONAL V5) - NEW STYLES
-   ================================================================= */
-
-/* --- Style for the compact company cards with status text --- */
-.company-strip-status {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-/* --- Layout for the new 'Recommended Actions' section --- */
-.recommended-actions-container {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.actions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-}
-
-/* --- Styles for the 'Key Employees' follow-up response --- */
-.people-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.person-card {
-    background-color: var(--bg-secondary);
-    border-radius: 0.5rem;
-    padding: 1rem;
-}
-
-.person-card h4 {
-    font-weight: 600;
-}
-
-.person-card p {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-}
-
-.person-card span {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
-    display: block;
-}
-/* =================================================================
    PORTCO PAGE (DILIGENCE HUB) STYLES
    ================================================================= */
 
@@ -2794,10 +2738,10 @@ input:checked + .slider:before {
 
 .modeling-container {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 1.5rem; /* 24px */
+    grid-template-columns: repeat(12, 1fr); /* Keep the 12-column base */
+    gap: 1.5rem;
     padding: 1.5rem;
-    height: calc(100vh - 5rem); /* Full height minus header */
+    height: calc(100vh - 5rem);
 }
 
 .modeling-pane {
@@ -2808,9 +2752,8 @@ input:checked + .slider:before {
     overflow: hidden;
 }
 
-.modeling-left-pane { grid-column: span 5 / span 5; }
-.modeling-middle-pane { grid-column: span 3 / span 3; }
-.modeling-right-pane { grid-column: span 4 / span 4; }
+.modeling-left-pane { grid-column: span 8 / span 8; } /* Wider left pane */
+.modeling-right-pane { grid-column: span 4 / span 4; } /* Skinnier right pane */
 
 .modeling-card {
     background-color: var(--bg-card);
@@ -3183,3 +3126,256 @@ input:checked + .slider:before {
 }
 .aria-perspective-card h3 { color: var(--accent-blue); font-weight: 700; }
 .aria-perspective-card p, .aria-perspective-card li { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+
+/* =================================================================
+   MODELING CANVAS V7 STYLES (DUAL-THUMB SLIDER)
+   ================================================================= */
+
+.modeling-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr); /* Use a 12-column grid for flexibility */
+    gap: 1.5rem;
+    padding: 1.5rem;
+    height: calc(100vh - 5rem);
+}
+
+.modeling-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* This is the key change: 8 columns for left, 4 for right (~70/30) */
+.modeling-left-pane { grid-column: span 8 / span 8; } 
+.modeling-right-pane { grid-column: span 4 / span 4; }
+
+.modeling-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Right Pane: Tree View */
+.tree-view-container { flex-grow: 1; overflow-y: auto; }
+.tree-node { padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; }
+.tree-node:hover { background-color: var(--bg-hover); }
+.tree-node.active { background-color: var(--accent-blue-translucent); }
+.tree-node.active .node-label { color: var(--accent-blue); font-weight: 600; }
+.tree-node .chevron { color: var(--text-muted); transition: transform 0.2s; width: 16px; height: 16px; flex-shrink: 0; }
+.tree-node .chevron.expanded { transform: rotate(90deg); }
+.tree-node .chevron.hidden { visibility: hidden; }
+.node-label { font-weight: 500; }
+.node-children { padding-left: 1.5rem; }
+
+/* Left Pane: Radar & Sliders */
+.radar-card { height: 400px; }
+.description-card { flex-grow: 1; overflow-y: auto; }
+
+/* Dual Thumb Slider Component */
+.dual-slider-component { margin-top: 1.5rem; }
+.dual-slider-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem; }
+.dual-slider-labels { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); }
+.dual-slider-values { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+.dual-slider-values .value-text { font-size: 0.875rem; font-weight: 600; background-color: var(--bg-hover); padding: 0.125rem 0.5rem; border-radius: 0.25rem; margin-left: 0.25rem; }
+
+.dual-slider-track-container { position: relative; height: 24px; }
+.dual-slider-track {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(to right, var(--purple), var(--accent-blue), var(--accent-teal));
+    border-radius: 99px;
+}
+.dual-slider-range-input {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 24px;
+    z-index: 10;
+    margin: 0;
+}
+.dual-slider-range-input::-webkit-slider-runnable-track {
+    background: transparent;
+}
+.dual-slider-range-input::-moz-range-track {
+    background: transparent;
+}
+
+.dual-slider-range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 4px solid;
+    background-color: var(--bg-card);
+    box-shadow: 0 2px 4px var(--shadow-hover);
+}
+
+.dual-slider-range-input::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 4px solid;
+    background-color: var(--bg-card);
+    box-shadow: 0 2px 4px var(--shadow-hover);
+}
+
+.dual-slider-range-input.as-is::-webkit-slider-thumb { border-color: var(--purple); }
+.dual-slider-range-input.to-be::-webkit-slider-thumb { border-color: var(--accent-blue); }
+.dual-slider-range-input.as-is::-moz-range-thumb { border-color: var(--purple); }
+.dual-slider-range-input.to-be::-moz-range-thumb { border-color: var(--accent-blue); }
+
+.dual-slider-descriptions {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.slider-description-box {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    padding: 0.75rem;
+    background-color: var(--bg-secondary);
+    border-radius: 0.5rem;
+    min-height: 60px;
+    line-height: 1.6;
+}
+
+/* Middle Pane: ARIA Perspective */
+.aria-perspective-card {
+    background-color: var(--bg-secondary);
+    border-left: 4px solid var(--accent-blue);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+.aria-perspective-card h3 { color: var(--accent-blue); font-weight: 700; }
+.aria-perspective-card p, .aria-perspective-card li { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+/* --- Modeling Page - Active Slider State --- */
+
+.dual-slider-labels.active {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+/* --- Modeling Page - Active Slider State --- */
+.dual-slider-labels.active {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+* --- Modeling Page - Active Slider State --- */
+.dual-slider-labels {
+    cursor: pointer; /* Make labels look clickable */
+}
+.dual-slider-labels.active {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* --- Modeling Page - ARIA Assessment Box --- */
+.aria-assessment-box {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--purple);
+    border-radius: 0.5rem;
+}
+.aria-assessment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+.aria-assessment-header svg {
+    color: var(--purple);
+}
+.aria-assessment-scores {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+.aria-score-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+.aria-score-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+/* --- FIX for Dual-Thumb Slider Interaction --- */
+.dual-slider-range-input {
+    /* Make the entire input, including the track, ignore mouse events */
+    pointer-events: none;
+    margin: 0; /* Ensure no extra margin is causing layout issues */
+}
+
+.dual-slider-range-input::-webkit-slider-thumb {
+    /* Re-enable mouse events ONLY for the thumb */
+    pointer-events: auto;
+}
+
+.dual-slider-range-input::-moz-range-thumb {
+    /* Re-enable mouse events ONLY for the thumb */
+    pointer-events: auto;
+}
+
+/* --- Modeling Page - ARIA Perspective Card Header --- */
+.aria-perspective-card h3 {
+    margin: 0; /* Remove default margin */
+    color: var(--accent-blue);
+}
+
+.aria-perspective-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reset-button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.reset-button:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+}
+
+#aria-perspective-content h4 {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+/* --- Modeling Page - Skinnier Explorer --- */
+.tree-view-container .node-label {
+    font-size: 0.875rem; /* 14px */
+}
