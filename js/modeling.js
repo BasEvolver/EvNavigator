@@ -1,331 +1,368 @@
-// js/modeling.js - Logic for the new Maturity Modeling Canvas
+// js/modeling.js - Logic for the new Maturity Modeling Canvas V4 (Interactive Three-Pane)
+// FINAL CORRECTED VERSION
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Load the state structure first.
-    let state = loadState();
-
-    // 2. CRITICAL FIX: Explicitly check and build the assessment data NOW.
-    // This ensures MaturityModel.js is loaded and available before we proceed.
-    if (!state.modeling.assessmentData || Object.keys(state.modeling.assessmentData).length === 0) {
-        console.log("Modeling page is initializing assessment data for the first time.");
-        state.modeling.assessmentData = buildInitialAssessmentData();
-        saveState(state);
+    if (typeof maturityModel === 'undefined' || typeof maturityModel_Cap === 'undefined') {
+        const mainContent = document.getElementById('main-content');
+        mainContent.innerHTML = `<div class="p-8 text-center"><h1 class="text-2xl font-bold text-red-600">Fatal Error</h1><p class="text-secondary mt-2">A required data model could not be loaded.</p></div>`;
+        return;
     }
 
-    // 3. Now that the state is guaranteed to be complete, load the shared components.
     await loadSharedComponents();
-
-    // 4. Render the page with the fully populated state.
+    
+    let state = loadState();
     renderModelingPage(state);
     initializeModelingEventListeners();
 });
 
-
-/**
- * Main rendering router. Determines which view to show based on the current state.
- * @param {object} state - The current application state.
- */
+// --- MAIN RENDERER ---
 function renderModelingPage(state) {
-    const { view, selectedDisciplineId, selectedCapabilityId } = state.modeling;
     const mainContent = document.getElementById('main-content');
-
-    let contentHTML = '';
-    switch (view) {
-        case 'capability':
-            contentHTML = renderCapabilityView(state, selectedDisciplineId);
-            break;
-        case 'domain':
-            contentHTML = renderDomainView(state, selectedCapabilityId);
-            break;
-        case 'discipline':
-        default:
-            contentHTML = renderDisciplineView(state);
-            break;
-    }
-    mainContent.innerHTML = `<div class="p-4 sm:p-6 space-y-6">${contentHTML}</div>`;
+    mainContent.innerHTML = `
+        <div class="modeling-container">
+            <div class="modeling-pane modeling-left-pane" id="modeling-left-pane"></div>
+            <div class="modeling-pane modeling-middle-pane" id="modeling-middle-pane"></div>
+            <div class="modeling-pane modeling-right-pane" id="modeling-right-pane"></div>
+        </div>
+    `;
     
-    // Render charts after the HTML is in the DOM
-    if (view === 'discipline') drawDisciplineRadar(state);
-    if (view === 'capability') drawCapabilityRadar(state, selectedDisciplineId);
+    renderRightPane(state);
+    updateDynamicPanes(state);
 }
 
-// --- VIEW RENDERING FUNCTIONS ---
+function updateDynamicPanes(state) {
+    renderLeftPane(state);
+    renderMiddlePane(state);
+    drawRadarChart(state);
+}
 
-/**
- * Renders the top-level Discipline Hub view with a radar chart.
- * @param {object} state - The current application state.
- */
-function renderDisciplineView(state) {
-    const companyId = state.selectedCompanyId;
-    const ariaBlurb = companyId === 'techflow-solutions'
-        ? "Based on my analysis of 3 critical anomalies, I've generated a preliminary 'As-Is' assessment. Please review and adjust."
-        : "To achieve your 'Rule of 60' goal, I recommend focusing on elevating 'Partner' and 'AI' capabilities. Here is a suggested target state.";
+// --- PANE RENDERERS ---
 
-    return `
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-card border border-border-color rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-1">Maturity Assessment Hub</h2>
-                <p class="text-secondary mb-4">Set the 'As-Is' and 'To-Be' maturity for each discipline. Click a discipline to drill down into its capabilities.</p>
-                <div class="h-96 md:h-[500px]"><canvas id="discipline-radar-chart"></canvas></div>
-            </div>
-            <div class="space-y-6">
-                <div class="bg-accent-blue-translucent border border-accent-blue rounded-lg p-4">
-                    <h3 class="font-bold text-accent-blue">ARIA's Recommendation</h3>
-                    <p class="text-sm text-secondary mt-1">${ariaBlurb}</p>
-                </div>
-                <div id="discipline-list" class="bg-card border border-border-color rounded-lg p-4 space-y-2">
-                    ${Object.values(maturityModel.disciplines).map(d => `
-                        <div class="p-2 rounded-md hover:bg-hover cursor-pointer" data-action="view-capability" data-discipline-id="${d.id}">
-                            <span class="font-semibold">${d.name}</span>
-                        </div>
-                    `).join('')}
-                </div>
+function renderRightPane(state) {
+    const rightPane = document.getElementById('modeling-right-pane');
+    rightPane.innerHTML = `
+        <div class="modeling-card h-full">
+            <h2 class="text-xl font-bold mb-4">Maturity Model Explorer</h2>
+            <div class="tree-view-container">
+                ${renderTreeView(state)}
             </div>
         </div>
     `;
 }
 
-/**
- * Renders the drill-down view for a specific Discipline's Capabilities.
- * @param {object} state - The current application state.
- * @param {string} disciplineId - The ID of the selected discipline.
- */
-function renderCapabilityView(state, disciplineId) {
-    const discipline = maturityModel.disciplines[disciplineId];
-    if (!discipline) return `<p>Discipline not found.</p>`;
+function renderLeftPane(state) {
+    const leftPane = document.getElementById('modeling-left-pane');
+    const { selectedItemId, assessmentData } = state.modeling;
     
-    const companyId = state.selectedCompanyId;
-    // Differentiated context for each company
-    const ariaContext = companyId === 'techflow-solutions'
-        ? techflow_anomalies.filter(a => a.workstream.startsWith(discipline.name.split(' ')[0]))
-        : cloudvantage_workstreamData.filter(w => w.title.startsWith(discipline.name.split(' ')[0]));
-
-    return `
-        <div class="mb-4"><button class="font-semibold text-accent-blue hover:underline" data-action="back-to-discipline">← Back to All Disciplines</button></div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-card border border-border-color rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-1">${discipline.name} Capabilities</h2>
-                <p class="text-secondary mb-4">Assess the maturity of capabilities within this discipline. Click one to see its domains.</p>
-                <div class="h-96 md:h-[500px]"><canvas id="capability-radar-chart"></canvas></div>
-            </div>
-            <div class="space-y-6">
-                <div class="bg-card border border-border-color rounded-lg p-4">
-                    <h3 class="font-bold text-primary">ARIA's Context for ${discipline.name}</h3>
-                    <p class="text-sm text-secondary mt-1 mb-3">The following findings are relevant to this discipline:</p>
-                    <ul class="text-sm space-y-2">
-                        ${ariaContext.map(item => `<li class="p-2 bg-secondary rounded-md">${item.title}</li>`).join('') || '<li class="text-secondary">No specific findings from ARIA for this discipline.</li>'}
-                    </ul>
-                </div>
-                <div id="capability-list" class="bg-card border border-border-color rounded-lg p-4 space-y-2">
-                    ${Object.values(discipline.capabilities).map(c => `
-                        <div class="p-2 rounded-md hover:bg-hover cursor-pointer ${state.modeling.selectedCapabilityId === c.id ? 'bg-accent-blue-translucent' : ''}" data-action="view-domain" data-capability-id="${c.id}">
-                            <span class="font-semibold">${c.name}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Renders the domain-level workshop for generating an uplift plan.
- * @param {object} state - The current application state.
- * @param {string} capabilityId - The ID of the selected capability.
- */
-function renderDomainView(state, capabilityId) {
-    const capability = Utils.findCapability(capabilityId);
-    if (!capability) return `<p>Capability not found.</p>`;
-
-    const { assessmentData, generatedPlan } = state.modeling;
-    
-    // ARIA's proactive insight based on the largest maturity gaps
-    const domainsWithGaps = Object.values(capability.domains)
-        .map(d => ({ ...d, gap: (assessmentData[d.id]?.target || 1) - (assessmentData[d.id]?.current || 1) }))
-        .filter(d => d.gap > 0)
-        .sort((a, b) => b.gap - a.gap);
-
-    let ariaPriorities = `<p class="text-secondary text-sm">Set your 'To-Be' targets on the left to identify areas for improvement. ARIA will then generate a detailed plan.</p>`;
-    if (domainsWithGaps.length > 0) {
-        ariaPriorities = `
-            <p class="text-secondary text-sm mb-2">Based on your current targets, the immediate priorities for improving <strong>${capability.name}</strong> are:</p>
-            <ul class="list-disc pl-5 text-sm text-secondary space-y-1">
-                ${domainsWithGaps.slice(0, 3).map(d => `<li>Focus on <strong>${d.name}</strong> (Gap of ${d.gap} levels)</li>`).join('')}
-            </ul>
-        `;
+    const item = findItemInModel(selectedItemId);
+    if (!item) {
+        leftPane.innerHTML = `<div class="modeling-card"><p class="text-red-500">Error: Could not find data for item ID ${selectedItemId}.</p></div>`;
+        return;
     }
 
-    return `
-        <div class="mb-4"><button class="font-semibold text-accent-blue hover:underline" data-action="back-to-capability">← Back to Capabilities</button></div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column: Domain Assessment -->
-            <div class="lg:col-span-1 bg-card border border-border-color rounded-lg p-6 space-y-4 h-fit">
-                <h2 class="text-xl font-bold">${capability.name}</h2>
-                <p class="text-sm text-secondary border-b border-border-color pb-4">${capability.controlQuestion}</p>
-                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                    ${Object.values(capability.domains).map(domain => `
-                        <div class="domain-assessment-item" data-domain-id="${domain.id}">
-                            <p class="font-semibold text-primary">${domain.name}</p>
-                            <!-- As-Is Slider -->
-                            <div class="flex items-center gap-3 mt-2">
-                                <span class="text-sm font-medium w-12 flex-shrink-0">As-Is:</span>
-                                <input type="range" min="1" max="5" value="${assessmentData[domain.id].current}" data-action="update-assessment" data-domain-id="${domain.id}" data-type="current" class="w-full">
-                                <span class="text-sm font-bold w-8 text-center">${assessmentData[domain.id].current}</span>
-                            </div>
-                            <p class="text-xs text-muted pl-14" id="desc-current-${domain.id}">${domain.levels[assessmentData[domain.id].current - 1]}</p>
-                            <!-- To-Be Slider -->
-                            <div class="flex items-center gap-3 mt-2">
-                                <span class="text-sm font-medium w-12 flex-shrink-0">To-Be:</span>
-                                <input type="range" min="1" max="5" value="${assessmentData[domain.id].target}" data-action="update-assessment" data-domain-id="${domain.id}" data-type="target" class="w-full">
-                                <span class="text-sm font-bold w-8 text-center">${assessmentData[domain.id].target}</span>
-                            </div>
-                            <p class="text-xs text-muted pl-14" id="desc-target-${domain.id}">${domain.levels[assessmentData[domain.id].target - 1]}</p>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            <!-- Right Column: Generative Canvas -->
-            <div class="lg:col-span-2 space-y-6">
-                 <div class="bg-card border border-border-color rounded-lg p-6">
-                     <h3 class="font-bold text-primary">ARIA's Immediate Priorities</h3>
-                     ${ariaPriorities}
-                 </div>
-                 <div id="generated-plan-container">
-                    ${generatedPlan ? renderGeneratedPlan(generatedPlan, state) : `
-                        <div class="bg-card border-2 border-dashed border-border-color rounded-lg p-6 h-full flex flex-col items-center justify-center text-center">
-                            <p class="text-secondary mb-4">Your generated uplift plan will appear here once you've set your target states.</p>
-                            <button class="p-3 font-semibold text-white bg-accent-blue rounded-lg hover:opacity-90" data-action="generate-plan" data-capability-id="${capability.id}">Generate Uplift Initiative with ARIA</button>
-                        </div>
-                    `}
-                 </div>
-            </div>
-        </div>
-    `;
-}
+    const isDomain = selectedItemId.startsWith('D-');
+    const currentScore = isDomain ? assessmentData[selectedItemId]?.current || 1 : calculateAverage(item, assessmentData).current;
+    const targetScore = isDomain ? assessmentData[selectedItemId]?.target || 1 : calculateAverage(item, assessmentData).target;
 
-/**
- * Renders the AI-generated plan.
- * @param {object} plan - The generated plan object from Utils.
- * @param {object} state - The current application state.
- */
-function renderGeneratedPlan(plan, state) {
-    const isAdded = state.diligenceWorkspace.valueLevers.some(l => l.id === plan.id);
-    return `
-        <div class="bg-card border border-border-color rounded-lg p-6 space-y-4 animate-fade-in">
-            <h3 class="text-lg font-bold text-primary">${plan.title}</h3>
-            <div>
-                <h4 class="font-semibold text-sm uppercase text-muted tracking-wider">Rationale</h4>
-                <p class="text-sm text-secondary mt-1">${plan.rationale}</p>
-            </div>
-            <div>
-                <h4 class="font-semibold text-sm uppercase text-muted tracking-wider">Key Actions</h4>
-                <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary">
-                    ${plan.actions.map(action => `<li>${action}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border-color">
+    const targetLevelDescription = isDomain 
+        ? item.levels[targetScore - 1]
+        : maturityModel.summary.levels[Math.round(targetScore) - 1];
+
+    leftPane.innerHTML = `
+        <div class="modeling-card radar-card">
+            <canvas id="modeling-radar-chart"></canvas>
+        </div>
+        <div class="modeling-card description-card">
+            <h3 class="text-lg font-bold">${item.name}</h3>
+            <p class="text-sm text-secondary mt-1">${item.controlQuestion}</p>
+            
+            ${renderMaturitySlider('Current State', currentScore)}
+
+            ${isDomain ? `
+            <div class="tobe-slider-vertical mt-4">
                 <div>
-                    <h4 class="font-semibold text-sm uppercase text-muted tracking-wider">Success Metrics (KPIs)</h4>
-                    <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary">${plan.kpis.map(kpi => `<li>${kpi}</li>`).join('')}</ul>
+                    <p class="slider-label">Set Target Maturity</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="range" min="1" max="5" value="${targetScore}" data-action="set-target-score" data-domain-id="${selectedItemId}">
+                        <span class="font-bold text-2xl">${targetScore}</span>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="font-semibold text-sm uppercase text-muted tracking-wider">Potential Risks</h4>
-                    <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary">${plan.risks.map(risk => `<li>${risk}</li>`).join('')}</ul>
+                <div class="flex-grow">
+                    <p class="slider-label">Target Level ${targetScore} Characteristics</p>
+                    <p class="text-xs text-muted mt-1">${targetLevelDescription}</p>
                 </div>
             </div>
-             <div class="pt-2 border-t border-border-color">
-                <h4 class="font-semibold text-sm uppercase text-muted tracking-wider">Estimated Budget</h4>
-                <p class="text-sm text-secondary mt-1">Software: ${plan.budget.software} | Headcount: ${plan.budget.headcount}</p>
-            </div>
-            ${isAdded 
-                ? `<button class="w-full p-3 font-semibold text-green-800 bg-green-100 rounded-lg cursor-default flex items-center justify-center gap-2">✓ Added to Workspace</button>`
-                : `<button class="w-full p-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700" data-action="commit-to-workspace" data-plan-id="${plan.id}">Commit Initiative to Workspace</button>`
+            ` : 
+            renderMaturitySlider('Target State', targetScore)
             }
         </div>
     `;
 }
 
-// --- CHART DRAWING FUNCTIONS ---
+function renderMaturitySlider(label, value) {
+    const levelName = getMaturityLevelName(value);
+    const thumbPosition = ((value - 1) / 4) * 100;
 
-function drawDisciplineRadar(state) {
-    const ctx = document.getElementById('discipline-radar-chart')?.getContext('2d');
+    return `
+        <div class="maturity-slider-wrapper">
+            <div class="slider-header">
+                <span class="slider-label">${label}</span>
+                <div class="slider-value-group">
+                    <span class="slider-value-text">${levelName}</span>
+                    <span class="slider-value-num">${value.toFixed(1)}</span>
+                </div>
+            </div>
+            <div class="slider-track">
+                <div class="slider-thumb" style="left: ${thumbPosition}%;"></div>
+            </div>
+        </div>
+    `;
+}
+
+
+function renderMiddlePane(state) {
+    const middlePane = document.getElementById('modeling-middle-pane');
+    middlePane.innerHTML = `
+        <div class="aria-perspective-card">
+            ${generateAriaPerspective(state)}
+        </div>
+    `;
+}
+
+// --- TREE VIEW LOGIC ---
+
+function renderTreeView(state) {
+    const { expandedNodes, selectedItemId } = state.modeling;
+    let html = `<div class="tree-node ${selectedItemId === 'all-disciplines' ? 'active' : ''}" data-action="select-item" data-item-id="all-disciplines"><span class="chevron hidden"></span><span class="node-label font-bold">All Disciplines</span></div>`;
+    const disciplines = Object.values(maturityModel_Cap.disciplines).sort((a, b) => a.id.localeCompare(b.id));
+
+    for (const discipline of disciplines) {
+        const isExpanded = expandedNodes[discipline.id];
+        html += `
+            <div class="tree-node ${selectedItemId === discipline.id ? 'active' : ''}" data-action="select-item" data-item-id="${discipline.id}">
+                <svg class="chevron ${isExpanded ? 'expanded' : ''}" data-action="toggle-node" data-node-id="${discipline.id}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <span class="node-label">${discipline.name}</span>
+            </div>
+        `;
+        if (isExpanded) {
+            html += `<div class="node-children">`;
+            const capabilities = Object.values(discipline.capabilities).sort((a, b) => a.id.localeCompare(b.id));
+            for (const capability of capabilities) {
+                const capIsExpanded = expandedNodes[capability.id];
+                html += `
+                    <div class="tree-node ${selectedItemId === capability.id ? 'active' : ''}" data-action="select-item" data-item-id="${capability.id}">
+                        <svg class="chevron ${capIsExpanded ? 'expanded' : ''}" data-action="toggle-node" data-node-id="${capability.id}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        <span class="node-label">${capability.name}</span>
+                    </div>
+                `;
+                if (capIsExpanded && capability.domains) {
+                    html += `<div class="node-children">`;
+                    const domains = capability.domains.sort((a, b) => a.id.localeCompare(b.id));
+                    for (const domain of domains) {
+                         html += `
+                            <div class="tree-node ${selectedItemId === domain.id ? 'active' : ''}" data-action="select-item" data-item-id="${domain.id}">
+                                <span class="chevron hidden"></span>
+                                <span class="node-label">${domain.name}</span>
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
+                }
+            }
+            html += `</div>`;
+        }
+    }
+    return html;
+}
+
+// --- ARIA'S PERSPECTIVE GENERATOR ---
+
+function generateAriaPerspective(state) {
+    const { selectedItemId, assessmentData } = state.modeling;
+    const companyId = state.selectedCompanyId;
+    const item = findItemInModel(selectedItemId);
+    if (!item) return '';
+
+    const isDomain = selectedItemId.startsWith('D-');
+    const currentScore = isDomain ? assessmentData[selectedItemId]?.current : calculateAverage(item, assessmentData).current;
+    const targetScore = isDomain ? assessmentData[selectedItemId]?.target : calculateAverage(item, assessmentData).target;
+    const gap = targetScore - currentScore;
+
+    let html = `<h3>ARIA's Perspective on ${item.name}</h3>`;
+
+    if (gap <= 0 && isDomain) {
+        html += `<p class="mt-2">This area meets or exceeds the current target maturity level. Focus should be directed to other areas with a larger maturity gap.</p>`;
+        return html;
+    }
+
+    if (companyId === 'techflow-solutions') {
+        html += `<p class="mt-2">For <strong>TechFlow Solutions</strong>, improving this area is critical. Our diligence flagged several operational risks that a higher maturity level would directly mitigate.</p>`;
+    } else {
+        html += `<p class="mt-2">For <strong>CloudVantage</strong>, achieving a Level ${Math.round(targetScore)} in this area is a key enabler for the 'Rule of 60' growth strategy, unlocking new efficiencies and scalability.</p>`;
+    }
+
+    html += `<h4 class="font-semibold mt-4 mb-2">To bridge the gap from Level ${currentScore.toFixed(1)} to ${targetScore.toFixed(1)}:</h4>`;
+    
+    if (isDomain) {
+        const nextStepLevel = Math.floor(currentScore);
+        if (nextStepLevel < 5) {
+             html += `<p>The immediate next step is to achieve the characteristics of Level ${nextStepLevel + 1}:</p>
+                      <p class="mt-2 p-2 bg-hover rounded-md"><em>"${item.levels[nextStepLevel]}"</em></p>`;
+        }
+    } else {
+        const domains = getDomainsRecursive(item);
+        const domainsWithGaps = domains
+            .map(d => ({ ...d, gap: (assessmentData[d.id]?.target || 1) - (assessmentData[d.id]?.current || 1) }))
+            .filter(d => d.gap > 0)
+            .sort((a, b) => b.gap - a.gap);
+        
+        if (domainsWithGaps.length > 0) {
+            html += `<p>The highest priority should be on the following domains:</p>
+                     <ul class="list-disc pl-5 mt-2 space-y-1">
+                        ${domainsWithGaps.slice(0, 3).map(d => `<li><strong>${d.name}</strong> (Gap of ${d.gap.toFixed(1)} levels)</li>`).join('')}
+                     </ul>`;
+        } else {
+            html += `<p>All underlying domains currently meet their target maturity levels. Consider increasing the 'To-Be' scores for specific domains to generate a new uplift plan.</p>`;
+        }
+    }
+    
+    return html;
+}
+
+
+// --- CHART & DATA HELPERS ---
+
+let chartInstance = null;
+function drawRadarChart(state) {
+    const ctx = document.getElementById('modeling-radar-chart')?.getContext('2d');
     if (!ctx) return;
 
-    const { assessmentData } = state.modeling;
-    const labels = Object.values(maturityModel.disciplines).map(d => d.name);
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    const { selectedItemId, assessmentData } = state.modeling;
+    const itemForChart = findItemInModel(selectedItemId, true); // Use lightweight model for chart structure
+    let itemsToChart = [];
     
-    const calculateAverage = (discipline) => {
-        const domainScores = Object.values(discipline.capabilities).flatMap(c => Object.values(c.domains).map(d => assessmentData[d.id]));
-        if (domainScores.length === 0 || domainScores.every(d => d === undefined)) return { current: 1, target: 1 };
-        
-        const validScores = domainScores.filter(d => d);
-        const totalCurrent = validScores.reduce((sum, d) => sum + d.current, 0);
-        const totalTarget = validScores.reduce((sum, d) => sum + d.target, 0);
-        return {
-            current: totalCurrent / validScores.length,
-            target: totalTarget / validScores.length
-        };
-    };
+    if (selectedItemId === 'all-disciplines') {
+        itemsToChart = Object.values(maturityModel_Cap.disciplines);
+    } else if (selectedItemId.startsWith('D') && !selectedItemId.startsWith('D-')) {
+        itemsToChart = Object.values(itemForChart.capabilities);
+    } else { 
+        const parentCapability = selectedItemId.startsWith('C') 
+            ? itemForChart
+            : findParent(selectedItemId, true);
+        itemsToChart = parentCapability.domains;
+    }
 
-    const asIsData = Object.values(maturityModel.disciplines).map(d => calculateAverage(d).current);
-    const toBeData = Object.values(maturityModel.disciplines).map(d => calculateAverage(d).target);
+    itemsToChart.sort((a, b) => a.id.localeCompare(b.id));
+    const labels = itemsToChart.map(i => i.name);
+    const asIsData = itemsToChart.map(i => calculateAverage(i, assessmentData).current);
+    const toBeData = itemsToChart.map(i => calculateAverage(i, assessmentData).target);
 
-    new Chart(ctx, {
+    chartInstance = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: labels,
             datasets: [
-                { label: 'As-Is', data: asIsData, borderColor: 'var(--accent-blue)', backgroundColor: 'rgba(72, 170, 221, 0.2)' },
-                { label: 'To-Be', data: toBeData, borderColor: 'var(--accent-teal)', backgroundColor: 'rgba(76, 198, 196, 0.2)' }
+                { 
+                    label: 'As-Is', 
+                    data: asIsData, 
+                    borderColor: 'var(--accent-teal)', 
+                    backgroundColor: 'transparent', 
+                    borderWidth: 2, 
+                    pointBackgroundColor: 'var(--accent-teal)' 
+                },
+                { 
+                    label: 'To-Be', 
+                    data: toBeData, 
+                    borderColor: 'var(--accent-blue)', 
+                    backgroundColor: 'var(--accent-blue-translucent)',
+                    borderWidth: 2, 
+                    pointBackgroundColor: 'var(--accent-blue)',
+                    fill: '+1'
+                }
             ]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: { r: { beginAtZero: true, max: 5, stepSize: 1, pointLabels: { font: { size: 12 } } } },
-            plugins: { legend: { position: 'top' } }
+            scales: { r: { beginAtZero: true, max: 5, stepSize: 1, pointLabels: { font: { size: 11 } }, grid: { color: 'var(--border-color)' }, angleLines: { color: 'var(--border-color)' }, ticks: { backdropColor: 'var(--bg-card)', color: 'var(--text-secondary)'} } },
+            plugins: { legend: { position: 'top', labels: { color: 'var(--text-primary)' } } }
         }
     });
 }
 
-function drawCapabilityRadar(state, disciplineId) {
-    const ctx = document.getElementById('capability-radar-chart')?.getContext('2d');
-    if (!ctx) return;
+// *** CRITICAL FIX: This function now correctly handles all cases ***
+function findItemInModel(id, useLightweight = false) {
+    const capModel = maturityModel_Cap;
+    const fullModel = maturityModel;
 
-    const { assessmentData } = state.modeling;
-    const discipline = maturityModel.disciplines[disciplineId];
-    const labels = Object.values(discipline.capabilities).map(c => c.name);
-
-    const calculateAverage = (capability) => {
-        const domainScores = Object.values(capability.domains).map(d => assessmentData[d.id]);
-        if (domainScores.length === 0 || domainScores.every(d => d === undefined)) return { current: 1, target: 1 };
-
-        const validScores = domainScores.filter(d => d);
-        const totalCurrent = validScores.reduce((sum, d) => sum + d.current, 0);
-        const totalTarget = validScores.reduce((sum, d) => sum + d.target, 0);
-        return {
-            current: totalCurrent / validScores.length,
-            target: totalTarget / validScores.length
-        };
-    };
-
-    const asIsData = Object.values(discipline.capabilities).map(c => calculateAverage(c).current);
-    const toBeData = Object.values(discipline.capabilities).map(c => calculateAverage(c).target);
-
-    new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'As-Is', data: asIsData, borderColor: 'var(--accent-blue)', backgroundColor: 'rgba(72, 170, 221, 0.2)' },
-                { label: 'To-Be', data: toBeData, borderColor: 'var(--accent-teal)', backgroundColor: 'rgba(76, 198, 196, 0.2)' }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            scales: { r: { beginAtZero: true, max: 5, stepSize: 1 } },
-            plugins: { legend: { position: 'top' } }
+    if (!id || id === 'all-disciplines') {
+        return { id: 'all-disciplines', name: 'All Disciplines', controlQuestion: 'An overview of the entire maturity model.', capabilities: capModel.disciplines };
+    }
+    
+    for (const disc of Object.values(capModel.disciplines)) {
+        if (disc.id === id) return useLightweight ? disc : fullModel.disciplines[id];
+        for (const cap of Object.values(disc.capabilities)) {
+            if (cap.id === id) return useLightweight ? cap : fullModel.disciplines[disc.id].capabilities[id];
+            if (cap.domains && cap.domains.some(d => d.id === id)) {
+                return useLightweight ? cap.domains.find(d => d.id === id) : fullModel.disciplines[disc.id].capabilities[cap.id].domains[id];
+            }
         }
-    });
+    }
+    return null;
+}
+
+function findParent(itemId, useLightweight = false) {
+    const model = useLightweight ? maturityModel_Cap : maturityModel;
+    if (itemId.startsWith('D-')) {
+        for (const disc of Object.values(model.disciplines)) {
+            for (const cap of Object.values(disc.capabilities)) {
+                const domainsSource = useLightweight ? cap.domains : Object.values(cap.domains || {});
+                if (domainsSource.some(d => d.id === itemId)) return cap;
+            }
+        }
+    }
+    if (itemId.startsWith('C')) {
+        for (const disc of Object.values(model.disciplines)) {
+            if (disc.capabilities[itemId]) return disc;
+        }
+    }
+    return null;
+}
+
+function getDomainsRecursive(item) {
+    const capItem = findItemInModel(item.id, true);
+    if (!capItem) return [];
+    if (capItem.id.startsWith('D-')) return [capItem];
+    if (capItem.domains) return capItem.domains;
+    if (capItem.capabilities) return Object.values(capItem.capabilities).flatMap(getDomainsRecursive);
+    return [];
+}
+
+function calculateAverage(item, assessmentData) {
+    if (item.id.startsWith('D-')) {
+        return assessmentData[item.id] || { current: 1, target: 1 };
+    }
+    
+    const childDomains = getDomainsRecursive(item);
+    if (childDomains.length === 0) return { current: 1, target: 1 };
+
+    const scores = childDomains.map(d => assessmentData[d.id] || { current: 1, target: 1 });
+    const totalCurrent = scores.reduce((sum, s) => sum + s.current, 0);
+    const totalTarget = scores.reduce((sum, s) => sum + s.target, 0);
+
+    return {
+        current: totalCurrent / scores.length,
+        target: totalTarget / scores.length
+    };
+}
+
+function getMaturityLevelName(score) {
+    const roundedScore = Math.round(score);
+    const levels = ["Reactive", "Organized", "Managed", "Platform-led", "Intelligent"];
+    return levels[roundedScore - 1] || "Unknown";
 }
 
 // --- EVENT LISTENERS ---
@@ -340,78 +377,39 @@ function initializeModelingEventListeners() {
         let state = loadState();
         const action = target.dataset.action;
 
-        switch (action) {
-            case 'view-capability':
-                state.modeling.view = 'capability';
-                state.modeling.selectedDisciplineId = target.dataset.disciplineId;
-                state.modeling.generatedPlan = null; // Clear plan when navigating
-                break;
-            case 'view-domain':
-                state.modeling.view = 'domain';
-                state.modeling.selectedCapabilityId = target.dataset.capabilityId;
-                state.modeling.generatedPlan = null;
-                break;
-            case 'back-to-discipline':
-                state.modeling.view = 'discipline';
-                state.modeling.selectedDisciplineId = null;
-                state.modeling.selectedCapabilityId = null;
-                state.modeling.generatedPlan = null;
-                break;
-            case 'back-to-capability':
-                state.modeling.view = 'capability';
-                state.modeling.selectedCapabilityId = null;
-                state.modeling.generatedPlan = null;
-                break;
-            case 'generate-plan':
-                const capabilityId = target.dataset.capabilityId;
-                state.modeling.generatedPlan = Utils.generateUpliftInitiative(capabilityId, state);
-                break;
-            case 'commit-to-workspace':
-                const plan = state.modeling.generatedPlan;
-                if (plan && !state.diligenceWorkspace.valueLevers.some(l => l.id === plan.id)) {
-                    state.diligenceWorkspace.valueLevers.push({ ...plan, type: 'capability' });
-                }
-                break;
+        if (action === 'select-item') {
+            const itemId = target.dataset.itemId;
+            if (state.modeling.selectedItemId === itemId) return;
+            
+            state.modeling.selectedItemId = itemId;
+            saveState(state);
+            updateDynamicPanes(state);
+            document.querySelectorAll('.tree-node.active').forEach(n => n.classList.remove('active'));
+            target.classList.add('active');
         }
         
-        saveState(state);
-        renderModelingPage(state);
+        if (action === 'toggle-node') {
+            e.stopPropagation(); // *** THIS IS THE CRITICAL FIX FOR THE TREE INTERACTION ***
+            const nodeId = target.dataset.nodeId;
+            state.modeling.expandedNodes[nodeId] = !state.modeling.expandedNodes[nodeId];
+            saveState(state);
+            renderRightPane(state); // Only re-render the tree pane
+        }
     });
     
     mainContent.addEventListener('input', (e) => {
         const target = e.target;
-        if (target.dataset.action === 'update-assessment') {
+        if (target.dataset.action === 'set-target-score') {
             let state = loadState();
-            const { domainId, type } = target.dataset;
+            const { domainId } = target.dataset;
             const value = parseInt(target.value);
 
             if (state.modeling.assessmentData[domainId]) {
-                state.modeling.assessmentData[domainId][type] = value;
+                state.modeling.assessmentData[domainId].target = value;
             }
             
-            state.modeling.generatedPlan = null;
             saveState(state);
-
-            // Dynamic label update without full re-render for smoothness
-            const domain = Object.values(maturityModel.disciplines)
-                .flatMap(d => Object.values(d.capabilities))
-                .flatMap(c => Object.values(c.domains))
-                .find(d => d.id === domainId);
-            
-            if (domain) {
-                document.getElementById(`desc-${type}-${domainId}`).textContent = domain.levels[value - 1];
-            }
-            
-            // Re-render just the plan container to show the placeholder
-            const planContainer = document.getElementById('generated-plan-container');
-            if (planContainer) {
-                 planContainer.innerHTML = `
-                    <div class="bg-card border-2 border-dashed border-border-color rounded-lg p-6 h-full flex flex-col items-center justify-center text-center">
-                        <p class="text-secondary mb-4">Your assessment has changed. Click "Generate" to create an updated plan.</p>
-                        <button class="p-3 font-semibold text-white bg-accent-blue rounded-lg hover:opacity-90" data-action="generate-plan" data-capability-id="${state.modeling.selectedCapabilityId}">Generate Uplift Initiative with ARIA</button>
-                    </div>
-                `;
-            }
+            updateDynamicPanes(state);
         }
     });
 }

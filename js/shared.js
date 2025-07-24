@@ -15,7 +15,7 @@ const Utils = {
         const { assessmentData } = state.modeling;
         const companyId = state.selectedCompanyId;
         const capability = this.findCapability(capabilityId);
-        if (!capability) return null;
+        if (!capability || !capability.domains) return null;
 
         const domainsInCapability = Object.values(capability.domains);
         
