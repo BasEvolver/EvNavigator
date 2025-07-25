@@ -3221,7 +3221,6 @@ input:checked + .slider:before {
 .maturity-table th.score-cell {
     text-align: center;
 }
-/* NEW: Style for non-wrapping stage cells */
 .maturity-table td.stage-cell {
     white-space: nowrap;
 }
@@ -3295,31 +3294,31 @@ input:checked + .slider:before {
 .dual-slider-range-input.as-is::-moz-range-thumb { border-color: var(--purple); }
 .dual-slider-range-input.to-be::-moz-range-thumb { border-color: var(--accent-blue); }
 
-/* UPDATED: Container for Aria indicators and labels */
+/* UPDATED: Container for Aria indicators above the slider */
 .aria-indicator-container {
     position: relative;
-    height: 28px; /* Height for triangle + label */
-    margin-bottom: 0.75rem;
+    height: 28px;
     width: 100%;
+    margin-bottom: 4px; /* Space between indicators and slider track */
 }
 .aria-indicator {
     position: absolute;
-    top: 0; /* Position triangle at the top */
+    bottom: 0; /* Triangle at the bottom of the container */
     transform: translateX(-50%);
     width: 0;
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
 }
-.aria-indicator.as-is { border-bottom: 8px solid var(--purple); }
-.aria-indicator.to-be { border-bottom: 8px solid var(--accent-blue); }
+/* UPDATED: Use border-top to point down */
+.aria-indicator.as-is { border-top: 8px solid var(--purple); }
+.aria-indicator.to-be { border-top: 8px solid var(--accent-blue); }
 
-/* NEW: Styles for labels under the triangles */
 .aria-indicator-label {
     position: absolute;
-    top: 10px; /* Position below the triangle */
+    top: 0; /* Label at the top of the container */
     transform: translateX(-50%);
-    font-size: 0.75rem; /* 12px */
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -3327,7 +3326,9 @@ input:checked + .slider:before {
 .aria-indicator-label.to-be { color: var(--accent-blue); }
 
 
+/* UPDATED: Added margin-top for spacing */
 .dual-slider-descriptions {
+    margin-top: 1.5rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
@@ -3402,3 +3403,167 @@ input:checked + .slider:before {
 .tree-view-container .node-label {
     font-size: 0.875rem;
 }
+/* css/styles.css - ADD THESE STYLES AT THE END OF THE FILE */
+
+/* =================================================================
+   KNOWLEDGE GRAPH PAGE V2 STYLES
+   ================================================================= */
+
+.knowledge-page-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px; /* Left | Center | Right */
+    gap: 1.5rem; /* 24px */
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.knowledge-left-panel, .knowledge-right-panel, .knowledge-center-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+    overflow: hidden;
+}
+
+.control-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 1px 3px var(--shadow);
+}
+
+.knowledge-left-panel .control-card {
+    flex-shrink: 0;
+}
+
+.knowledge-right-panel .control-card {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.knowledge-center-stage {
+    gap: 1rem;
+}
+
+.search-bar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+#knowledge-search-input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+#knowledge-search-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px var(--accent-blue-translucent);
+}
+
+#knowledge-search-clear {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: none;
+}
+
+#knowledge-graph-card {
+    flex-grow: 1;
+    position: relative;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px var(--shadow);
+    overflow: hidden;
+}
+
+.control-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.legend-item, .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+.filter-item label {
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+.filter-item input {
+    cursor: pointer;
+}
+
+/* Detail Pane Styles */
+#detail-pane-content .detail-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--text-muted);
+}
+.detail-header {
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    border-left: 4px solid;
+    padding-left: 0.75rem;
+}
+.detail-title { font-size: 1.125rem; font-weight: 700; color: var(--text-primary); }
+.detail-group { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+.detail-body .detail-section { margin-bottom: 1rem; }
+.detail-body strong { font-weight: 600; color: var(--text-primary); font-size: 0.875rem; }
+.detail-body p { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+
+/* D3 Graph Styles */
+.node { cursor: pointer; }
+.node text { text-anchor: middle; pointer-events: none; dominant-baseline: middle; }
+.node rect, .node circle, .node path {
+    stroke: var(--bg-card);
+    stroke-width: 3px;
+    transition: filter 0.2s ease;
+}
+.node:hover rect, .node:hover circle, .node:hover path {
+    filter: brightness(1.2);
+}
+.node.faded { opacity: 0.2; transition: opacity 0.3s ease; }
+.node.highlighted-search { opacity: 1; }
+.node.highlighted-search rect, .node.highlighted-search circle, .node.highlighted-search path {
+    stroke: var(--status-warning);
+    stroke-width: 4px;
+}
+.node.selected rect, .node.selected circle, .node.selected path {
+    stroke: var(--accent-blue);
+    stroke-width: 4px;
+}
+
+.link {
+    stroke: var(--text-muted);
+    stroke-width: 1.5px;
+    stroke-opacity: 0.6;
+    transition: all 0.3s ease;
+}
+.link.faded { stroke-opacity: 0.1; }
+.link.highlighted { stroke: var(--accent-blue); stroke-width: 3px; stroke-opacity: 1; }

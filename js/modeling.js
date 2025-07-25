@@ -133,8 +133,8 @@ function renderMaturityTable(state) {
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>As-Is Stage</th>
-                    <th>To-Be Stage</th>
+                    <th class="stage-cell">As-Is Stage</th>
+                    <th class="stage-cell">To-Be Stage</th>
                     <th class="score-cell">Gap</th>
                 </tr>
             </thead>
@@ -160,7 +160,7 @@ function renderMaturityTable(state) {
     return tableHTML;
 }
 
-
+// THIS IS THE CORRECTED FUNCTION
 function renderDualSlider(state) {
     const { selectedItemId, assessmentData } = state.modeling;
     const item = findItemInModel(selectedItemId);
@@ -184,11 +184,11 @@ function renderDualSlider(state) {
         const toBePercent = (ariaScores.to_be / 5) * 100;
         ariaIndicatorHTML = `
             <div class="aria-indicator-container">
-                <div class="aria-indicator as-is" style="left: ${asIsPercent}%;"></div>
                 <span class="aria-indicator-label as-is" style="left: ${asIsPercent}%;" title="Aria As-Is Score: ${ariaScores.as_is.toFixed(1)}">Aria As-Is</span>
+                <div class="aria-indicator as-is" style="left: ${asIsPercent}%;"></div>
                 
-                <div class="aria-indicator to-be" style="left: ${toBePercent}%;"></div>
                 <span class="aria-indicator-label to-be" style="left: ${toBePercent}%;" title="Aria To-Be Score: ${ariaScores.to_be.toFixed(1)}">Aria To-Be</span>
+                <div class="aria-indicator to-be" style="left: ${toBePercent}%;"></div>
             </div>
         `;
     }
@@ -209,12 +209,15 @@ function renderDualSlider(state) {
                     </div>
                 </div>
             </div>
+            
+            ${ariaIndicatorHTML}
+
             <div class="dual-slider-track-container">
                 <div class="dual-slider-track"></div>
                 <input type="range" min="0" max="5" value="${currentValue}" step="0.1" class="dual-slider-range-input as-is" data-action="update-score" data-item-id="${selectedItemId}" data-type="current">
                 <input type="range" min="0" max="5" value="${targetValue}" step="0.1" class="dual-slider-range-input to-be" data-action="update-score" data-item-id="${selectedItemId}" data-type="target">
             </div>
-            ${ariaIndicatorHTML}
+            
             <div class="dual-slider-descriptions">
                 <div class="slider-description-box" id="current-desc-display">${currentDescription}</div>
                 <div class="slider-description-box" id="target-desc-display">${targetDescription}</div>
@@ -222,6 +225,7 @@ function renderDualSlider(state) {
         </div>
     `;
 }
+
 
 // --- TREE VIEW LOGIC ---
 function renderTreeView(state) {
@@ -482,13 +486,13 @@ function calculateAverage(item, assessmentData) {
     };
 }
 
-// UPDATED: More robust stage name calculation
 function getMaturityLevelName(score) {
     if (score < 1) return "Initial";
     if (score >= 5) return "Intelligent";
     const levels = ["Reactive", "Organized", "Managed", "Platform-led", "Intelligent"];
-    return levels[Math.floor(score) - 1];
+    return levels[Math.floor(score - 0.01)] || "Initial";
 }
+
 
 function getMaturityLevelDescription(score) {
     const state = loadState();
@@ -525,8 +529,6 @@ function initializeModelingEventListeners() {
             state.modeling.selectedItemId = itemId;
             saveState(state);
             updateDynamicPanes(state);
-            document.querySelectorAll('.tree-node.active').forEach(n => n.classList.remove('active'));
-            // This is a bit complex to also highlight the table row, might simplify
         }
         
         if (action === 'toggle-node') {
@@ -577,8 +579,8 @@ function initializeModelingEventListeners() {
                     state.modeling.assessmentData[itemId][type] = value;
                 }
             } else {
-                const childDomains = getDomainsRecursive(item);
-                childDomains.forEach(d => {
+                const childItems = getDomainsRecursive(item);
+                childItems.forEach(d => {
                     if (state.modeling.assessmentData[d.id]) {
                         state.modeling.assessmentData[d.id][type] = value;
                     }
@@ -586,13 +588,11 @@ function initializeModelingEventListeners() {
             }
             saveState(state);
 
-            const currentScore = type === 'current' ? value : parseFloat(document.querySelector('.dual-slider-range-input.as-is').value);
-            const targetScore = type === 'target' ? value : parseFloat(document.querySelector('.dual-slider-range-input.to-be').value);
-
-            document.getElementById('current-value-display').innerHTML = `${currentScore.toFixed(1)} <span class="value-text">${getMaturityLevelName(currentScore)}</span>`;
-            document.getElementById('target-value-display').innerHTML = `${targetScore.toFixed(1)} <span class="value-text">${getMaturityLevelName(targetScore)}</span>`;
-            document.getElementById('current-desc-display').textContent = getMaturityLevelDescription(currentScore);
-            document.getElementById('target-desc-display').textContent = getMaturityLevelDescription(targetScore);
+            const { current: newCurrent, target: newTarget } = calculateAverage(item, state.modeling.assessmentData);
+            document.getElementById('current-value-display').innerHTML = `${newCurrent.toFixed(1)} <span class="value-text">${getMaturityLevelName(newCurrent)}</span>`;
+            document.getElementById('target-value-display').innerHTML = `${newTarget.toFixed(1)} <span class="value-text">${getMaturityLevelName(newTarget)}</span>`;
+            document.getElementById('current-desc-display').textContent = getMaturityLevelDescription(newCurrent);
+            document.getElementById('target-desc-display').textContent = getMaturityLevelDescription(newTarget);
             
             clearTimeout(window.rerenderDebounce);
             window.rerenderDebounce = setTimeout(() => {

@@ -1,0 +1,64 @@
+<!-- knowledge.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigator - Knowledge Graph</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <div class="main-content-wrapper">
+            <div id="header-container"></div>
+            
+            <main id="main-content" class="p-6 sm:p-8 flex flex-col">
+                <!-- NEW: Redesigned Layout for the Knowledge Page -->
+                <div class="knowledge-page-layout">
+                    
+                    <!-- Left Panel: Controls -->
+                    <div class="knowledge-left-panel">
+                        <div id="legend-container" class="control-card"></div>
+                        <div id="filter-container" class="control-card"></div>
+                    </div>
+
+                    <!-- Center Stage: Graph & Search -->
+                    <div class="knowledge-center-stage">
+                        <div class="search-bar-wrapper">
+                            <input type="text" id="knowledge-search-input" placeholder="Search for any document, task, or report...">
+                            <button id="knowledge-search-clear" title="Clear Search">×</button>
+                        </div>
+                        <div id="knowledge-graph-card">
+                            <!-- D3 SVG will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Details -->
+                    <div class="knowledge-right-panel">
+                        <div id="detail-pane" class="control-card">
+                            <div id="detail-pane-content">
+                                <!-- Details of selected node will be rendered here -->
+                                <div class="detail-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    <h3 class="font-bold mt-2">Select a Node</h3>
+                                    <p>Click on any item in the graph to see its details.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/knowledge-data.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/knowledge.js"></script>
+</body>
+</html>

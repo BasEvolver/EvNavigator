@@ -154,18 +154,15 @@ const Navigation = {
         if (page === 'index') {
             title = 'Portfolio Overview';
         } else if (page === 'portco') {
-            const companyId = state.selectedCompanyId;
-            if (companyId && companyId !== 'all') {
-                title = companyId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            } else {
-                title = 'Portfolio Company';
-            }
+            // ... (existing logic)
         } else if (page === 'aria') {
             title = 'ARIA';
         } else if (page === 'workspace') {
             title = 'Diligence Workspace';
         } else if (page === 'modeling') {
             title = 'Capability Modeling';
+        } else if (page === 'knowledge') { // ADD THIS ELSE IF BLOCK
+            title = 'Knowledge Graph';
         }
         
         titleElement.textContent = title;
@@ -238,6 +235,7 @@ async function loadSharedComponents() {
     const sidebarContainer = document.getElementById('sidebar-container');
     const headerContainer = document.getElementById('header-container');
     
+    // **MODIFIED:** Load both components unconditionally for a consistent app shell.
     if (sidebarContainer) {
         sidebarContainer.innerHTML = await ComponentLoader.loadSidebar();
     }
