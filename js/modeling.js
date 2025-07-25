@@ -63,18 +63,31 @@ function renderRightPane(state) {
 
 function renderLeftPane(state) {
     const leftPane = document.getElementById('modeling-left-pane');
-    const { selectedItemId, assessmentData } = state.modeling;
+    const { selectedItemId } = state.modeling;
     
     const item = findItemInModel(selectedItemId);
     if (!item) return;
 
-    const isDomain = selectedItemId.startsWith('D-');
-    const currentScore = isDomain ? assessmentData[selectedItemId]?.current || 0 : calculateAverage(item, assessmentData).current;
-    const targetScore = isDomain ? assessmentData[selectedItemId]?.target || 0 : calculateAverage(item, assessmentData).target;
+    let title;
+    if (selectedItemId.startsWith('D-')) {
+        title = findParent(selectedItemId, true)?.name || "Details";
+    } else if (selectedItemId === 'all-disciplines') {
+        title = "All Disciplines";
+    } else {
+        title = item.name;
+    }
 
     leftPane.innerHTML = `
         <div class="modeling-card radar-card">
-            <canvas id="modeling-radar-chart"></canvas>
+            <div class="radar-table-grid">
+                <div class="radar-chart-container">
+                    <h3 class="radar-chart-title">${title}</h3>
+                    <canvas id="modeling-radar-chart"></canvas>
+                </div>
+                <div class="maturity-table-container">
+                    ${renderMaturityTable(state)}
+                </div>
+            </div>
         </div>
         <div class="aria-perspective-card">
             <div class="aria-perspective-header">
@@ -93,40 +106,89 @@ function renderLeftPane(state) {
         <div class="modeling-card description-card">
             <h3 class="text-lg font-bold">${item.name}</h3>
             <p class="text-sm text-secondary mt-1">${item.controlQuestion}</p>
-            ${renderDualSlider(currentScore, targetScore, selectedItemId)}
+            ${renderDualSlider(state)}
         </div>
     `;
 }
 
-function renderDualSlider(currentValue, targetValue, itemId) {
+function renderMaturityTable(state) {
+    const { selectedItemId, assessmentData } = state.modeling;
+    
+    const selectedItem = findItemInModel(selectedItemId, true);
+    let itemsToDisplay;
+
+    if (selectedItemId.startsWith('D-')) {
+        const parent = findParent(selectedItemId, true);
+        itemsToDisplay = parent ? parent.domains : [];
+    } else if (selectedItemId.startsWith('C')) {
+        itemsToDisplay = selectedItem.domains;
+    } else if (selectedItemId.startsWith('D')) {
+        itemsToDisplay = Object.values(selectedItem.capabilities);
+    } else {
+        itemsToDisplay = Object.values(maturityModel_Cap.disciplines);
+    }
+
+    let tableHTML = `
+        <table class="maturity-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>As-Is Stage</th>
+                    <th>To-Be Stage</th>
+                    <th class="score-cell">Gap</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    itemsToDisplay.sort((a,b) => a.id.localeCompare(b.id)).forEach(item => {
+        const scores = calculateAverage(item, assessmentData);
+        const gap = scores.target - scores.current;
+        const gapClass = gap > 0.1 ? 'gap-positive' : (gap < -0.1 ? 'gap-negative' : '');
+        
+        tableHTML += `
+            <tr data-action="select-item" data-item-id="${item.id}">
+                <td>${item.name}</td>
+                <td class="stage-cell">${getMaturityLevelName(scores.current)}</td>
+                <td class="stage-cell">${getMaturityLevelName(scores.target)}</td>
+                <td class="score-cell ${gapClass}">${gap.toFixed(1)}</td>
+            </tr>
+        `;
+    });
+
+    tableHTML += `</tbody></table>`;
+    return tableHTML;
+}
+
+
+function renderDualSlider(state) {
+    const { selectedItemId, assessmentData } = state.modeling;
+    const item = findItemInModel(selectedItemId);
+    if (!item) return '';
+
+    const isDomain = selectedItemId.startsWith('D-');
+    const currentValue = isDomain ? assessmentData[selectedItemId]?.current || 0 : calculateAverage(item, assessmentData).current;
+    const targetValue = isDomain ? assessmentData[selectedItemId]?.target || 0 : calculateAverage(item, assessmentData).target;
+
     const currentLevelName = getMaturityLevelName(currentValue);
     const targetLevelName = getMaturityLevelName(targetValue);
     const currentDescription = getMaturityLevelDescription(currentValue);
     const targetDescription = getMaturityLevelDescription(targetValue);
 
-    // Get ARIA's assessment scores
-    const state = loadState();
     const companyId = state.selectedCompanyId;
-    const ariaScores = ariaAssessments[companyId]?.[itemId];
-    let ariaAssessmentHTML = '';
+    const ariaScores = ariaAssessments[companyId]?.[selectedItemId];
 
+    let ariaIndicatorHTML = '';
     if (ariaScores) {
-        ariaAssessmentHTML = `
-            <div class="aria-assessment-box">
-                <div class="aria-assessment-header">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
-                    <span>ARIA's Assessment</span>
-                </div>
-                <div class="aria-assessment-scores">
-                    <div>
-                        <div class="aria-score-label">AS-IS</div>
-                        <div class="aria-score-value">${ariaScores.as_is.toFixed(1)}</div>
-                    </div>
-                    <div>
-                        <div class="aria-score-label">TO-BE</div>
-                        <div class="aria-score-value">${ariaScores.to_be.toFixed(1)}</div>
-                    </div>
-                </div>
+        const asIsPercent = (ariaScores.as_is / 5) * 100;
+        const toBePercent = (ariaScores.to_be / 5) * 100;
+        ariaIndicatorHTML = `
+            <div class="aria-indicator-container">
+                <div class="aria-indicator as-is" style="left: ${asIsPercent}%;"></div>
+                <span class="aria-indicator-label as-is" style="left: ${asIsPercent}%;" title="Aria As-Is Score: ${ariaScores.as_is.toFixed(1)}">Aria As-Is</span>
+                
+                <div class="aria-indicator to-be" style="left: ${toBePercent}%;"></div>
+                <span class="aria-indicator-label to-be" style="left: ${toBePercent}%;" title="Aria To-Be Score: ${ariaScores.to_be.toFixed(1)}">Aria To-Be</span>
             </div>
         `;
     }
@@ -147,24 +209,21 @@ function renderDualSlider(currentValue, targetValue, itemId) {
                     </div>
                 </div>
             </div>
-
             <div class="dual-slider-track-container">
                 <div class="dual-slider-track"></div>
-                <input type="range" min="0" max="5" value="${currentValue}" step="0.1" class="dual-slider-range-input as-is" data-action="update-score" data-item-id="${itemId}" data-type="current">
-                <input type="range" min="0" max="5" value="${targetValue}" step="0.1" class="dual-slider-range-input to-be" data-action="update-score" data-item-id="${itemId}" data-type="target">
+                <input type="range" min="0" max="5" value="${currentValue}" step="0.1" class="dual-slider-range-input as-is" data-action="update-score" data-item-id="${selectedItemId}" data-type="current">
+                <input type="range" min="0" max="5" value="${targetValue}" step="0.1" class="dual-slider-range-input to-be" data-action="update-score" data-item-id="${selectedItemId}" data-type="target">
             </div>
-
+            ${ariaIndicatorHTML}
             <div class="dual-slider-descriptions">
                 <div class="slider-description-box" id="current-desc-display">${currentDescription}</div>
                 <div class="slider-description-box" id="target-desc-display">${targetDescription}</div>
             </div>
-            ${ariaAssessmentHTML}
         </div>
     `;
 }
 
 // --- TREE VIEW LOGIC ---
-
 function renderTreeView(state) {
     const { expandedNodes, selectedItemId } = state.modeling;
     let html = `<div class="tree-node ${selectedItemId === 'all-disciplines' ? 'active' : ''}" data-action="select-item" data-item-id="all-disciplines"><span class="chevron hidden"></span><span class="node-label font-bold">All Disciplines</span></div>`;
@@ -210,7 +269,6 @@ function renderTreeView(state) {
 }
 
 // --- ARIA'S PERSPECTIVE GENERATOR ---
-
 function generateAriaPerspective(state) {
     const { selectedItemId, assessmentData } = state.modeling;
     const companyId = state.selectedCompanyId;
@@ -218,13 +276,13 @@ function generateAriaPerspective(state) {
     if (!item) return '';
 
     const isDomain = selectedItemId.startsWith('D-');
-    const currentScore = isDomain ? assessmentData[selectedItemId]?.current : calculateAverage(item, assessmentData).current;
-    const targetScore = isDomain ? assessmentData[selectedItemId]?.target : calculateAverage(item, assessmentData).target;
+    const currentScore = isDomain ? assessmentData[selectedItemId]?.current || 0 : calculateAverage(item, assessmentData).current;
+    const targetScore = isDomain ? assessmentData[selectedItemId]?.target || 0 : calculateAverage(item, assessmentData).target;
     const gap = targetScore - currentScore;
 
     let html = `<h4>On ${item.name}</h4>`;
 
-    if (gap <= 0 && isDomain) {
+    if (gap <= 0.1 && isDomain) {
         html += `<p class="mt-2">This area meets or exceeds the current target maturity level. Focus should be directed to other areas with a larger maturity gap.</p>`;
         return html;
     }
@@ -232,7 +290,7 @@ function generateAriaPerspective(state) {
     if (companyId === 'techflow-solutions') {
         html += `<p class="mt-2">For <strong>TechFlow Solutions</strong>, improving this area is critical. Our diligence flagged several operational risks that a higher maturity level would directly mitigate.</p>`;
     } else {
-        html += `<p class="mt-2">For <strong>CloudVantage</strong>, achieving a Level ${Math.round(targetScore)} in this area is a key enabler for the 'Rule of 60' growth strategy, unlocking new efficiencies and scalability.</p>`;
+        html += `<p class="mt-2">For <strong>CloudVantage</strong>, achieving a Level ${Math.ceil(targetScore)} in this area is a key enabler for the 'Rule of 60' growth strategy, unlocking new efficiencies and scalability.</p>`;
     }
 
     html += `<h4 class="font-semibold mt-4 mb-2">To bridge the gap from Level ${currentScore.toFixed(1)} to ${targetScore.toFixed(1)}:</h4>`;
@@ -244,19 +302,19 @@ function generateAriaPerspective(state) {
                       <p class="mt-2 p-2 bg-hover rounded-md"><em>"${item.levels[nextStepLevel - 1]}"</em></p>`;
         }
     } else {
-        const domains = getDomainsRecursive(item);
-        const domainsWithGaps = domains
+        const childItems = getDomainsRecursive(item);
+        const itemsWithGaps = childItems
             .map(d => ({ ...d, gap: (assessmentData[d.id]?.target || 0) - (assessmentData[d.id]?.current || 0) }))
-            .filter(d => d.gap > 0)
+            .filter(d => d.gap > 0.1)
             .sort((a, b) => b.gap - a.gap);
         
-        if (domainsWithGaps.length > 0) {
-            html += `<p>The highest priority should be on the following domains:</p>
+        if (itemsWithGaps.length > 0) {
+            html += `<p>The highest priority should be on the following areas:</p>
                      <ul class="list-disc pl-5 mt-2 space-y-1">
-                        ${domainsWithGaps.slice(0, 3).map(d => `<li><strong>${d.name}</strong> (Gap of ${d.gap.toFixed(1)} levels)</li>`).join('')}
+                        ${itemsWithGaps.slice(0, 3).map(d => `<li><strong>${d.name}</strong> (Gap of ${d.gap.toFixed(1)} levels)</li>`).join('')}
                      </ul>`;
         } else {
-            html += `<p>All underlying domains currently meet their target maturity levels. Consider increasing the 'To-Be' scores for specific domains to generate a new uplift plan.</p>`;
+            html += `<p>All underlying areas currently meet their target maturity levels. Consider increasing the 'To-Be' scores for specific areas to generate a new uplift plan.</p>`;
         }
     }
     
@@ -265,7 +323,6 @@ function generateAriaPerspective(state) {
 
 
 // --- CHART & DATA HELPERS ---
-
 let chartInstance = null;
 function drawRadarChart(state) {
     const ctx = document.getElementById('modeling-radar-chart')?.getContext('2d');
@@ -286,24 +343,17 @@ function drawRadarChart(state) {
     const { selectedItemId, assessmentData } = state.modeling;
     
     const selectedItem = findItemInModel(selectedItemId, true);
-    let chartContextItem;
-    let chartTitle;
-    if (selectedItemId === 'all-disciplines') {
-        chartContextItem = findItemInModel('all-disciplines', true);
-        chartTitle = "All Disciplines";
-    } else {
+    
+    let itemsToChart;
+    if (selectedItemId.startsWith('D-')) {
         const parent = findParent(selectedItemId, true);
-        chartContextItem = parent || findItemInModel('all-disciplines', true);
-        chartTitle = parent ? parent.name : "All Disciplines";
-    }
-
-    let itemsToChart = [];
-    if (chartContextItem.id === 'all-disciplines') {
-        itemsToChart = Object.values(maturityModel_Cap.disciplines);
-    } else if (chartContextItem.id.startsWith('D')) {
-        itemsToChart = Object.values(chartContextItem.capabilities);
+        itemsToChart = parent ? parent.domains : [];
+    } else if (selectedItemId.startsWith('C')) {
+        itemsToChart = selectedItem.domains;
+    } else if (selectedItemId.startsWith('D')) {
+        itemsToChart = Object.values(selectedItem.capabilities);
     } else {
-        itemsToChart = chartContextItem.domains;
+        itemsToChart = Object.values(maturityModel_Cap.disciplines);
     }
 
     itemsToChart.sort((a, b) => a.id.localeCompare(b.id));
@@ -345,18 +395,7 @@ function drawRadarChart(state) {
                     stepSize: 1, 
                     pointLabels: { 
                         font: { weight: 'bold', size: 12 },
-                        color: (context) => {
-                            return context.label === selectedItem.name ? textPrimary : textSecondary;
-                        },
-                        backdropColor: (context) => {
-                            return context.label === selectedItem.name ? 'var(--accent-blue-translucent)' : 'transparent';
-                        },
-                        borderColor: (context) => {
-                            return context.label === selectedItem.name ? 'var(--accent-blue)' : 'transparent';
-                        },
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        padding: 4
+                        color: (context) => context.label === selectedItem.name ? textPrimary : textSecondary,
                     }, 
                     grid: { color: borderColor }, 
                     angleLines: { color: borderColor }, 
@@ -371,17 +410,11 @@ function drawRadarChart(state) {
             },
             plugins: { 
                 legend: { 
-                    position: 'right', 
-                    align: 'center',
-                    labels: { color: textPrimary } 
+                    position: 'bottom',
+                    align: 'end',
+                    labels: { color: textPrimary, padding: 20 } 
                 },
-                title: {
-                    display: true,
-                    text: chartTitle,
-                    color: textPrimary,
-                    font: { size: 16, weight: 'bold' },
-                    padding: { bottom: 10 }
-                }
+                title: { display: false }
             }
         }
     });
@@ -395,7 +428,7 @@ function findItemInModel(id, useLightweight = false) {
         if (discipline.id === id) return discipline;
         for (const capability of Object.values(discipline.capabilities)) {
             if (capability.id === id) return capability;
-            const domainsSource = useLightweight ? capability.domains : Object.values(capability.domains || {});
+            const domainsSource = useLightweight ? (capability.domains || []) : Object.values(capability.domains || {});
             if (domainsSource.some(d => d.id === id)) {
                 return useLightweight ? domainsSource.find(d => d.id === id) : model.disciplines[discipline.id].capabilities[capability.id].domains[id];
             }
@@ -409,7 +442,7 @@ function findParent(itemId, useLightweight = false) {
     if (itemId.startsWith('D-')) {
         for (const disc of Object.values(model.disciplines)) {
             for (const cap of Object.values(disc.capabilities)) {
-                const domainsSource = useLightweight ? cap.domains : Object.values(cap.domains || {});
+                const domainsSource = useLightweight ? (cap.domains || []) : Object.values(cap.domains || {});
                 if (domainsSource.some(d => d.id === itemId)) return cap;
             }
         }
@@ -449,34 +482,32 @@ function calculateAverage(item, assessmentData) {
     };
 }
 
+// UPDATED: More robust stage name calculation
 function getMaturityLevelName(score) {
     if (score < 1) return "Initial";
-    const roundedScore = Math.round(score);
+    if (score >= 5) return "Intelligent";
     const levels = ["Reactive", "Organized", "Managed", "Platform-led", "Intelligent"];
-    return levels[roundedScore - 1] || "Intelligent";
+    return levels[Math.floor(score) - 1];
 }
 
 function getMaturityLevelDescription(score) {
     const state = loadState();
     const itemId = state.modeling.selectedItemId;
-    const item = findItemInModel(itemId); // Use the full model to get level details
+    const item = findItemInModel(itemId);
 
     if (!item) return "Description not found.";
 
     const roundedScore = Math.round(score);
     if (roundedScore < 1) return "The initial stage before formal processes are established.";
 
-    // Use specific level descriptions if the item is a domain and has them
     if (item.id.startsWith('D-') && item.levels && item.levels.length >= roundedScore) {
         return item.levels[roundedScore - 1];
     }
-
-    // Fallback to the general summary descriptions for capabilities/disciplines
+    
     return maturityModel.summary.levels[roundedScore - 1] || maturityModel.summary.levels[4];
 }
 
 // --- EVENT LISTENERS ---
-
 function initializeModelingEventListeners() {
     const mainContent = document.getElementById('main-content');
     
@@ -495,7 +526,7 @@ function initializeModelingEventListeners() {
             saveState(state);
             updateDynamicPanes(state);
             document.querySelectorAll('.tree-node.active').forEach(n => n.classList.remove('active'));
-            target.classList.add('active');
+            // This is a bit complex to also highlight the table row, might simplify
         }
         
         if (action === 'toggle-node') {
@@ -520,9 +551,9 @@ function initializeModelingEventListeners() {
             if (confirm("Are you sure you want to reset all maturity scores for this company to their default values?")) {
                 const companyId = state.selectedCompanyId;
                 state.modeling.assessmentData = buildInitialAssessmentData(companyId);
-                state.modeling.assessmentData.companyId = companyId; // Re-tag the data
+                state.modeling.assessmentData.companyId = companyId;
                 saveState(state);
-                updateDynamicPanes(state); // Re-render the panes with the new data
+                updateDynamicPanes(state);
             }
         }
     });
@@ -534,7 +565,6 @@ function initializeModelingEventListeners() {
             const { itemId, type } = target.dataset;
             const value = parseFloat(target.value);
 
-            // Activate the correct label on input
             const header = target.closest('.dual-slider-component').querySelector('.dual-slider-header');
             if (header) {
                  header.children[0].classList.toggle('active', type === 'current');
@@ -556,7 +586,6 @@ function initializeModelingEventListeners() {
             }
             saveState(state);
 
-            // Update display values without full re-render
             const currentScore = type === 'current' ? value : parseFloat(document.querySelector('.dual-slider-range-input.as-is').value);
             const targetScore = type === 'target' ? value : parseFloat(document.querySelector('.dual-slider-range-input.to-be').value);
 
@@ -565,11 +594,11 @@ function initializeModelingEventListeners() {
             document.getElementById('current-desc-display').textContent = getMaturityLevelDescription(currentScore);
             document.getElementById('target-desc-display').textContent = getMaturityLevelDescription(targetScore);
             
-            // Debounce radar chart drawing for performance
-            clearTimeout(window.radarDebounce);
-            window.radarDebounce = setTimeout(() => {
+            clearTimeout(window.rerenderDebounce);
+            window.rerenderDebounce = setTimeout(() => {
+                document.querySelector('.maturity-table-container').innerHTML = renderMaturityTable(loadState());
                 drawRadarChart(loadState());
-            }, 200);
+            }, 50);
         }
     });
 }

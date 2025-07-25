@@ -3133,7 +3133,7 @@ input:checked + .slider:before {
 
 .modeling-container {
     display: grid;
-    grid-template-columns: repeat(12, 1fr); /* Use a 12-column grid for flexibility */
+    grid-template-columns: repeat(12, 1fr);
     gap: 1.5rem;
     padding: 1.5rem;
     height: calc(100vh - 5rem);
@@ -3147,9 +3147,8 @@ input:checked + .slider:before {
     overflow: hidden;
 }
 
-/* This is the key change: 8 columns for left, 4 for right (~70/30) */
-.modeling-left-pane { grid-column: span 8 / span 8; } 
-.modeling-right-pane { grid-column: span 4 / span 4; }
+.modeling-left-pane { grid-column: span 9 / span 9; } 
+.modeling-right-pane { grid-column: span 3 / span 3; }
 
 .modeling-card {
     background-color: var(--bg-card);
@@ -3160,7 +3159,6 @@ input:checked + .slider:before {
     flex-direction: column;
 }
 
-/* Right Pane: Tree View */
 .tree-view-container { flex-grow: 1; overflow-y: auto; }
 .tree-node { padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; }
 .tree-node:hover { background-color: var(--bg-hover); }
@@ -3172,11 +3170,73 @@ input:checked + .slider:before {
 .node-label { font-weight: 500; }
 .node-children { padding-left: 1.5rem; }
 
-/* Left Pane: Radar & Sliders */
-.radar-card { height: 400px; }
+.radar-card { height: 480px; padding: 0; }
 .description-card { flex-grow: 1; overflow-y: auto; }
 
-/* Dual Thumb Slider Component */
+.radar-table-grid {
+    display: grid;
+    grid-template-columns: 6fr 4fr;
+    gap: 1.5rem;
+    height: 100%;
+    width: 100%;
+    padding: 1.5rem;
+}
+.radar-chart-container {
+    position: relative;
+    height: 100%;
+}
+
+.radar-chart-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    z-index: 10;
+}
+
+.maturity-table-container {
+    overflow-y: auto;
+    height: 100%;
+}
+.maturity-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.maturity-table th, .maturity-table td {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.maturity-table th {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-card);
+}
+.maturity-table th.score-cell {
+    text-align: center;
+}
+/* NEW: Style for non-wrapping stage cells */
+.maturity-table td.stage-cell {
+    white-space: nowrap;
+}
+.maturity-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.maturity-table tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+.maturity-table .score-cell { font-weight: 600; text-align: center; }
+.maturity-table .gap-positive { color: var(--status-success); }
+.maturity-table .gap-negative { color: var(--status-error); }
+
+
 .dual-slider-component { margin-top: 1.5rem; }
 .dual-slider-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem; }
 .dual-slider-labels { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); }
@@ -3206,12 +3266,8 @@ input:checked + .slider:before {
     z-index: 10;
     margin: 0;
 }
-.dual-slider-range-input::-webkit-slider-runnable-track {
-    background: transparent;
-}
-.dual-slider-range-input::-moz-range-track {
-    background: transparent;
-}
+.dual-slider-range-input::-webkit-slider-runnable-track { background: transparent; }
+.dual-slider-range-input::-moz-range-track { background: transparent; }
 
 .dual-slider-range-input::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -3239,8 +3295,39 @@ input:checked + .slider:before {
 .dual-slider-range-input.as-is::-moz-range-thumb { border-color: var(--purple); }
 .dual-slider-range-input.to-be::-moz-range-thumb { border-color: var(--accent-blue); }
 
+/* UPDATED: Container for Aria indicators and labels */
+.aria-indicator-container {
+    position: relative;
+    height: 28px; /* Height for triangle + label */
+    margin-bottom: 0.75rem;
+    width: 100%;
+}
+.aria-indicator {
+    position: absolute;
+    top: 0; /* Position triangle at the top */
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+}
+.aria-indicator.as-is { border-bottom: 8px solid var(--purple); }
+.aria-indicator.to-be { border-bottom: 8px solid var(--accent-blue); }
+
+/* NEW: Styles for labels under the triangles */
+.aria-indicator-label {
+    position: absolute;
+    top: 10px; /* Position below the triangle */
+    transform: translateX(-50%);
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    white-space: nowrap;
+}
+.aria-indicator-label.as-is { color: var(--purple); }
+.aria-indicator-label.to-be { color: var(--accent-blue); }
+
+
 .dual-slider-descriptions {
-    margin-top: 1rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
@@ -3255,95 +3342,31 @@ input:checked + .slider:before {
     line-height: 1.6;
 }
 
-/* Middle Pane: ARIA Perspective */
 .aria-perspective-card {
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-left: 4px solid var(--accent-blue);
-    padding: 1.5rem;
     border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
     overflow-y: auto;
 }
 .aria-perspective-card h3 { color: var(--accent-blue); font-weight: 700; }
 .aria-perspective-card p, .aria-perspective-card li { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
-/* --- Modeling Page - Active Slider State --- */
 
-.dual-slider-labels.active {
-    font-weight: 700;
-    color: var(--text-primary);
-}
-/* --- Modeling Page - Active Slider State --- */
+.dual-slider-labels { cursor: pointer; }
 .dual-slider-labels.active {
     font-weight: 700;
     color: var(--text-primary);
 }
 
-* --- Modeling Page - Active Slider State --- */
-.dual-slider-labels {
-    cursor: pointer; /* Make labels look clickable */
-}
-.dual-slider-labels.active {
-    font-weight: 700;
-    color: var(--text-primary);
-}
+.dual-slider-range-input::-webkit-slider-thumb { pointer-events: auto; }
+.dual-slider-range-input::-moz-range-thumb { pointer-events: auto; }
 
-/* --- Modeling Page - ARIA Assessment Box --- */
-.aria-assessment-box {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--purple);
-    border-radius: 0.5rem;
-}
-.aria-assessment-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-    margin-bottom: 0.75rem;
-}
-.aria-assessment-header svg {
-    color: var(--purple);
-}
-.aria-assessment-scores {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-}
-.aria-score-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-}
-.aria-score-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-/* --- FIX for Dual-Thumb Slider Interaction --- */
-.dual-slider-range-input {
-    /* Make the entire input, including the track, ignore mouse events */
-    pointer-events: none;
-    margin: 0; /* Ensure no extra margin is causing layout issues */
-}
-
-.dual-slider-range-input::-webkit-slider-thumb {
-    /* Re-enable mouse events ONLY for the thumb */
-    pointer-events: auto;
-}
-
-.dual-slider-range-input::-moz-range-thumb {
-    /* Re-enable mouse events ONLY for the thumb */
-    pointer-events: auto;
-}
-
-/* --- Modeling Page - ARIA Perspective Card Header --- */
 .aria-perspective-card h3 {
-    margin: 0; /* Remove default margin */
+    margin: 0;
     color: var(--accent-blue);
 }
 
@@ -3375,7 +3398,7 @@ input:checked + .slider:before {
     font-weight: 700;
     color: var(--text-primary);
 }
-/* --- Modeling Page - Skinnier Explorer --- */
+
 .tree-view-container .node-label {
-    font-size: 0.875rem; /* 14px */
+    font-size: 0.875rem;
 }
