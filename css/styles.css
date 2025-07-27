@@ -3567,3 +3567,640 @@ input:checked + .slider:before {
 }
 .link.faded { stroke-opacity: 0.1; }
 .link.highlighted { stroke: var(--accent-blue); stroke-width: 3px; stroke-opacity: 1; }
+
+/* css/styles.css - ADD these variables inside :root and [data-theme="dark"] */
+
+:root {
+    /* ... existing variables ... */
+    --node-fill-subtle: #F1F5F9; /* slate-100 */
+    --node-text-subtle: #091A2D; /* custom dark blue */
+    --accent-blue-translucent: rgba(72, 170, 221, 0.2); /* 20% opacity */
+}
+
+[data-theme="dark"] {
+    /* ... existing variables ... */
+    --node-fill-subtle: #475569; /* slate-600 */
+    --node-text-subtle: #F8FAFC; /* slate-50 */
+    --accent-blue-translucent: rgba(96, 165, 250, 0.25); /* 25% opacity */
+}
+
+/* ADD these new styles for the knowledge page layout */
+.knowledge-left-panel {
+    overflow-y: auto; /* Allow scrolling for many filters */
+}
+.control-card {
+    margin-bottom: 1.5rem;
+}
+.control-card:last-child {
+    margin-bottom: 0;
+}
+.filter-item label {
+    line-height: 1.2;
+}
+
+* Enriched Detail Pane Grid Styles */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+}
+.detail-grid strong {
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.125rem;
+}
+.detail-grid p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* NEW: Tree-View Filter Styles */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.filter-header span {
+    font-weight: 600;
+    font-size: 1rem;
+}
+.filter-header button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.filter-tree-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+.filter-tree-item > label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+.filter-tree-children {
+    width: 100%;
+    padding-left: 1.25rem;
+    margin-top: 0.25rem;
+}
+.filter-tree-children .filter-tree-item > label {
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+/* NEW: Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-hover);
+    transition: .4s;
+    border-radius: 34px;
+}
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.toggle-switch input:checked + .slider {
+    background-color: var(--accent-blue);
+}
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* NEW: Enriched Detail Pane Styles */
+.quality-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.quality-badge.good { background-color: var(--status-success); color: white; }
+.quality-badge.concerns { background-color: var(--status-warning); color: white; }
+.quality-badge.bad { background-color: var(--status-error); color: white; }
+
+/* NEW: Simplified Filter Styles */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.filter-header .control-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.filter-header button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.filter-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+}
+.filter-item label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* NEW: Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-hover);
+    transition: .4s;
+    border-radius: 34px;
+}
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.toggle-switch input:checked + .slider {
+    background-color: var(--accent-blue);
+}
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* NEW: Enriched Detail Pane Styles */
+.quality-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.quality-badge.good { background-color: var(--status-success); color: white; }
+.quality-badge.concerns { background-color: var(--status-warning); color: white; }
+.quality-badge.bad { background-color: var(--status-error); color: white; }
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+}
+.detail-grid strong {
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.125rem;
+    font-size: 0.8rem;
+}
+.detail-grid p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.8rem;
+    word-break: break-word;
+}
+.detail-section-list li {
+    font-size: 0.8rem;
+}
+/* NEW: Tree-View Filter Styles */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.filter-header .control-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.filter-header button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.filter-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.filter-tree-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+.filter-tree-item > label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+.filter-tree-children {
+    width: 100%;
+    padding-left: 1.25rem;
+    margin-top: 0.25rem;
+}
+.filter-tree-children .filter-tree-item > label {
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+/* NEW: Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-hover);
+    transition: .4s;
+    border-radius: 34px;
+}
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.toggle-switch input:checked + .slider {
+    background-color: var(--accent-blue);
+}
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* NEW: Graph Reset Button */
+.graph-reset-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.graph-reset-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* NEW: Legend Subheader */
+.legend-subheader {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* NEW: Tree-View Filter Styles */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.filter-header .control-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.filter-header button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.filter-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.filter-tree-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+.filter-tree-item.is-parent > .filter-parent-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.filter-tree-item.is-parent > .filter-parent-label .chevron-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease-in-out;
+}
+.filter-tree-item.is-parent > .filter-parent-label .chevron-icon.expanded {
+    transform: rotate(90deg);
+}
+.filter-tree-children {
+    width: 100%;
+    padding-left: 1.25rem;
+    margin-top: 0.25rem;
+}
+.filter-tree-children.collapsed {
+    display: none;
+}
+.filter-tree-children .filter-tree-item > label {
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+/* NEW: Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-hover);
+    transition: .4s;
+    border-radius: 34px;
+}
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.toggle-switch input:checked + .slider {
+    background-color: var(--accent-blue);
+}
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* =================================================================
+   KNOWLEDGE GRAPH PAGE V2 STYLES (ADDITIONS)
+   ================================================================= */
+
+.filter-header button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.filter-header button:hover {
+    text-decoration: underline;
+}
+
+.filter-tree-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+.filter-tree-item.is-parent > .filter-parent-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.filter-tree-item.is-parent > .filter-parent-label .chevron-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease-in-out;
+}
+.filter-tree-item.is-parent > .filter-parent-label .chevron-icon.expanded {
+    transform: rotate(90deg);
+}
+.filter-tree-children {
+    width: 100%;
+    padding-left: 1.25rem;
+    margin-top: 0.25rem;
+}
+.filter-tree-children.collapsed {
+    display: none;
+}
+.filter-tree-children .filter-tree-item > label {
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+/* =================================================================
+   KNOWLEDGE GRAPH PAGE V2 STYLES (ADDITIONS)
+   ================================================================= */
+
+.knowledge-page-layout {
+    grid-template-columns: 320px 1fr 320px; /* Widened left panel */
+}
+
+.legend-item {
+    margin-bottom: 0.25rem; /* Reduced spacing */
+}
+
+/* TIGHTER SPACING FOR NODE TYPES FILTER */
+#nodetype-filter-container .filter-item {
+    padding: 0.3rem 0; 
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.filter-header button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.filter-header button:hover {
+    text-decoration: underline;
+}
+
+.filter-tree-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+.filter-tree-item.is-parent > .filter-parent-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.filter-tree-item.is-parent > .filter-parent-label .chevron-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease-in-out;
+}
+.filter-tree-item.is-parent > .filter-parent-label .chevron-icon.expanded {
+    transform: rotate(90deg);
+}
+.filter-tree-children {
+    width: 100%;
+    padding-left: 1.25rem;
+    margin-top: 0.25rem;
+}
+.filter-tree-children.collapsed {
+    display: none;
+}
+.filter-tree-children .filter-tree-item > label {
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+/* NEW: In-Graph Reset Button */
+.graph-reset-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10; /* Ensure it's above the graph canvas */
+}
+.graph-reset-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}

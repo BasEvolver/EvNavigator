@@ -15,7 +15,8 @@ const ariaAssessments = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (typeof maturityModel === 'undefined' || typeof maturityModel_Cap === 'undefined') {
+    // MODIFIED: Removed check for maturityModel_Cap
+    if (typeof maturityModel === 'undefined') {
         const mainContent = document.getElementById('main-content');
         mainContent.innerHTML = `<div class="p-8 text-center"><h1 class="text-2xl font-bold text-red-600">Fatal Error</h1><p class="text-secondary mt-2">A required data model could not be loaded.</p></div>`;
         return;
@@ -53,7 +54,7 @@ function renderRightPane(state) {
     const rightPane = document.getElementById('modeling-right-pane');
     rightPane.innerHTML = `
         <div class="modeling-card h-full">
-            <h2 class="text-xl font-bold mb-4">Maturity Model Explorer</h2>
+            <h2 class="text-xl font-bold mb-4">Value Creation Canvas</h2>
             <div class="tree-view-container">
                 ${renderTreeView(state)}
             </div>
@@ -70,7 +71,7 @@ function renderLeftPane(state) {
 
     let title;
     if (selectedItemId.startsWith('D-')) {
-        title = findParent(selectedItemId, true)?.name || "Details";
+        title = findParent(selectedItemId)?.name || "Details";
     } else if (selectedItemId === 'all-disciplines') {
         title = "All Disciplines";
     } else {
@@ -114,18 +115,19 @@ function renderLeftPane(state) {
 function renderMaturityTable(state) {
     const { selectedItemId, assessmentData } = state.modeling;
     
-    const selectedItem = findItemInModel(selectedItemId, true);
+    const selectedItem = findItemInModel(selectedItemId);
     let itemsToDisplay;
 
     if (selectedItemId.startsWith('D-')) {
-        const parent = findParent(selectedItemId, true);
-        itemsToDisplay = parent ? parent.domains : [];
+        const parent = findParent(selectedItemId);
+        itemsToDisplay = parent ? Object.values(parent.domains) : [];
     } else if (selectedItemId.startsWith('C')) {
-        itemsToDisplay = selectedItem.domains;
+        itemsToDisplay = Object.values(selectedItem.domains);
     } else if (selectedItemId.startsWith('D')) {
         itemsToDisplay = Object.values(selectedItem.capabilities);
     } else {
-        itemsToDisplay = Object.values(maturityModel_Cap.disciplines);
+        // MODIFIED: Use full maturityModel
+        itemsToDisplay = Object.values(maturityModel.disciplines);
     }
 
     let tableHTML = `
@@ -160,7 +162,6 @@ function renderMaturityTable(state) {
     return tableHTML;
 }
 
-// THIS IS THE CORRECTED FUNCTION
 function renderDualSlider(state) {
     const { selectedItemId, assessmentData } = state.modeling;
     const item = findItemInModel(selectedItemId);
@@ -231,7 +232,8 @@ function renderDualSlider(state) {
 function renderTreeView(state) {
     const { expandedNodes, selectedItemId } = state.modeling;
     let html = `<div class="tree-node ${selectedItemId === 'all-disciplines' ? 'active' : ''}" data-action="select-item" data-item-id="all-disciplines"><span class="chevron hidden"></span><span class="node-label font-bold">All Disciplines</span></div>`;
-    const disciplines = Object.values(maturityModel_Cap.disciplines).sort((a, b) => a.id.localeCompare(b.id));
+    // MODIFIED: Use full maturityModel
+    const disciplines = Object.values(maturityModel.disciplines).sort((a, b) => a.id.localeCompare(b.id));
 
     for (const discipline of disciplines) {
         const isExpanded = expandedNodes[discipline.id];
@@ -254,7 +256,8 @@ function renderTreeView(state) {
                 `;
                 if (capIsExpanded && capability.domains) {
                     html += `<div class="node-children">`;
-                    const domains = capability.domains.sort((a, b) => a.id.localeCompare(b.id));
+                    // MODIFIED: Use Object.values() because domains is an object in the full model
+                    const domains = Object.values(capability.domains).sort((a, b) => a.id.localeCompare(b.id));
                     for (const domain of domains) {
                          html += `
                             <div class="tree-node ${selectedItemId === domain.id ? 'active' : ''}" data-action="select-item" data-item-id="${domain.id}">
@@ -346,18 +349,19 @@ function drawRadarChart(state) {
 
     const { selectedItemId, assessmentData } = state.modeling;
     
-    const selectedItem = findItemInModel(selectedItemId, true);
+    const selectedItem = findItemInModel(selectedItemId);
     
     let itemsToChart;
     if (selectedItemId.startsWith('D-')) {
-        const parent = findParent(selectedItemId, true);
-        itemsToChart = parent ? parent.domains : [];
+        const parent = findParent(selectedItemId);
+        itemsToChart = parent ? Object.values(parent.domains) : [];
     } else if (selectedItemId.startsWith('C')) {
-        itemsToChart = selectedItem.domains;
+        itemsToChart = Object.values(selectedItem.domains);
     } else if (selectedItemId.startsWith('D')) {
         itemsToChart = Object.values(selectedItem.capabilities);
     } else {
-        itemsToChart = Object.values(maturityModel_Cap.disciplines);
+        // MODIFIED: Use full maturityModel
+        itemsToChart = Object.values(maturityModel.disciplines);
     }
 
     itemsToChart.sort((a, b) => a.id.localeCompare(b.id));
@@ -424,47 +428,51 @@ function drawRadarChart(state) {
     });
 }
 
-function findItemInModel(id, useLightweight = false) {
-    const model = useLightweight ? maturityModel_Cap : maturityModel;
-    if (!id || id === 'all-disciplines') return { id: 'all-disciplines', name: 'All Disciplines', controlQuestion: 'An overview of the entire maturity model.', capabilities: model.disciplines };
+// REFACTORED: This function now only uses the full maturityModel
+function findItemInModel(id) {
+    if (!id || id === 'all-disciplines') {
+        return { id: 'all-disciplines', name: 'All Disciplines', controlQuestion: 'An overview of the entire maturity model.', capabilities: maturityModel.disciplines };
+    }
     
-    for (const discipline of Object.values(model.disciplines)) {
+    for (const discipline of Object.values(maturityModel.disciplines)) {
         if (discipline.id === id) return discipline;
         for (const capability of Object.values(discipline.capabilities)) {
             if (capability.id === id) return capability;
-            const domainsSource = useLightweight ? (capability.domains || []) : Object.values(capability.domains || {});
-            if (domainsSource.some(d => d.id === id)) {
-                return useLightweight ? domainsSource.find(d => d.id === id) : model.disciplines[discipline.id].capabilities[capability.id].domains[id];
+            if (capability.domains && capability.domains[id]) {
+                return capability.domains[id];
             }
         }
     }
     return null;
 }
 
-function findParent(itemId, useLightweight = false) {
-    const model = useLightweight ? maturityModel_Cap : maturityModel;
-    if (itemId.startsWith('D-')) {
-        for (const disc of Object.values(model.disciplines)) {
+// REFACTORED: This function now only uses the full maturityModel
+function findParent(itemId) {
+    if (itemId.startsWith('D-')) { // Domain
+        for (const disc of Object.values(maturityModel.disciplines)) {
             for (const cap of Object.values(disc.capabilities)) {
-                const domainsSource = useLightweight ? (cap.domains || []) : Object.values(cap.domains || {});
-                if (domainsSource.some(d => d.id === itemId)) return cap;
+                if (cap.domains && cap.domains[itemId]) {
+                    return cap;
+                }
             }
         }
     }
-    if (itemId.startsWith('C')) {
-        for (const disc of Object.values(model.disciplines)) {
-            if (disc.capabilities[itemId]) return disc;
+    if (itemId.startsWith('C')) { // Capability
+        for (const disc of Object.values(maturityModel.disciplines)) {
+            if (disc.capabilities[itemId]) {
+                return disc;
+            }
         }
     }
     return null;
 }
 
+// REFACTORED: This function now directly traverses the full model structure
 function getDomainsRecursive(item) {
-    const capItem = findItemInModel(item.id, true);
-    if (!capItem) return [];
-    if (capItem.id.startsWith('D-')) return [capItem];
-    if (capItem.domains) return capItem.domains;
-    if (capItem.capabilities) return Object.values(capItem.capabilities).flatMap(getDomainsRecursive);
+    if (!item) return [];
+    if (item.id.startsWith('D-')) return [item]; // It's a domain
+    if (item.domains) return Object.values(item.domains); // It's a capability
+    if (item.capabilities) return Object.values(item.capabilities).flatMap(getDomainsRecursive); // It's a discipline or 'all'
     return [];
 }
 
@@ -504,10 +512,16 @@ function getMaturityLevelDescription(score) {
     const roundedScore = Math.round(score);
     if (roundedScore < 1) return "The initial stage before formal processes are established.";
 
-    if (item.id.startsWith('D-') && item.levels && item.levels.length >= roundedScore) {
+    if (item.levels && item.levels.length >= roundedScore) {
         return item.levels[roundedScore - 1];
     }
     
+    // Fallback for aggregate levels
+    const summaryItem = findItemInModel(itemId) || maturityModel.summary;
+    if (summaryItem.levels && summaryItem.levels.length >= roundedScore) {
+        return summaryItem.levels[roundedScore - 1];
+    }
+
     return maturityModel.summary.levels[roundedScore - 1] || maturityModel.summary.levels[4];
 }
 
@@ -529,6 +543,8 @@ function initializeModelingEventListeners() {
             state.modeling.selectedItemId = itemId;
             saveState(state);
             updateDynamicPanes(state);
+            // Re-render the tree to update the 'active' class
+            renderRightPane(state);
         }
         
         if (action === 'toggle-node') {
@@ -573,7 +589,7 @@ function initializeModelingEventListeners() {
                  header.children[1].classList.toggle('active', type === 'target');
             }
 
-            const item = findItemInModel(itemId, true);
+            const item = findItemInModel(itemId);
             if (item.id.startsWith('D-')) {
                  if (state.modeling.assessmentData[itemId]) {
                     state.modeling.assessmentData[itemId][type] = value;
