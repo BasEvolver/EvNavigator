@@ -52,7 +52,7 @@ function renderWorkspacePage() {
             <div class="workspace-v3-bottom-section">
                 <div class="ws-input-column">
                     ${renderInputCard('Strategic Value Levers', strategicValueLevers_v2, selections)}
-                    ${renderInputCard('Flagged Anomalies', flaggedAnomalies, selections)}
+                    ${renderInputCard('Flagged Anomalies', [], selections)}
                     ${renderInputCard('Other Observations', otherObservations_v2, selections)}
                 </div>
                 <div class="ws-narrative-column">
@@ -82,13 +82,22 @@ function renderWorkspaceHeader(data) {
     `;
 }
 
-
 function renderInputCard(title, items, selections) {
+    let itemsToRender = items; // Use the default passed-in items
+
+    // DYNAMIC LOGIC: If this is the Flagged Anomalies card, get the items from the state instead.
+    if (title === 'Flagged Anomalies') {
+        const state = loadState();
+        // The keyRisks object in the state holds all flagged items.
+        // We convert it from an object to an array for rendering.
+        itemsToRender = Object.values(state.diligenceWorkspace.keyRisks);
+    }
+
     return `
         <div class="ws-input-card">
             <h3 class="ws-input-title">${title}</h3>
             <div class="ws-input-list">
-                ${items.map(item => renderInputItem(item, selections[item.id] || {})).join('')}
+                ${itemsToRender.map(item => renderInputItem(item, selections[item.id] || {})).join('')}
             </div>
         </div>
     `;
@@ -127,7 +136,7 @@ function renderNarrative(state, selections) {
     const companyId = state.selectedCompanyId;
     const outputData = workspaceOutputs[companyId];
     let narrativeHtml = '';
-    const allItems = [...strategicValueLevers_v2, ...flaggedAnomalies, ...otherObservations_v2];
+    const allItems = [...strategicValueLevers_v2, ...Object.values(state.diligenceWorkspace.keyRisks), ...otherObservations_v2];
     
     let hasContent = false;
 
@@ -150,20 +159,26 @@ function renderNarrative(state, selections) {
         <div class="ws-narrative-card">
             <div class="ws-narrative-header">
                 <h3 class="ws-input-title">Strategic Narrative</h3>
-                <div class="ws-output-module">
-                    <button class="ws-output-button-small" data-action="toggle-output-popup">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        <span>Generate Output</span>
+                <div class="flex items-center gap-2">
+                    <button class="ws-output-button-small" data-action="reset-workspace-selections" title="Reset Selections">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        <span>Reset</span>
                     </button>
-                    <div class="ws-output-popup" id="output-popup" style="display: none;">
-                        ${(outputData || []).map(item => `
-                            <div class="ws-output-item">
-                                <span class="ws-output-name">${item.name}</span>
-                                <div class="ws-output-formats">
-                                    ${item.formats.map(format => ICONS[format] || '').join('')}
+                    <div class="ws-output-module">
+                        <button class="ws-output-button-small" data-action="toggle-output-popup">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span>Generate Output</span>
+                        </button>
+                        <div class="ws-output-popup" id="output-popup" style="display: none;">
+                            ${(outputData || []).map(item => `
+                                <div class="ws-output-item">
+                                    <span class="ws-output-name">${item.name}</span>
+                                    <div class="ws-output-formats">
+                                        ${item.formats.map(format => ICONS[format] || '').join('')}
+                                    </div>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -174,6 +189,65 @@ function renderNarrative(state, selections) {
     `;
 }
 
+function assembleReportData(state) {
+    const companyId = state.selectedCompanyId;
+    if (!companyId || companyId === 'all') return null;
+
+    const companyData = workspaceHeaders[companyId];
+    const selections = state.diligenceWorkspace.itemSelections[companyId] || {};
+
+    // DYNAMIC LOGIC: Get all selectable items, including the dynamic risks from the state
+    const allSelectableItems = [
+        ...strategicValueLevers_v2,
+        ...Object.values(state.diligenceWorkspace.keyRisks), // Use risks from state
+        ...otherObservations_v2
+    ];
+
+    // Create a map of all possible ARIA responses by their ID for easy lookup
+    const allAriaResponses = { ...techflow_ariaResponses, ...cloudvantage_ariaResponses };
+
+    const selectedRisks = allSelectableItems
+        .filter(item => selections[item.id]?.ic)
+        .map(item => {
+            // Check if it's a rich ARIA response by looking it up by its ID
+            const fullAriaResponse = allAriaResponses[item.id];
+            if (fullAriaResponse && fullAriaResponse.renderFunc) {
+                return { ...fullAriaResponse, isAriaResponse: true, title: item.title };
+            }
+            
+            // Check if it's a standard anomaly
+            const fullAnomalyData = techflow_anomalies.find(a => a.id === item.id);
+            if (fullAnomalyData) {
+                return { ...fullAnomalyData };
+            }
+
+            // Handle other simple item types
+            return {
+                title: item.title || item.text,
+                severity: item.severity || 'Medium',
+                impact: item.impact || 'Varies',
+                sourceDocuments: ['Workspace Analysis'],
+                analysis: item.description || 'This item was flagged for inclusion in the IC report.'
+            };
+        });
+
+    const selectedLevers = allSelectableItems
+        .filter(item => selections[item.id]?.vcp)
+        .map(item => ({
+            title: item.title || item.text,
+            description: item.description || ''
+        }));
+
+    return {
+        company: companyData,
+        recommendation: {
+            recommendation: 'Proceed with Investment, Subject to Final Diligence',
+            color: [34, 146, 84]
+        },
+        risks: selectedRisks,
+        levers: selectedLevers
+    };
+}
 
 function initializeWorkspaceListeners() {
     const mainContent = document.getElementById('main-content');
@@ -192,7 +266,6 @@ function initializeWorkspaceListeners() {
             case 'toggle-selection':
                 if (!companyId || companyId === 'all') return;
 
-                // Ensure company and item objects exist
                 if (!state.diligenceWorkspace.itemSelections[companyId]) {
                     state.diligenceWorkspace.itemSelections[companyId] = {};
                 }
@@ -200,12 +273,20 @@ function initializeWorkspaceListeners() {
                     state.diligenceWorkspace.itemSelections[companyId][itemId] = {};
                 }
 
-                // Toggle the value
                 const currentVal = state.diligenceWorkspace.itemSelections[companyId][itemId][toggleId];
                 state.diligenceWorkspace.itemSelections[companyId][itemId][toggleId] = !currentVal;
 
                 saveState(state);
-                renderWorkspacePage(); // Re-render the whole page to reflect changes
+                renderWorkspacePage();
+                break;
+
+            case 'reset-workspace-selections':
+                if (confirm("Are you sure you want to clear all selections for this workspace?")) {
+                    if (!companyId || companyId === 'all') return;
+                    state.diligenceWorkspace.itemSelections[companyId] = {};
+                    saveState(state);
+                    renderWorkspacePage();
+                }
                 break;
 
             case 'toggle-output-popup':
@@ -216,11 +297,15 @@ function initializeWorkspaceListeners() {
                 button.innerHTML = `Generating...`;
                 button.disabled = true;
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     try {
-                        // **FIX**: We now only pass the 'state'. The generator will find the data itself.
-                        const generator = new ReportGenerator(state);
-                        generator.generate();
+                        const reportData = assembleReportData(loadState());
+                        if (!reportData) {
+                            alert("Cannot generate a report. Please select a specific company.");
+                            return;
+                        }
+                        const generator = new ReportGenerator(reportData);
+                        await generator.generate();
                     } catch (error) {
                         console.error("Failed to generate PDF:", error);
                         alert("An error occurred while generating the report. Check the console for details.");
@@ -233,7 +318,6 @@ function initializeWorkspaceListeners() {
         }
     });
 
-    // Close popup if clicking outside
     document.addEventListener('click', (e) => {
         const outputModule = e.target.closest('.ws-output-module');
         if (!outputModule && popupOpen) {

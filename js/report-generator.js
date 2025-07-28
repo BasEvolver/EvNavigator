@@ -12,13 +12,13 @@ class ReportGenerator {
         this.pageNumber = 1;
     }
 
-    generate() {
+    async generate() {
         this._drawCoverPage();
         this._addPage();
         this._drawRecommendation();
         this._drawThesis();
         this._drawRisksAndLevers();
-        this._drawDetailedFindings();
+        await this._drawDetailedFindings();
 
         this._addPageNumbers();
         this.doc.save(`IC_Report_${this.data.company.title}_${new Date().toISOString().slice(0,10)}.pdf`);
@@ -87,10 +87,23 @@ class ReportGenerator {
 
     _drawThesis() {
         this._drawSectionTitle('2. Investment Thesis');
-        const thesisText = this.data.company.priorities.text.replace(/<strong>/g, '').replace(/<\/strong>/g, '');
         this.doc.setFont('helvetica', 'normal');
         this.doc.setFontSize(11);
-        const splitText = this.doc.splitTextToSize(thesisText, this.pageWidth - (this.margin * 2));
+
+        const introText = `TechFlow Solutions ("TechFlow" or the "Company") is a vertically-focused B2B SaaS provider that has established a strong, defensible niche in data workflow automation for the mid-market financial services sector. Operating primarily from its headquarters in New York with a satellite development office in Austin, the Company serves a loyal base of asset management firms, regional banks, and insurance providers across North America and Western Europe. Its core platform enables clients to automate complex data ingestion, reconciliation, and reporting tasks, significantly reducing operational risk and manual overhead associated with regulatory compliance.`;
+        
+        const whyInterestingText = `The investment is compelling due to TechFlow's position as an undervalued asset with "good bones" in a resilient, high-growth vertical. The Company exhibits strong product-market fit, evidenced by high gross margins (72%) and a loyal, albeit concentrated, customer base. However, it has been hampered by a lack of go-to-market sophistication and significant, addressable technical debt. Our thesis is centered on acquiring this sticky asset at an attractive valuation and executing a targeted Value Creation Plan to professionalize its commercial functions and modernize its technology platform, thereby unlocking its latent growth potential and positioning it for a strategic exit within 3-5 years.`;
+
+        let splitText = this.doc.splitTextToSize(introText, this.pageWidth - (this.margin * 2));
+        this.doc.text(splitText, this.margin, this.cursorY);
+        this.cursorY += (splitText.length * 5) + 5; // Add extra space
+
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.text('Why The Company is Interesting:', this.margin, this.cursorY);
+        this.cursorY += 7;
+
+        this.doc.setFont('helvetica', 'normal');
+        splitText = this.doc.splitTextToSize(whyInterestingText, this.pageWidth - (this.margin * 2));
         this.doc.text(splitText, this.margin, this.cursorY);
         this.cursorY += (splitText.length * 5) + 10;
     }
@@ -118,33 +131,62 @@ class ReportGenerator {
         this.cursorY = this.doc.autoTable.previous.finalY + 10;
     }
 
-    _drawDetailedFindings() {
+    async _drawDetailedFindings() {
         this._drawSectionTitle('4. Detailed Diligence Findings');
-        this.data.risks.forEach((item, index) => {
+
+        for (const [index, item] of this.data.risks.entries()) {
             this._checkNewPage(50);
             this.doc.setFont('helvetica', 'bold');
             this.doc.setFontSize(12);
-            this.doc.text(`4.${index + 1} Finding: ${item.title.split(': ')[1]}`, this.margin, this.cursorY);
+            this.doc.text(`4.${index + 1} Finding: ${item.title}`, this.margin, this.cursorY);
             this.cursorY += 8;
-            this.doc.autoTable({
-                body: [
-                    ['Severity', item.severity],
-                    ['Impact', item.impact],
-                    ['Source Docs', item.sourceDocuments.join(', ')]
-                ],
-                startY: this.cursorY,
-                theme: 'plain',
-                styles: { fontSize: 10, cellPadding: 1.5 },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } }
-            });
-            this.cursorY = this.doc.autoTable.previous.finalY + 5;
-            this.doc.setFont('helvetica', 'bold');
-            this.doc.text('Agent Analysis:', this.margin, this.cursorY);
-            this.cursorY += 5;
-            this.doc.setFont('helvetica', 'normal');
-            const splitText = this.doc.splitTextToSize(item.analysis, this.pageWidth - (this.margin * 2));
-            this.doc.text(splitText, this.margin, this.cursorY);
-            this.cursorY += (splitText.length * 5) + 10;
-        });
+
+            if (item.isAriaResponse && typeof item.renderFunc === 'function') {
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.width = '700px';
+                tempContainer.style.padding = '1rem';
+                tempContainer.style.backgroundColor = 'var(--bg-card)';
+                document.body.appendChild(tempContainer);
+
+                const state = loadState();
+                tempContainer.innerHTML = item.renderFunc(state, { isForPdf: true });
+                
+                const canvas = await html2canvas(tempContainer, { scale: 2 });
+                const imgData = canvas.toDataURL('image/png');
+                
+                document.body.removeChild(tempContainer);
+
+                const imgProps = this.doc.getImageProperties(imgData);
+                const pdfWidth = this.pageWidth - (this.margin * 2);
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                this._checkNewPage(pdfHeight + 10);
+                this.doc.addImage(imgData, 'PNG', this.margin, this.cursorY, pdfWidth, pdfHeight);
+                this.cursorY += pdfHeight + 10;
+
+            } else {
+                this.doc.autoTable({
+                    body: [
+                        ['Severity', item.severity],
+                        ['Impact', item.impact],
+                        ['Source Docs', item.sourceDocuments.join(', ')]
+                    ],
+                    startY: this.cursorY,
+                    theme: 'plain',
+                    styles: { fontSize: 10, cellPadding: 1.5 },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } }
+                });
+                this.cursorY = this.doc.autoTable.previous.finalY + 5;
+                this.doc.setFont('helvetica', 'bold');
+                this.doc.text('Agent Analysis:', this.margin, this.cursorY);
+                this.cursorY += 5;
+                this.doc.setFont('helvetica', 'normal');
+                const splitText = this.doc.splitTextToSize(item.analysis, this.pageWidth - (this.margin * 2));
+                this.doc.text(splitText, this.margin, this.cursorY);
+                this.cursorY += (splitText.length * 5) + 10;
+            }
+        }
     }
 }
