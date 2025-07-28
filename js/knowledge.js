@@ -71,13 +71,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function createFilterPanels() {
-        const filterHierarchy = {};
+const filterHierarchy = {};
+        const categoriesToExclude = new Set(['Final Deliverables', 'IC Prep', 'Synthesis & Planning']);
+
         knowledgeGraphData.nodes.forEach(n => {
-            if (n.workstream && n.category && n.topic) {
-                if (!filterHierarchy[n.workstream]) filterHierarchy[n.workstream] = {};
-                if (!filterHierarchy[n.workstream][n.category]) filterHierarchy[n.workstream][n.category] = new Set();
-                filterHierarchy[n.workstream][n.category].add(n.topic);
+            // Skip nodes belonging to the categories you want to remove
+            if (!n.workstream || !n.category || !n.topic || categoriesToExclude.has(n.category)) {
+                return;
             }
+
+            let workstream = n.workstream;
+            let category = n.category;
+
+            // If a node's category is specifically 'Financial',
+            // remap it to 'Financial & Accounting'.
+            if (category === 'Financial') {
+                category = 'Financial & Accounting';
+            } 
+            // NEW: If a node's category is 'Legal', remap it to 'Corporate & Legal'.
+            else if (category === 'Legal') {
+                category = 'Corporate & Legal';
+            }
+
+            if (!filterHierarchy[workstream]) filterHierarchy[workstream] = {};
+            if (!filterHierarchy[workstream][category]) filterHierarchy[workstream][category] = new Set();
+            filterHierarchy[workstream][category].add(n.topic);
         });
 
         const nodeTypes = [

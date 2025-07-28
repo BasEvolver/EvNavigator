@@ -6,29 +6,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializePortfolioEventListeners();
 });
 
+// Returns a greeting based on the current time of day
+function getDynamicGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+        return 'Good morning.';
+    } else if (hour < 18) {
+        return 'Good afternoon.';
+    } else {
+        return 'Good evening.';
+    }
+}
+
 // Renders the initial, static layout of the page
 function renderPortfolioPage() {
     const mainContent = document.getElementById('main-content');
     
     const companies = [
-        { id: 'techflow-solutions', name: 'TechFlow Solutions', status: 'At Risk', statusColor: 'var(--status-warning)', kpis: [{label: 'ARR', value: '$55M'}, {label: 'NRR', value: '105%'}, {label: 'EBITDA', value: '22%'}] },
-        { id: 'cloudvantage', name: 'CloudVantage', status: 'Healthy', statusColor: 'var(--status-success)', kpis: [{label: 'ARR', value: '$78M'}, {label: 'NRR', value: '128%'}, {label: 'EBITDA', value: '31%'}] },
-        { id: 'innovate-inc', name: 'Innovate Inc.', status: 'Healthy', statusColor: 'var(--status-success)', kpis: [{label: 'ARR', value: '$120M'}, {label: 'NRR', value: '122%'}, {label: 'EBITDA', value: '18%'}] },
-        { id: 'dataflow-systems', name: 'DataFlow Systems', status: 'Healthy', statusColor: 'var(--status-success)', kpis: [{label: 'ARR', value: '$32M'}, {label: 'NRR', value: '115%'}, {label: 'EBITDA', value: '25%'}] },
-        { id: 'scaleops', name: 'ScaleOps', status: 'Needs Attention', statusColor: 'var(--status-warning)', kpis: [{label: 'ARR', value: '$19M'}, {label: 'NRR', value: '108%'}, {label: 'EBITDA', value: '12%'}] },
+        { id: 'techflow-solutions', name: 'TechFlow Solutions', stage: 'Due Diligence', status: 'At Risk', statusColor: 'var(--status-warning)', kpis: [{label: 'ARR', value: '$55M'}, {label: 'NRR', value: '105%'}, {label: 'EBITDA', value: '22%'}] },
+        { id: 'cloudvantage', name: 'CloudVantage', stage: 'Growth', status: 'Healthy', statusColor: 'var(--status-success)', kpis: [{label: 'ARR', value: '$78M'}, {label: 'NRR', value: '128%'}, {label: 'EBITDA', value: '31%'}] },
+        { id: 'innovate-inc', name: 'Innovate Inc.', stage: 'Growth', status: 'Healthy', statusColor: 'var(--status-success)', kpis: [{label: 'ARR', value: '$120M'}, {label: 'NRR', value: '122%'}, {label: 'EBITDA', value: '18%'}] },
+        { id: 'dataflow-systems', name: 'DataFlow Systems', stage: 'Strategy', status: 'Healthy', statusColor: 'var(--status-success)', kpis: [{label: 'ARR', value: '$32M'}, {label: 'NRR', value: '115%'}, {label: 'EBITDA', value: '25%'}] },
+        { id: 'scaleops', name: 'ScaleOps', stage: 'Transformation', status: 'Needs Attention', statusColor: 'var(--status-warning)', kpis: [{label: 'ARR', value: '$19M'}, {label: 'NRR', value: '108%'}, {label: 'EBITDA', value: '12%'}] },
     ];
 
     mainContent.innerHTML = `
         <div class="portfolio-container">
             <div class="ai-briefing-card">
-                <h1 class="briefing-title">Good morning. Here is the state of the business.</h1>
+                <h1 class="briefing-title">${getDynamicGreeting()} Here is the state of the business.</h1>
                 <p class="briefing-text">The portfolio value is up <strong>$25M</strong> this quarter, driven by <strong>CloudVantage's</strong> strong NRR performance. Your attention is required on <strong>TechFlow Solutions</strong>, where diligence has flagged 3 critical anomalies. There is also a potential upside opportunity in <strong>ScaleOps's</strong> go-to-market strategy.</p>
             </div>
             <div class="company-strip-container">
                 ${companies.map(company => `
                     <div class="company-strip-card" data-action="view-company" data-company-id="${company.id}">
                         <div class="company-strip-header">
-                            <h4 class="company-strip-name">${company.name}</h4>
+                            <div>
+                                <h4 class="company-strip-name">${company.name}</h4>
+                                <p class="company-strip-stage">${company.stage}</p>
+                            </div>
                             <div class="company-strip-status"><span class="status-dot" style="background-color: ${company.statusColor};"></span><span>${company.status}</span></div>
                         </div>
                         <ul class="company-strip-kpis">${company.kpis.map(kpi => `<li><span>${kpi.label}</span><span>${kpi.value}</span></li>`).join('')}</ul>
@@ -149,6 +164,44 @@ const portfolioResponses = {
     "Who are the key employees to retain at TechFlow?": {
         renderFunc: () => `<h2 class="response-title">Key Employee Retention Targets: TechFlow</h2><div class="people-grid"><div class="person-card"><h4>Sarah Jenkins</h4><p>VP, Engineering</p><span>Deep institutional knowledge of the legacy platform. Critical for migration.</span></div><div class="person-card"><h4>Michael Chen</h4><p>Lead Sales Engineer</p><span>Trusted by top customers, including Global FinCorp. Highest technical win rate.</span></div><div class="person-card"><h4>Emily Rodriguez</h4><p>Product Manager</p><span>Authored the original product vision and has the strongest customer relationships.</span></div></div>`,
         chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["Draft retention packages for these employees.", "What is their current compensation?", "Identify potential backfill candidates."]
+    },
+    // CHAIN 2: FORECAST
+    "Action: Update master financial model": {
+        renderFunc: () => `<h2 class="response-title">Action Confirmation</h2><div class="board-slide"><strong>Success:</strong> The 6-month ARR forecast has been exported and queued for integration into the master financial model. The model owner has been notified to validate the update.</div>`,
+        chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["Export this forecast data as a CSV.", "Who has access to the master model?"]
+    },
+    "Action: Generate LP talking points": {
+        renderFunc: () => `<h2 class="response-title">Generated LP Update Talking Points</h2><div class="board-slide"><div class="slide-title">Q3 LP Update: Key Highlights</div><ul><li>The portfolio is projected to grow ARR to <strong>~$292M</strong> over the next 6 months (base case).</li><li>This is driven by continued strong organic growth and NRR performance, particularly from our top-quartile assets.</li><li>Our 'Bear Case' of <strong>$285M</strong> is well-capitalized, and we see a potential 'Bull Case' of <strong>$305M</strong> if key enterprise deals land in Q4.</li></ul></div>`,
+        chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["Draft a full LP update email.", "Add the forecast chart to this summary."]
+    },
+     "Action: Identify risks to Bear Case": {
+        renderFunc: () => `<h2 class="response-title">Top 3 Risks to 'Bear Case' Forecast</h2><div class="list-container"><div class="list-item"><span class="list-number text-error">1</span><div><h4 class="list-title">TechFlow Churn</h4><p class="list-text">Failure to renew the Global FinCorp contract (28% of ARR) at TechFlow would immediately trigger the bear case scenario.</p></div></div><div class="list-item"><span class="list-number text-warning">2</span><div><h4 class="list-title">Macroeconomic Slowdown</h4><p class="list-text">A broader economic downturn could delay enterprise sales cycles at CloudVantage and Innovate Inc., pushing the bull case out of reach.</p></div></div><div class="list-item"><span class="list-number text-warning">3</span><div><h4 class="list-title">Competitor Pricing Pressure</h4><p class="list-text">Aggressive pricing from competitors could impact new logo acquisition and NRR at ScaleOps.</p></div></div></div>`,
+        chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["What's our mitigation plan for the TechFlow churn risk?", "Model a scenario where enterprise sales cycles lengthen by 30 days."]
+    },
+    "What is the required hiring plan to support this forecast?": {
+        renderFunc: () => `<h2 class="response-title">Required Hiring Plan to Support Forecast</h2><div class="data-table-container"><table class="data-table"><thead><tr><th>Department</th><th>Q3 2025 Hires</th><th>Q4 2025 Hires</th><th>Rationale</th></tr></thead><tbody><tr><td>Sales (Enterprise)</td><td>+5 AE, +3 SDR</td><td>+4 AE, +2 SDR</td><td>To capture projected Q4/Q1 enterprise demand.</td></tr><tr><td>Customer Success</td><td>+4 CSM</td><td>+3 CSM</td><td>To maintain NRR as the customer base grows.</td></tr><tr><td>Engineering</td><td>+6 SWE</td><td>+4 SWE</td><td>To support roadmap acceleration at CloudVantage & Innovate.</td></tr></tbody></table></div>`,
+        chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["What is the estimated cost of this hiring plan?", "Which roles are the highest priority to fill?"]
+    },
+    "Model the portfolio's cash runway based on this forecast.": {
+        renderFunc: () => `<h2 class="response-title">Portfolio Cash Runway Forecast</h2><div class="chart-wrapper" style="height: 300px;"><canvas id="cash-runway-chart"></canvas></div><div class="chart-narrative"><p>Based on the forecast and the associated hiring plan, the portfolio has a healthy cash runway of approximately <strong>28 months</strong>. The model projects the portfolio to reach cash flow breakeven in <strong>Q4 2026</strong>.</p></div>`,
+        chartDrawFunc: drawCashRunwayChart, recommendedActions: [], followUpQuestions: ["What is the impact on runway if we accelerate hiring by 50%?", "At what point should we consider a new fundraise?"]
+    },
+    "Which value creation lever has the biggest impact on this forecast?": {
+        renderFunc: () => `<h2 class="response-title">Forecasted ARR Growth Drivers</h2><div class="chart-wrapper" style="height: 250px;"><canvas id="lever-impact-chart"></canvas></div><div class="chart-narrative"><p>The 6-month forecast is primarily driven by <strong>Expansion (NRR)</strong> from the existing customer base, accounting for nearly 60% of the projected growth. New logo acquisition remains a consistent contributor, while planned price increases have a smaller, but meaningful, impact.</p></div>`,
+        chartDrawFunc: drawLeverImpactChart, recommendedActions: [], followUpQuestions: ["Double-click on the NRR driver.", "How does this compare to last year's drivers?"]
+    },
+    // CHAIN 3: SCENARIO
+    "Action: Add Synergy Plan to Workspace": {
+        renderFunc: () => `<h2 class="response-title">Action Confirmation</h2><div class="board-slide"><strong>Success:</strong> A new workstream "TechFlow Synergy Plan" has been added to the 100-Day Plan in the Workspace. Key synergy targets have been pre-populated and assigned to the integration lead.</div>`,
+        chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["Assign this workstream to Brenda.", "Set a deadline for initial synergy realization."]
+    },
+    "Action: Draft email to legal": {
+        renderFunc: () => `<h2 class="response-title">Generated Email Draft</h2><div class="email-draft"><p><strong>To:</strong> legal@firm.com</p><p><strong>Subject:</strong> Kick Off Confirmatory Diligence - Project TechFlow</p><hr/><p>Hi Team,</p><p>We are moving forward with the acquisition of TechFlow Solutions. The preliminary diligence has been positive, and we'd like to engage your team to begin the final confirmatory diligence process.</p><p>Please find the executed LOI attached. We'd like to schedule a kick-off call for early next week to align on the timeline and key areas of focus.</p><p>Best,</p></div>`,
+        chartDrawFunc: null, recommendedActions: [], followUpQuestions: ["Attach the LOI to this email.", "Send the email and CC the deal team."]
+    },
+    "Action: Model lower synergy case": {
+        renderFunc: () => `<h2 class="response-title">Scenario: TechFlow Acquisition with 25% Lower Synergies</h2><div class="chart-wrapper" style="height: 300px;"><canvas id="lower-synergy-chart"></canvas></div><div class="judgement-box warning mt-6"><p class="judgement-title">Judgement (Medium Confidence):</p><p class="judgement-text">In this downside scenario, the acquisition is still accretive, but the impact on portfolio EBITDA margin is more pronounced and the payback period extends by approximately 9 months. The deal remains strategically sound, but the financial returns are less compelling.</p></div>`,
+        chartDrawFunc: drawLowerSynergyScenarioChart, recommendedActions: [], followUpQuestions: ["What is the new IRR in this scenario?", "What are the most at-risk synergy components?"]
     },
 };
 
@@ -393,6 +446,96 @@ function drawSynergyChart() {
         }
     });
 }
+
+function drawLeverImpactChart() {
+    const ctx = document.getElementById('lever-impact-chart')?.getContext('2d');
+    if (!ctx) return;
+    const style = getComputedStyle(document.body);
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Expansion (NRR)', 'New Logos', 'Price Increase', 'Synergies'],
+            datasets: [{
+                label: 'Contribution to Growth ($M)',
+                data: [25, 15, 3, 2],
+                backgroundColor: [style.getPropertyValue('--status-success'), style.getPropertyValue('--accent-blue'), style.getPropertyValue('--accent-teal'), style.getPropertyValue('--purple')],
+            }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            scales: { x: { grid: { color: style.getPropertyValue('--border-color') }, ticks: { callback: (v) => `$${v}M` } }, y: { grid: { display: false } } },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+function drawCashRunwayChart() {
+    const ctx = document.getElementById('cash-runway-chart')?.getContext('2d');
+    if (!ctx) return;
+    const labels = Array.from({ length: 12 }, (_, i) => { const d = new Date(2025, 8 + i); return d.toLocaleString('default', { month: 'short' }) + ` '${d.getFullYear().toString().substr(-2)}`; });
+    const runwayData = [85, 82, 78, 74, 70, 65, 60, 54, 48, 41, 34, 26]; // Example data
+    const style = getComputedStyle(document.body);
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Cash Balance ($M)', data: runwayData, borderColor: style.getPropertyValue('--accent-blue'), tension: 0.1, fill: true, backgroundColor: `${style.getPropertyValue('--accent-blue')}26` }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { grid: { display: false } }, y: { grid: { color: style.getPropertyValue('--border-color') }, ticks: { callback: (v) => `$${v}M` } } },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+function drawLowerSynergyScenarioChart() {
+    const ctx = document.getElementById('lower-synergy-chart')?.getContext('2d');
+    if (!ctx) return;
+    const labels = Array.from({ length: 24 }, (_, i) => { const d = new Date(2025, i); return d.toLocaleString('default', { month: 'short' }) + ` '${d.getFullYear().toString().substr(-2)}`; });
+    
+    // Original Scenario Data
+    let scenarioEBITDA = [75];
+    let baseARR = [250];
+    let scenarioARR = [305];
+    for (let i = 1; i < 24; i++) {
+        const baseGrowth = (1 + Math.random() * 0.005 + 0.015);
+        const scenarioSynergyFactor = 1 + (i / 24) * 0.01;
+        const scenarioGrowth = baseGrowth * scenarioSynergyFactor;
+        baseARR.push(baseARR[i-1] * baseGrowth);
+        scenarioARR.push(scenarioARR[i-1] * scenarioGrowth);
+        scenarioEBITDA.push(scenarioARR[i] * (0.23 + (i / 24) * 0.03 + (Math.random() - 0.5) * 0.02));
+    }
+
+    // Lower Synergy Scenario Data
+    let lowerSynergyEBITDA = [75];
+    let lowerSynergyARR = [305];
+     for (let i = 1; i < 24; i++) {
+        const baseGrowth = (1 + Math.random() * 0.005 + 0.015);
+        const scenarioSynergyFactor = 1 + (i / 24) * 0.0075; // 25% lower synergy impact
+        const scenarioGrowth = baseGrowth * scenarioSynergyFactor;
+        lowerSynergyARR.push(lowerSynergyARR[i-1] * scenarioGrowth);
+        lowerSynergyEBITDA.push(lowerSynergyARR[i] * (0.23 + (i / 24) * 0.0225 + (Math.random() - 0.5) * 0.02)); // 25% lower margin improvement
+    }
+    
+    const style = getComputedStyle(document.body);
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Base Case EBITDA', data: scenarioEBITDA, borderColor: style.getPropertyValue('--accent-teal'), tension: 0.2, borderWidth: 3, pointRadius: 0 },
+                { label: 'Downside Case EBITDA', data: lowerSynergyEBITDA, borderColor: style.getPropertyValue('--status-warning'), tension: 0.2, borderDash: [5, 5], borderWidth: 3, pointRadius: 0 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { grid: { display: false } }, y: { grid: { color: style.getPropertyValue('--border-color') }, ticks: { callback: (v) => `$${Math.round(v)}M` } } },
+            plugins: { legend: { position: 'top', labels: { color: style.getPropertyValue('--text-primary'), usePointStyle: true } } }
+        }
+    });
+}
+
 
 // --- EVENT LISTENERS & HANDLERS ---
 

@@ -535,34 +535,38 @@ function runPortcoPrompt(promptText, companyId) {
     const conversationLog = document.getElementById('portco-conversation-log');
     const promptContainer = document.getElementById('portco-prompt-container');
     if (!conversationLog || !promptContainer) return;
+
     conversationLog.insertAdjacentHTML('beforeend', `<div class="user-prompt-bubble"><p>${promptText}</p></div>`);
+    
     const promptBox = promptContainer.querySelector('.prompt-area-large-v4');
     if (promptBox) {
         const suggestions = promptBox.querySelector('.suggestion-pills-container');
         if (suggestions) suggestions.style.display = 'none';
     }
+
     const thinkingId = `thinking-${Date.now()}`;
     conversationLog.insertAdjacentHTML('beforeend', `<div id="${thinkingId}" class="portfolio-response-card"><p>ARIA is thinking...</p></div>`);
     document.getElementById(thinkingId).scrollIntoView({ behavior: 'smooth' });
+
     setTimeout(() => {
-        const thinkingBubble = document.getElementById(thinkingId);
+        document.getElementById(thinkingId)?.remove(); // FIX: Safely remove the thinking bubble
+
         const response = portcoResponses[promptText];
-        let responseContent = '';
+        let responseHTML = '';
         let followUpQuestions = [];
+
         if (response && typeof response.renderFunc === 'function') {
-            responseContent = response.renderFunc();
+            responseHTML = response.renderFunc();
             followUpQuestions = response.followUpQuestions || [];
         } else {
-            responseContent = `<div class="portfolio-response-card"><p>This is a simulated response for "${promptText}". In a real scenario, ARIA would provide a detailed, data-driven answer.</p></div>`;
+            responseHTML = `<div class="portfolio-response-card"><p>Aria is not trained to provide a response for that specific query yet.</p></div>`;
         }
-        if (thinkingBubble) {
-            thinkingBubble.outerHTML = responseContent;
-        } else {
-            conversationLog.insertAdjacentHTML('beforeend', responseContent);
-        }
+        
+        conversationLog.insertAdjacentHTML('beforeend', responseHTML);
         promptContainer.innerHTML = getPromptBoxHTML(followUpQuestions);
-        // After rendering, initialize hover effects for any new Gantt charts
-        initializeGanttHover();
+        
+        initializeGanttHover(); // Re-initialize hover for any new Gantt charts
+        
         const lastBubble = conversationLog.lastElementChild;
         if(lastBubble) lastBubble.scrollIntoView({ behavior: 'smooth' });
     }, 1500);

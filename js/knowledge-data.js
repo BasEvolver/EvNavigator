@@ -1947,6 +1947,9 @@ const knowledgeGraphData = {
         { id: 'report_asset_val', label: 'Asset Valuation Report', group: 'output_report', description: 'Specifically details the valuation of intellectual property and other key assets.' },
         { id: 'ic_deck', label: 'Investment Committee Deck', group: 'final_output', description: 'Final presentation synthesizing all diligence findings to request capital approval.' }
     ],
+
+    // ===========================================================
+    
     links: [
     // --- COMPREHENSIVE DOCUMENT-TO-TASK MAPPINGS ---
     { source: 'DDI-001', target: 'DD-1' }, { source: 'DDI-001', target: 'DD-53' },
