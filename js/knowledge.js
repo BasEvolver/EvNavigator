@@ -82,20 +82,27 @@ const filterHierarchy = {};
 
             let workstream = n.workstream;
             let category = n.category;
+            let topic = n.topic;
 
-            // If a node's category is specifically 'Financial',
-            // remap it to 'Financial & Accounting'.
+            // --- Remapping Logic ---
+
+            // First, consolidate the category names
             if (category === 'Financial') {
                 category = 'Financial & Accounting';
             } 
-            // NEW: If a node's category is 'Legal', remap it to 'Corporate & Legal'.
             else if (category === 'Legal') {
                 category = 'Corporate & Legal';
             }
 
+            // NEW: Now, specifically move the 'Risk Management' topic to the 'Risk & Insurance' category
+            if (topic === 'Risk Management') {
+                category = 'Risk & Insurance';
+            }
+
+            // --- Hierarchy Building ---
             if (!filterHierarchy[workstream]) filterHierarchy[workstream] = {};
             if (!filterHierarchy[workstream][category]) filterHierarchy[workstream][category] = new Set();
-            filterHierarchy[workstream][category].add(n.topic);
+            filterHierarchy[workstream][category].add(topic);
         });
 
         const nodeTypes = [

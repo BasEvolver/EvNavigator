@@ -153,8 +153,15 @@ const Navigation = {
         let title = 'Portfolio'; // Default title
         if (page === 'index') {
             title = 'Portfolio Overview';
-        } else if (page === 'portco') {
-            // ... (existing logic)
+     } else if (page === 'portco') {
+            const companyId = state.selectedCompanyId;
+            // Use the workspaceHeaders data (available from data.js) to get the name and stage
+            const companyHeaderData = workspaceHeaders[companyId];
+            if (companyHeaderData) {
+                title = `${companyHeaderData.title} - ${companyHeaderData.stage}`;
+            } else {
+                title = 'Portfolio Company'; // Fallback title
+            }
         } else if (page === 'aria') {
             title = 'ARIA';
         } else if (page === 'workspace') {
