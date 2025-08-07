@@ -39,6 +39,15 @@
 
     // Add login form submission logic only if the form exists
     document.addEventListener('DOMContentLoaded', () => {
+                // Clear username and password fields on page load to ensure a clean state after logout.
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        if (usernameInput) {
+            usernameInput.value = '';
+        }
+        if (passwordInput) {
+            passwordInput.value = '';
+        }
         const loginForm = document.getElementById('login-form');
         if (loginForm) {
             loginForm.addEventListener('submit', function(event) {

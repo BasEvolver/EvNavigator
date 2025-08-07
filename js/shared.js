@@ -80,13 +80,16 @@ function initializeTheme() {
     if (!themeToggleButton) return;
 
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.body.setAttribute('data-theme', savedTheme);
+    // MODIFIED: Apply theme to the <html> element for global scope
+    document.documentElement.setAttribute('data-theme', savedTheme);
     updateLogoForTheme(savedTheme);
 
     themeToggleButton.addEventListener('click', () => {
-        const currentTheme = document.body.getAttribute('data-theme');
+        // MODIFIED: Read theme from the <html> element
+        const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.body.setAttribute('data-theme', newTheme);
+        // MODIFIED: Set the new theme on the <html> element
+        document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateLogoForTheme(newTheme);
     });
