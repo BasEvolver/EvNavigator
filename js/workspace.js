@@ -19,9 +19,14 @@ const TOGGLE_CONFIG = [
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadSharedComponents();
-    renderWorkspacePage();
-    initializeWorkspaceListeners();
+
+    // CHECK: Only run if we are on the Workspace page
+    if (Navigation.getCurrentPage() === 'workspace') {
+        renderWorkspacePage();
+        initializeWorkspaceListeners();
+    }
 });
+
 
 function renderWorkspacePage() {
     const state = loadState();

@@ -6,6 +6,9 @@
     <title>Navigator - Aria</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- ADDED: Add auth script to protect the page -->
+    <script src="js/auth.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -23,10 +26,21 @@
         </div>
     </div>
 
-    <!-- Load scripts in the CORRECT order -->
+    <!-- SCRIPT LOADING ORDER IS CRITICAL -->
     <script src="js/data.js"></script>
+    <script src="js/portco-data.js"></script>
+    <script src="js/knowledge-data.js"></script>
+    <script src="js/MaturityModel.js"></script>
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
+    <script src="js/report-generator.js"></script>
+    <script src="js/home.js"></script>
+    <script src="js/portco.js"></script>
     <script src="js/aria.js"></script>
+    <script src="js/workspace.js"></script>
+    <script src="js/modeling.js"></script>
+    <script src="js/knowledge.js"></script>
+    <script src="js/knowledge-refinery.js"></script>
+    <script src="js/data-quality.js"></script>
 </body>
 </html>

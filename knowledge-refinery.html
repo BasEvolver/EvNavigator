@@ -1,9 +1,10 @@
+<!-- knowledge-refinery.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigator - Portfolio Company</title>
+    <title>Navigator - Knowledge Refinery</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -15,16 +16,21 @@
         <div id="sidebar-container"></div>
         <div class="main-content-wrapper">
             <div id="header-container"></div>
-            <main id="main-content" class="p-6 sm:p-8"></main>
+            <main id="main-content" class="p-6 sm:p-8 flex flex-col">
+                <div class="knowledge-refinery-layout">
+                    <div id="refinery-pane-1" class="refinery-pane"></div>
+                    <div id="refinery-pane-2" class="refinery-pane"></div>
+                    <div id="refinery-pane-3" class="refinery-pane"></div>
+                </div>
+            </main>
         </div>
     </div>
 
+    <input type="file" id="file-upload-input" style="display: none;" accept=".pdf,.doc,.docx,.ppt,.pptx">
+
     <script src="js/data.js"></script>
-    <script src="js/portco-data.js"></script>
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
-    <script src="js/portco.js"></script>
     <script src="js/knowledge-refinery.js"></script>
-    <script src="js/data-quality.js"></script>
 </body>
 </html>

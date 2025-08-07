@@ -6,8 +6,10 @@
     <title>Navigator - Workspace</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- ADDED: Add auth script to protect the page -->
+    <script src="js/auth.js"></script>
 
-    <!-- NEW: Chart.js for financial projection graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -23,16 +25,16 @@
         </div>
     </div>
 
-    <!-- External libraries for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Load our scripts in the CORRECT order -->
     <script src="js/data.js"></script>
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/report-generator.js"></script>
     <script src="js/workspace.js"></script>
+    <script src="js/knowledge-refinery.js"></script>
+    <script src="js/data-quality.js"></script>
 </body>
 </html>

@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- ADDED: Add auth script to protect the page -->
+    <script src="js/auth.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -14,7 +17,6 @@
         <div class="main-content-wrapper">
             <div id="header-container"></div>
             <main id="main-content">
-                <!-- The new three-column layout will be rendered here by modeling.js -->
                 <div class="flex items-center justify-center h-full">
                     <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
@@ -22,10 +24,8 @@
         </div>
     </div>
 
-    <!-- Load ALL data models first, then the scripts that use them -->
     <script src="js/data.js"></script>
-    <script src="js/MaturityModel.js"></script> <!-- Full model for details -->
-    <!-- REMOVED MaturityModel_Cap2.js -->
+    <script src="js/MaturityModel.js"></script> 
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/modeling.js"></script>

@@ -15,18 +15,19 @@ const ariaAssessments = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // MODIFIED: Removed check for maturityModel_Cap
-    if (typeof maturityModel === 'undefined') {
-        const mainContent = document.getElementById('main-content');
-        mainContent.innerHTML = `<div class="p-8 text-center"><h1 class="text-2xl font-bold text-red-600">Fatal Error</h1><p class="text-secondary mt-2">A required data model could not be loaded.</p></div>`;
-        return;
-    }
+    if (Navigation.getCurrentPage() === 'modeling') {
+        if (typeof maturityModel === 'undefined') {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `<div class="p-8 text-center"><h1 class="text-2xl font-bold text-red-600">Fatal Error</h1><p class="text-secondary mt-2">A required data model could not be loaded.</p></div>`;
+            return;
+        }
 
-    await loadSharedComponents();
-    
-    let state = loadState();
-    renderModelingPage(state);
-    initializeModelingEventListeners();
+        await loadSharedComponents();
+        
+        let state = loadState();
+        renderModelingPage(state);
+        initializeModelingEventListeners();
+    }
 });
 
 // --- MAIN RENDERER ---
@@ -113,7 +114,9 @@ function renderLeftPane(state) {
 }
 
 function renderMaturityTable(state) {
-    const { selectedItemId, assessmentData } = state.modeling;
+    const { selectedItemId } = state.modeling;
+    const companyId = state.selectedCompanyId;
+    const assessmentData = state.modeling.assessments[companyId];
     
     const selectedItem = findItemInModel(selectedItemId);
     let itemsToDisplay;
@@ -126,7 +129,6 @@ function renderMaturityTable(state) {
     } else if (selectedItemId.startsWith('D')) {
         itemsToDisplay = Object.values(selectedItem.capabilities);
     } else {
-        // MODIFIED: Use full maturityModel
         itemsToDisplay = Object.values(maturityModel.disciplines);
     }
 
@@ -163,7 +165,9 @@ function renderMaturityTable(state) {
 }
 
 function renderDualSlider(state) {
-    const { selectedItemId, assessmentData } = state.modeling;
+    const { selectedItemId } = state.modeling;
+    const companyId = state.selectedCompanyId;
+    const assessmentData = state.modeling.assessments[companyId];
     const item = findItemInModel(selectedItemId);
     if (!item) return '';
 
@@ -176,7 +180,6 @@ function renderDualSlider(state) {
     const currentDescription = getMaturityLevelDescription(currentValue);
     const targetDescription = getMaturityLevelDescription(targetValue);
 
-    const companyId = state.selectedCompanyId;
     const ariaScores = ariaAssessments[companyId]?.[selectedItemId];
 
     let ariaIndicatorHTML = '';
@@ -232,7 +235,6 @@ function renderDualSlider(state) {
 function renderTreeView(state) {
     const { expandedNodes, selectedItemId } = state.modeling;
     let html = `<div class="tree-node ${selectedItemId === 'all-disciplines' ? 'active' : ''}" data-action="select-item" data-item-id="all-disciplines"><span class="chevron hidden"></span><span class="node-label font-bold">All Disciplines</span></div>`;
-    // MODIFIED: Use full maturityModel
     const disciplines = Object.values(maturityModel.disciplines).sort((a, b) => a.id.localeCompare(b.id));
 
     for (const discipline of disciplines) {
@@ -256,7 +258,6 @@ function renderTreeView(state) {
                 `;
                 if (capIsExpanded && capability.domains) {
                     html += `<div class="node-children">`;
-                    // MODIFIED: Use Object.values() because domains is an object in the full model
                     const domains = Object.values(capability.domains).sort((a, b) => a.id.localeCompare(b.id));
                     for (const domain of domains) {
                          html += `
@@ -277,8 +278,9 @@ function renderTreeView(state) {
 
 // --- ARIA'S PERSPECTIVE GENERATOR ---
 function generateAriaPerspective(state) {
-    const { selectedItemId, assessmentData } = state.modeling;
+    const { selectedItemId } = state.modeling;
     const companyId = state.selectedCompanyId;
+    const assessmentData = state.modeling.assessments[companyId];
     const item = findItemInModel(selectedItemId);
     if (!item) return '';
 
@@ -347,7 +349,9 @@ function drawRadarChart(state) {
     const textSecondary = styles.getPropertyValue('--text-secondary').trim();
     const bgCard = styles.getPropertyValue('--bg-card').trim();
 
-    const { selectedItemId, assessmentData } = state.modeling;
+    const { selectedItemId } = state.modeling;
+    const companyId = state.selectedCompanyId;
+    const assessmentData = state.modeling.assessments[companyId];
     
     const selectedItem = findItemInModel(selectedItemId);
     
@@ -360,7 +364,6 @@ function drawRadarChart(state) {
     } else if (selectedItemId.startsWith('D')) {
         itemsToChart = Object.values(selectedItem.capabilities);
     } else {
-        // MODIFIED: Use full maturityModel
         itemsToChart = Object.values(maturityModel.disciplines);
     }
 
@@ -428,7 +431,6 @@ function drawRadarChart(state) {
     });
 }
 
-// REFACTORED: This function now only uses the full maturityModel
 function findItemInModel(id) {
     if (!id || id === 'all-disciplines') {
         return { id: 'all-disciplines', name: 'All Disciplines', controlQuestion: 'An overview of the entire maturity model.', capabilities: maturityModel.disciplines };
@@ -446,7 +448,6 @@ function findItemInModel(id) {
     return null;
 }
 
-// REFACTORED: This function now only uses the full maturityModel
 function findParent(itemId) {
     if (itemId.startsWith('D-')) { // Domain
         for (const disc of Object.values(maturityModel.disciplines)) {
@@ -467,7 +468,6 @@ function findParent(itemId) {
     return null;
 }
 
-// REFACTORED: This function now directly traverses the full model structure
 function getDomainsRecursive(item) {
     if (!item) return [];
     if (item.id.startsWith('D-')) return [item]; // It's a domain
@@ -477,6 +477,7 @@ function getDomainsRecursive(item) {
 }
 
 function calculateAverage(item, assessmentData) {
+    if (!assessmentData) return { current: 0, target: 0 }; // Safety check
     if (item.id.startsWith('D-')) {
         return assessmentData[item.id] || { current: 0, target: 0 };
     }
@@ -543,7 +544,6 @@ function initializeModelingEventListeners() {
             state.modeling.selectedItemId = itemId;
             saveState(state);
             updateDynamicPanes(state);
-            // Re-render the tree to update the 'active' class
             renderRightPane(state);
         }
         
@@ -568,8 +568,7 @@ function initializeModelingEventListeners() {
         if (action === 'reset-assessment') {
             if (confirm("Are you sure you want to reset all maturity scores for this company to their default values?")) {
                 const companyId = state.selectedCompanyId;
-                state.modeling.assessmentData = buildInitialAssessmentData(companyId);
-                state.modeling.assessmentData.companyId = companyId;
+                state.modeling.assessments[companyId] = buildInitialAssessmentData(companyId);
                 saveState(state);
                 updateDynamicPanes(state);
             }
@@ -580,6 +579,7 @@ function initializeModelingEventListeners() {
         const target = e.target;
         if (target.dataset.action === 'update-score') {
             let state = loadState();
+            const companyId = state.selectedCompanyId;
             const { itemId, type } = target.dataset;
             const value = parseFloat(target.value);
 
@@ -591,20 +591,21 @@ function initializeModelingEventListeners() {
 
             const item = findItemInModel(itemId);
             if (item.id.startsWith('D-')) {
-                 if (state.modeling.assessmentData[itemId]) {
-                    state.modeling.assessmentData[itemId][type] = value;
+                 if (state.modeling.assessments[companyId][itemId]) {
+                    state.modeling.assessments[companyId][itemId][type] = value;
                 }
             } else {
                 const childItems = getDomainsRecursive(item);
                 childItems.forEach(d => {
-                    if (state.modeling.assessmentData[d.id]) {
-                        state.modeling.assessmentData[d.id][type] = value;
+                    if (state.modeling.assessments[companyId][d.id]) {
+                        state.modeling.assessments[companyId][d.id][type] = value;
                     }
                 });
             }
             saveState(state);
 
-            const { current: newCurrent, target: newTarget } = calculateAverage(item, state.modeling.assessmentData);
+            const assessmentData = state.modeling.assessments[companyId];
+            const { current: newCurrent, target: newTarget } = calculateAverage(item, assessmentData);
             document.getElementById('current-value-display').innerHTML = `${newCurrent.toFixed(1)} <span class="value-text">${getMaturityLevelName(newCurrent)}</span>`;
             document.getElementById('target-value-display').innerHTML = `${newTarget.toFixed(1)} <span class="value-text">${getMaturityLevelName(newTarget)}</span>`;
             document.getElementById('current-desc-display').textContent = getMaturityLevelDescription(newCurrent);

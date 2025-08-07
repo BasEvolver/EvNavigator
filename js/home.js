@@ -2,8 +2,12 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadSharedComponents();
-    renderPortfolioPage();
-    initializePortfolioEventListeners();
+    
+    // CHECK: Only run if we are on the home page
+    if (Navigation.getCurrentPage() === 'index') {
+        renderPortfolioPage();
+        initializePortfolioEventListeners();
+    }
 });
 
 // Returns a greeting based on the current time of day

@@ -1,4 +1,4 @@
-// js/state.js - Global State Management (Final Version)
+// js/state.js - Global State Management (Final Version with Multi-Company Assessments)
 
 const initialScores = {
     'techflow-solutions': {
@@ -17,7 +17,7 @@ const initialScores = {
     }
 };
 
-function buildInitialAssessmentData(companyId = 'techflow-solutions') {
+function buildInitialAssessmentData(companyId) {
     const data = {};
     if (typeof maturityModel === 'undefined') {
         console.error("CRITICAL ERROR: buildInitialAssessmentData was called before MaturityModel.js was loaded.");
@@ -32,7 +32,7 @@ function buildInitialAssessmentData(companyId = 'techflow-solutions') {
             const capScore = companyScores[cap.id] || discScore;
             if (cap.domains) {
                 for (const domain of Object.values(cap.domains)) {
-                    data[domain.id] = companyScores[domain.id] || capScore;
+                    data[domain.id] = { ...(companyScores[domain.id] || capScore) };
                 }
             }
         }
@@ -46,7 +46,11 @@ function getInitialState() {
         modeling: {
             selectedItemId: 'all-disciplines', 
             expandedNodes: {'D1': true}, 
-            assessmentData: {}, 
+            // NEW STRUCTURE: 'assessments' holds data for multiple companies
+            assessments: {
+                'techflow-solutions': buildInitialAssessmentData('techflow-solutions'),
+                'cloudvantage': buildInitialAssessmentData('cloudvantage')
+            }
         },
         activeTabId: 'home',
         isReportFinalized: false,
@@ -65,23 +69,26 @@ function loadState() {
     const initialState = getInitialState();
     const savedStateJSON = localStorage.getItem('navigatorAppState');
     
-    let state;
     if (savedStateJSON) {
         try {
             const savedState = JSON.parse(savedStateJSON);
-            state = { ...initialState, ...savedState, modeling: { ...initialState.modeling, ...(savedState.modeling || {}) } };
+            // Deep merge to ensure new properties from initialState are included
+            return {
+                ...initialState,
+                ...savedState,
+                modeling: {
+                    ...initialState.modeling,
+                    ...(savedState.modeling || {}),
+                    // Ensure assessments object is present
+                    assessments: {
+                        ...initialState.modeling.assessments,
+                        ...(savedState.modeling?.assessments || {})
+                    }
+                }
+            };
         } catch (e) {
-            state = initialState;
+            return initialState;
         }
-    } else {
-        state = initialState;
     }
-
-    if (!state.modeling.assessmentData || Object.keys(state.modeling.assessmentData).length === 0 || !state.modeling.assessmentData.companyId || state.modeling.assessmentData.companyId !== state.selectedCompanyId) {
-        state.modeling.assessmentData = buildInitialAssessmentData(state.selectedCompanyId);
-        state.modeling.assessmentData.companyId = state.selectedCompanyId;
-        saveState(state);
-    }
-    
-    return state;
+    return initialState;
 }

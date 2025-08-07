@@ -108,30 +108,34 @@ const projectPlanUtils = {
 // --- MAIN SCRIPT ---
 document.addEventListener('DOMContentLoaded', async () => {
     await loadSharedComponents();
-    const urlParams = new URLSearchParams(window.location.search);
-    const companyId = urlParams.get('company');
-    if (!companyId) {
-        document.getElementById('main-content').innerHTML = `<div class="text-center py-16">...</div>`;
-        return;
-    }
-    let state = loadState();
-    state.selectedCompanyId = companyId;
-    if (!state.diligenceFilters) {
-        state.diligenceFilters = {
-            workstreams: FILTER_DATA.workstreams.map(w => w.label),
-            statuses: [...FILTER_DATA.statuses]
-        };
-    }
-    saveState(state);
-    if (companyId === 'techflow-solutions') {
-        renderDiligenceHub(companyId);
-    } else {
-        renderGuidedGenerativePortcoPage(companyId);
-    }
-    Navigation.updateCompanySelector();
-    initializePortcoEventListeners();
-    if (!document.getElementById('file-attachment-input')) {
-        document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
+
+    // CHECK: Only run if we are on the PortCo page
+    if (Navigation.getCurrentPage() === 'portco') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyId = urlParams.get('company');
+        if (!companyId) {
+            document.getElementById('main-content').innerHTML = `<div class="text-center py-16">...</div>`;
+            return;
+        }
+        let state = loadState();
+        state.selectedCompanyId = companyId;
+        if (!state.diligenceFilters) {
+            state.diligenceFilters = {
+                workstreams: FILTER_DATA.workstreams.map(w => w.label),
+                statuses: [...FILTER_DATA.statuses]
+            };
+        }
+        saveState(state);
+        if (companyId === 'techflow-solutions') {
+            renderDiligenceHub(companyId);
+        } else {
+            renderGuidedGenerativePortcoPage(companyId);
+        }
+        Navigation.updateCompanySelector();
+        initializePortcoEventListeners();
+        if (!document.getElementById('file-attachment-input')) {
+            document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
+        }
     }
 });
 

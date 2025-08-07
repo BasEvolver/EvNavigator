@@ -22,13 +22,16 @@ const triggerToPromptMap = {
 
 // --- PAGE INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadSharedComponents();
-    initializeAriaPage();
-    initializeAriaEventListeners();
+    // This check ensures this code ONLY runs on the aria.html page
+    if (Navigation.getCurrentPage() === 'aria') {
+        await loadSharedComponents();
+        initializeAriaPage();
+        initializeAriaEventListeners();
 
-    // Add a hidden file input to the body if it doesn't exist
-    if (!document.getElementById('file-attachment-input')) {
-        document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
+        // Add a hidden file input to the body if it doesn't exist
+        if (!document.getElementById('file-attachment-input')) {
+            document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
+        }
     }
 });
 

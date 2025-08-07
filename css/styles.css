@@ -128,38 +128,65 @@ header {
     --tw-ring-color: var(--accent-blue);
 }
 
-
-/* =================================================================
-   SIDEBAR FOOTER & THEME TOGGLE (RESTORED)
-   ================================================================= */
+/* CORRECTED: Sidebar Footer layout */
 .sidebar-footer {
+    position: relative;
     padding: 1rem;
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between; /* This is key: it pushes the left and right groups apart */
 }
 
-.settings-icon, .theme-toggle-button {
+/* CORRECTED: Combined styles for all footer buttons */
+.settings-icon, .theme-toggle-button, .logout-button {
     background: none;
     border: 1px solid transparent;
     cursor: pointer;
     color: var(--text-secondary);
     padding: 8px;
     border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-.settings-icon:hover, .theme-toggle-button:hover {
+.settings-icon:hover, .theme-toggle-button:hover, .logout-button:hover {
     color: var(--text-primary);
     background-color: var(--bg-hover);
 }
+
+/* This is the magic for showing/hiding the correct theme icon */
+[data-theme="light"] .moon-icon { display: none; }
+[data-theme="dark"] .sun-icon { display: none; }
+
+
+/* CORRECTED: Settings Modal Styles */
+#settings-popup-modal {
+    position: absolute;
+    bottom: 100%;
+    left: 1rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--shadow-hover);
+    width: 220px;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(10px);
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+#settings-popup-modal.visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
 
 .theme-toggle-button {
     padding: 8px; /* Ensure it's just the icon */
@@ -4372,4 +4399,201 @@ input:checked + .slider:before {
     display: flex; 
     flex-direction: column; 
     gap: 1rem; 
+}
+
+/* css/styles.css - ADD THESE STYLES AT THE END OF THE FILE */
+
+/* =================================================================
+   NEW SIDEBAR MENU STYLES
+   ================================================================= */
+.nav-parent .nav-link.active {
+    background-color: transparent; /* Parent link shouldn't highlight like a child */
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.nav-parent .nav-link[data-page-parent]:hover {
+    background-color: var(--bg-hover);
+}
+.nav-children {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    padding-left: 1rem; /* Indent child items */
+}
+.nav-children .nav-link {
+    color: var(--text-secondary);
+}
+.nav-children .nav-link:hover {
+    color: var(--text-primary);
+}
+.nav-parent .chevron-icon {
+    transition: transform 0.3s ease-in-out;
+}
+.nav-parent .chevron-icon.expanded {
+    transform: rotate(90deg);
+}
+
+/* =================================================================
+   KNOWLEDGE REFINERY STYLES
+   ================================================================= */
+.knowledge-refinery-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+.refinery-pane {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+.refinery-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px var(--shadow);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.refinery-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.source-document-viewer, .interpretation-content, .curation-form {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+.document-preview-placeholder {
+    margin-top: 1rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 0.5rem;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+.entity-text-box {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+mark.entity-kpi { background-color: #fef3c7; padding: 2px 4px; border-radius: 3px; }
+mark.entity-company { background-color: #dbeafe; padding: 2px 4px; border-radius: 3px; }
+mark.entity-date { background-color: #d1fae5; padding: 2px 4px; border-radius: 3px; }
+mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3px; }
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem; }
+.form-group select, .form-group input, .form-group textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+.form-group textarea { resize: vertical; }
+
+/* =================================================================
+   DATA QUALITY CONTROL CENTER STYLES
+   ================================================================= */
+.data-quality-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.dq-filter-toolbar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background-color: var(--bg-card);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+}
+.dq-filter-toolbar select, .dq-filter-toolbar input {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+.dq-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+.dq-synthesis-box {
+    background-color: var(--bg-card);
+    border-left: 4px solid var(--accent-blue);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+}
+
+/* =================================================================
+   KNOWLEDGE REFINERY - DYNAMIC STATES
+   ================================================================= */
+.refinery-empty-state, .refinery-loading-state {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-muted);
+    height: 100%;
+}
+.refinery-empty-state svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    stroke-width: 1;
+}
+.file-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+/* NEW: Login Page Styles */
+.login-body {
+    background-color: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-form {
+    width: 100%;
+    background-color: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow);
 }

@@ -1,7 +1,7 @@
 // js/shared.js - Shared utilities, state, component loading, and navigation
 
 // =================================================================
-// GENERATIVE UTILITIES (NEW & ENHANCED)
+// GENERATIVE UTILITIES
 // =================================================================
 const Utils = {
     /**
@@ -19,7 +19,6 @@ const Utils = {
 
         const domainsInCapability = Object.values(capability.domains);
         
-        // Find all domains within this capability that have a maturity gap.
         const relevantDomains = domainsInCapability.filter(d => 
             assessmentData[d.id] && assessmentData[d.id].target > assessmentData[d.id].current
         );
@@ -37,8 +36,6 @@ const Utils = {
         }
 
         let allActions = [];
-        // This is a placeholder for a more sophisticated lookup, but demonstrates the principle.
-        // In a real LLM-powered version, this would be far more dynamic.
         relevantDomains.forEach(domain => {
             const { current, target } = assessmentData[domain.id];
             for (let i = current; i < target; i++) {
@@ -46,7 +43,6 @@ const Utils = {
             }
         });
         
-        // Generate a differentiated rationale based on the company's strategic context.
         let rationale = `This initiative is designed to mature the '${capability.name}' capability. `;
         if (companyId === 'techflow-solutions') {
             rationale += "It directly addresses critical diligence findings related to operational inefficiency and market risk, forming a key part of the 100-Day Plan to stabilize and prepare the asset for growth.";
@@ -58,7 +54,7 @@ const Utils = {
             id: `INIT-${capability.id}`,
             title: `Uplift Initiative: ${capability.name}`,
             rationale: rationale,
-            actions: allActions.slice(0, 5), // Limiting to 5 for demo clarity
+            actions: allActions.slice(0, 5),
             kpis: ["Reduce related operational costs by 15%", "Improve team efficiency score by 20 points", "Increase customer satisfaction in this area by 10%"],
             risks: ["Potential for disruption to current operations during implementation.", "Requires significant buy-in and change management from department heads."],
             budget: { software: '$15,000', headcount: '$90,000' }
@@ -82,16 +78,12 @@ const Utils = {
 
 
 // =================================================================
-// THEME MANAGEMENT (UNCHANGED)
+// THEME MANAGEMENT
 // =================================================================
 function updateLogoForTheme(theme) {
     const logo = document.getElementById('sidebar-logo');
     if (logo) {
-        if (theme === 'dark') {
-            logo.src = 'Navigator lock up_white_25.png';
-        } else {
-            logo.src = 'Navigator lock up_Veridian_25.png';
-        }
+        logo.src = (theme === 'dark') ? 'Navigator lock up_white_25.png' : 'Navigator lock up_Veridian_25.png';
     }
 }
 
@@ -100,24 +92,21 @@ function initializeTheme() {
     if (!themeToggleButton) return;
 
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    
     document.body.setAttribute('data-theme', savedTheme);
     updateLogoForTheme(savedTheme);
 
     themeToggleButton.addEventListener('click', () => {
         const currentTheme = document.body.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
         document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
-        
         updateLogoForTheme(newTheme);
     });
 }
 
 
 // =================================================================
-// COMPONENT LOADER (UNCHANGED)
+// COMPONENT LOADER
 // =================================================================
 const ComponentLoader = {
     async loadComponent(path) {
@@ -135,7 +124,7 @@ const ComponentLoader = {
 };
 
 // =================================================================
-// NAVIGATION (UNCHANGED)
+// NAVIGATION
 // =================================================================
 const Navigation = {
     getCurrentPage() {
@@ -150,26 +139,22 @@ const Navigation = {
         const page = this.getCurrentPage();
         const state = loadState(); 
         
-        let title = 'Portfolio'; // Default title
-        if (page === 'index') {
-            title = 'Portfolio Overview';
-     } else if (page === 'portco') {
+        let title = 'Portfolio';
+        const pageTitles = {
+            'index': 'Portfolio Overview',
+            'aria': 'ARIA',
+            'workspace': 'Diligence Workspace',
+            'modeling': 'Capability Modeling',
+            'knowledge': 'Knowledge Graph',
+            'knowledge-refinery': 'Knowledge Refinery',
+            'data-quality': 'Data Quality Control Center'
+        };
+        title = pageTitles[page] || 'Portfolio Company';
+
+        if (page === 'portco') {
             const companyId = state.selectedCompanyId;
-            // Use the workspaceHeaders data (available from data.js) to get the name and stage
             const companyHeaderData = workspaceHeaders[companyId];
-            if (companyHeaderData) {
-                title = `${companyHeaderData.title} - ${companyHeaderData.stage}`;
-            } else {
-                title = 'Portfolio Company'; // Fallback title
-            }
-        } else if (page === 'aria') {
-            title = 'ARIA';
-        } else if (page === 'workspace') {
-            title = 'Diligence Workspace';
-        } else if (page === 'modeling') {
-            title = 'Capability Modeling';
-        } else if (page === 'knowledge') { // ADD THIS ELSE IF BLOCK
-            title = 'Knowledge Graph';
+            title = companyHeaderData ? `${companyHeaderData.title} - ${companyHeaderData.stage}` : 'Portfolio Company';
         }
         
         titleElement.textContent = title;
@@ -177,55 +162,118 @@ const Navigation = {
 
     updateCompanySelector() {
         const selector = document.getElementById('company-selector');
-        if (!selector) return;
-        selector.value = loadState().selectedCompanyId;
-        
-        selector.onchange = (e) => {
-            const newCompanyId = e.target.value;
-            const currentPage = Navigation.getCurrentPage();
-
-            let state = loadState();
-            state.selectedCompanyId = newCompanyId;
-            saveState(state);
-            
-            if (newCompanyId === 'all') {
-                window.location.href = 'index.html';
-            } 
-            else if (currentPage === 'index') {
-                window.location.href = `portco.html?company=${newCompanyId}`;
-            }
-            else {
-                window.location.href = `${currentPage}.html?company=${newCompanyId}`;
-            }
-        };
+        if (selector) {
+            const state = loadState();
+            selector.value = state.selectedCompanyId || 'all';
+            selector.addEventListener('change', (e) => {
+                let state = loadState();
+                state.selectedCompanyId = e.target.value;
+                saveState(state);
+                const currentPage = Navigation.getCurrentPage();
+                if (currentPage !== 'index') {
+                    window.location.href = `${currentPage}.html?company=${e.target.value}`;
+                } else {
+                    window.location.reload();
+                }
+            });
+        }
     },
 
     updateActiveNavigation() {
         const currentPage = this.getCurrentPage();
         const navLinks = document.querySelectorAll('.nav-link');
+        let activeParent = null;
+
         navLinks.forEach(link => {
             link.classList.remove('active');
-            const linkPage = link.getAttribute('data-page');
-            if (linkPage === currentPage) {
-                 link.classList.add('active');
+            if (link.getAttribute('data-page') === currentPage) {
+                link.classList.add('active');
+                const parentLi = link.closest('li.nav-parent');
+                if (parentLi) activeParent = parentLi;
             }
+        });
+
+        document.querySelectorAll('.nav-parent').forEach(parentLi => {
+            const childrenUl = parentLi.querySelector('.nav-children');
+            const parentLink = parentLi.querySelector('[data-page-parent]');
+            const chevron = parentLink.querySelector('.chevron-icon');
+            const isActive = parentLi === activeParent;
+            
+            childrenUl.style.maxHeight = isActive ? childrenUl.scrollHeight + "px" : null;
+            parentLink.classList.toggle('active', isActive);
+            chevron.classList.toggle('expanded', isActive);
         });
     },
     
     updateNavigationLinks() {
         const { selectedCompanyId } = loadState();
-        const navLinks = document.querySelectorAll('#sidebar-menu .nav-link');
-
-        navLinks.forEach(link => {
+        document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
             const page = link.dataset.page;
             if (page === 'index') {
                 link.href = 'index.html';
-                return; 
-            }
-            if (selectedCompanyId && selectedCompanyId !== 'all') {
+            } else if (selectedCompanyId && selectedCompanyId !== 'all') {
                 link.href = `${page}.html?company=${selectedCompanyId}`;
             } else {
                 link.href = `${page}.html`;
+            }
+        });
+    },
+    
+    initializeSidebarInteractions() {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+
+        // --- Collapsible Menu Logic ---
+        sidebar.addEventListener('click', (e) => {
+            const parentLink = e.target.closest('[data-page-parent]');
+            if (parentLink) {
+                e.preventDefault();
+                const parentLi = parentLink.closest('.nav-parent');
+                const childrenUl = parentLi.querySelector('.nav-children');
+                const chevron = parentLink.querySelector('.chevron-icon');
+                const isExpanded = childrenUl.style.maxHeight;
+
+                childrenUl.style.maxHeight = isExpanded ? null : childrenUl.scrollHeight + "px";
+                chevron.classList.toggle('expanded', !isExpanded);
+            }
+        });
+
+        // --- Settings Popup, Reset, and Logout Logic ---
+        const settingsButton = sidebar.querySelector('[data-action="toggle-settings-popup"]');
+        const settingsModal = sidebar.querySelector('#settings-popup-modal');
+        const resetButton = sidebar.querySelector('[data-action="reset-app-state"]');
+        const logoutButton = sidebar.querySelector('[data-action="logout"]');
+
+        if (settingsButton && settingsModal) {
+            settingsButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent the document click listener from closing it immediately
+                settingsModal.classList.toggle('visible');
+            });
+        }
+
+        if (resetButton) {
+            resetButton.addEventListener('click', () => {
+                if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
+                    localStorage.removeItem('navigatorAppState');
+                    window.location.reload();
+                }
+            });
+        }
+        
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                if (typeof window.logout === 'function') {
+                    window.logout();
+                }
+            });
+        }
+
+        // Close modal if clicking anywhere else on the page
+        document.addEventListener('click', (e) => {
+            if (settingsModal && settingsModal.classList.contains('visible')) {
+                if (!settingsModal.contains(e.target) && !settingsButton.contains(e.target)) {
+                    settingsModal.classList.remove('visible');
+                }
             }
         });
     },
@@ -235,6 +283,7 @@ const Navigation = {
         this.updateCompanySelector();
         this.updateActiveNavigation();
         this.updateNavigationLinks();
+        this.initializeSidebarInteractions();
     }
 };
 
@@ -242,7 +291,6 @@ async function loadSharedComponents() {
     const sidebarContainer = document.getElementById('sidebar-container');
     const headerContainer = document.getElementById('header-container');
     
-    // **MODIFIED:** Load both components unconditionally for a consistent app shell.
     if (sidebarContainer) {
         sidebarContainer.innerHTML = await ComponentLoader.loadSidebar();
     }
