@@ -4,13 +4,6 @@
 // GENERATIVE UTILITIES
 // =================================================================
 const Utils = {
-    /**
-     * Generates a detailed, structured uplift plan based on a capability's maturity gap.
-     * This is the core of the "generative" experience in the Modeling tab.
-     * @param {string} capabilityId - The ID of the capability to generate a plan for.
-     * @param {object} state - The current global application state.
-     * @returns {object|null} A structured plan object or null if not applicable.
-     */
     generateUpliftInitiative(capabilityId, state) {
         const { assessmentData } = state.modeling;
         const companyId = state.selectedCompanyId;
@@ -61,11 +54,6 @@ const Utils = {
         };
     },
 
-    /**
-     * Helper function to find a capability object by its ID from the main maturity model.
-     * @param {string} capabilityId - The ID to search for (e.g., 'C110').
-     * @returns {object|null} The capability object or null if not found.
-     */
     findCapability(capabilityId) {
         for (const discipline of Object.values(maturityModel.disciplines)) {
             if (discipline.capabilities[capabilityId]) {
@@ -220,62 +208,66 @@ const Navigation = {
     },
     
     initializeSidebarInteractions() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+        // This flag ensures we only attach the main listener ONCE.
+        if (window.sidebarListenersAttached) {
+            return;
+        }
 
-        // --- Collapsible Menu Logic ---
-        sidebar.addEventListener('click', (e) => {
-            const parentLink = e.target.closest('[data-page-parent]');
+        // Use event delegation on the document body. This is more robust.
+        document.body.addEventListener('click', (e) => {
+            const target = e.target;
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar) return;
+
+            // --- Handle Collapsible Menu ---
+            const parentLink = target.closest('[data-page-parent]');
             if (parentLink) {
                 e.preventDefault();
                 const parentLi = parentLink.closest('.nav-parent');
                 const childrenUl = parentLi.querySelector('.nav-children');
                 const chevron = parentLink.querySelector('.chevron-icon');
-                const isExpanded = childrenUl.style.maxHeight;
+                const isExpanded = childrenUl.style.maxHeight && childrenUl.style.maxHeight !== "0px";
 
                 childrenUl.style.maxHeight = isExpanded ? null : childrenUl.scrollHeight + "px";
                 chevron.classList.toggle('expanded', !isExpanded);
+                return;
             }
-        });
 
-        // --- Settings Popup, Reset, and Logout Logic ---
-        const settingsButton = sidebar.querySelector('[data-action="toggle-settings-popup"]');
-        const settingsModal = sidebar.querySelector('#settings-popup-modal');
-        const resetButton = sidebar.querySelector('[data-action="reset-app-state"]');
-        const logoutButton = sidebar.querySelector('[data-action="logout"]');
+            // --- Handle Settings Popup, Reset, and Logout ---
+            const actionTarget = target.closest('[data-action]');
+            const settingsModal = sidebar.querySelector('#settings-popup-modal');
+            const settingsButton = sidebar.querySelector('[data-action="toggle-settings-popup"]');
 
-        if (settingsButton && settingsModal) {
-            settingsButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the document click listener from closing it immediately
-                settingsModal.classList.toggle('visible');
-            });
-        }
-
-        if (resetButton) {
-            resetButton.addEventListener('click', () => {
-                if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
-                    localStorage.removeItem('navigatorAppState');
-                    window.location.reload();
+            if (actionTarget) {
+                const action = actionTarget.dataset.action;
+                switch (action) {
+                    case 'toggle-settings-popup':
+                        e.stopPropagation();
+                        settingsModal?.classList.toggle('visible');
+                        return;
+                    case 'reset-app-state':
+                        if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
+                            localStorage.removeItem('navigatorAppState');
+                            window.location.reload();
+                        }
+                        return;
+                    case 'logout':
+                        if (typeof window.logout === 'function') {
+                            window.logout();
+                        }
+                        return;
                 }
-            });
-        }
-        
-        if (logoutButton) {
-            logoutButton.addEventListener('click', () => {
-                if (typeof window.logout === 'function') {
-                    window.logout();
-                }
-            });
-        }
+            }
 
-        // Close modal if clicking anywhere else on the page
-        document.addEventListener('click', (e) => {
+            // --- Handle Closing Modal on Outside Click ---
             if (settingsModal && settingsModal.classList.contains('visible')) {
-                if (!settingsModal.contains(e.target) && !settingsButton.contains(e.target)) {
+                if (!settingsModal.contains(target) && !settingsButton.contains(target)) {
                     settingsModal.classList.remove('visible');
                 }
             }
         });
+
+        window.sidebarListenersAttached = true; // Set the flag
     },
 
     updateAll() {
@@ -287,6 +279,9 @@ const Navigation = {
     }
 };
 
+// =================================================================
+// MAIN COMPONENT LOADER FUNCTION
+// =================================================================
 async function loadSharedComponents() {
     const sidebarContainer = document.getElementById('sidebar-container');
     const headerContainer = document.getElementById('header-container');
