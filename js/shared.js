@@ -76,25 +76,10 @@ function updateLogoForTheme(theme) {
 }
 
 function initializeTheme() {
-    const themeToggleButton = document.getElementById('theme-toggle-button');
-    if (!themeToggleButton) return;
-
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    // MODIFIED: Apply theme to the <html> element for global scope
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateLogoForTheme(savedTheme);
-
-    themeToggleButton.addEventListener('click', () => {
-        // MODIFIED: Read theme from the <html> element
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        // MODIFIED: Set the new theme on the <html> element
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateLogoForTheme(newTheme);
-    });
 }
-
 
 // =================================================================
 // COMPONENT LOADER
@@ -211,9 +196,20 @@ const Navigation = {
     },
     
     initializeSidebarInteractions() {
-        // This flag ensures we only attach the main listener ONCE.
         if (window.sidebarListenersAttached) {
             return;
+        }
+
+        // --- MODIFICATION START: Theme Toggle Logic is now here ---
+        const themeToggleButton = document.getElementById('theme-toggle-button');
+        if (themeToggleButton) {
+            themeToggleButton.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateLogoForTheme(newTheme);
+            });
         }
 
         // Use event delegation on the document body. This is more robust.

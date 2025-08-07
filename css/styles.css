@@ -136,7 +136,8 @@ header {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* This is key: it pushes the left and right groups apart */
+    /* MODIFIED: Changed from space-between to flex-start to align all icons to the left */
+    justify-content: flex-start; 
 }
 
 /* CORRECTED: Combined styles for all footer buttons */
