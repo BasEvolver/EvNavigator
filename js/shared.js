@@ -76,9 +76,28 @@ function updateLogoForTheme(theme) {
 }
 
 function initializeTheme() {
+    const themeToggleCheckbox = document.getElementById('theme-toggle-checkbox');
+    if (!themeToggleCheckbox) return;
+
+    // 1. Set initial theme on page load
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateLogoForTheme(savedTheme);
+
+    // 2. Sync the checkbox state with the current theme
+    if (savedTheme === 'dark') {
+        themeToggleCheckbox.checked = true;
+    }
+
+    // 3. Add event listener to handle changes
+    themeToggleCheckbox.addEventListener('change', () => {
+        const isChecked = themeToggleCheckbox.checked;
+        const newTheme = isChecked ? 'dark' : 'light';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateLogoForTheme(newTheme);
+    });
 }
 
 // =================================================================

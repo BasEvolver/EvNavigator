@@ -4598,3 +4598,68 @@ mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 12px var(--shadow);
 }
+
+/* NEW: Custom Theme Toggle Switch */
+.theme-toggle-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 60px;
+    height: 30px;
+    background-color: var(--bg-hover);
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    padding: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.theme-toggle-switch input {
+    display: none; /* Hide the actual checkbox */
+}
+
+.theme-toggle-switch .slider-track {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+.theme-toggle-switch .slider-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 24px;
+    height: 24px;
+    background-color: var(--bg-primary);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    z-index: 1;
+}
+
+.theme-toggle-switch .sun-icon,
+.theme-toggle-switch .moon-icon {
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+/* Light mode (default) styles */
+.theme-toggle-switch .sun-icon { color: var(--text-primary); }
+.theme-toggle-switch .moon-icon { color: var(--text-muted); }
+
+/* When checkbox is checked (dark mode) */
+.theme-toggle-switch input:checked + .slider-track .slider-thumb {
+    transform: translateX(30px);
+}
+
+.theme-toggle-switch input:checked ~ .sun-icon {
+    color: var(--text-muted);
+}
+
+.theme-toggle-switch input:checked ~ .moon-icon {
+    color: var(--text-primary);
+}
