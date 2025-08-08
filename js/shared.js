@@ -127,7 +127,7 @@ const Navigation = {
         };
         title = pageTitles[page] || 'Portfolio Company';
 
-        if (page === 'portco') {
+        if (page === 'portco' || page === 'workspace' || page === 'modeling' || page === 'aria') {
             const companyId = state.selectedCompanyId;
             const companyHeaderData = workspaceHeaders[companyId];
             title = companyHeaderData ? `${companyHeaderData.title} - ${companyHeaderData.stage}` : 'Portfolio Company';
@@ -146,11 +146,7 @@ const Navigation = {
                 state.selectedCompanyId = e.target.value;
                 saveState(state);
                 const currentPage = Navigation.getCurrentPage();
-                if (currentPage !== 'index') {
-                    window.location.href = `${currentPage}.html?company=${e.target.value}`;
-                } else {
-                    window.location.reload();
-                }
+                window.location.href = `${currentPage}.html?company=${e.target.value}`;
             });
         }
     },
@@ -183,24 +179,23 @@ const Navigation = {
     
     updateNavigationLinks() {
         const { selectedCompanyId } = loadState();
+        const linkCompanyId = (selectedCompanyId && selectedCompanyId !== 'all') ? selectedCompanyId : 'techflow-solutions';
+
         document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
             const page = link.dataset.page;
             if (page === 'index') {
                 link.href = 'index.html';
-            } else if (selectedCompanyId && selectedCompanyId !== 'all') {
-                link.href = `${page}.html?company=${selectedCompanyId}`;
             } else {
-                link.href = `${page}.html`;
+                link.href = `${page}.html?company=${linkCompanyId}`;
             }
         });
     },
     
-        initializeSidebarInteractions() {
+    initializeSidebarInteractions() {
         if (window.sidebarListenersAttached) {
             return;
         }
 
-        // --- Theme Toggle Logic ---
         const themeToggleButton = document.getElementById('theme-toggle-button');
         if (themeToggleButton) {
             themeToggleButton.addEventListener('click', () => {
@@ -212,9 +207,54 @@ const Navigation = {
             });
         }
 
-        // --- Settings/Logout/Modal Logic ---
         document.body.addEventListener('click', (e) => {
-            // ... (the rest of the function for settings/logout remains the same) ...
+            const target = e.target;
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar) return;
+
+            const parentLink = target.closest('[data-page-parent]');
+            if (parentLink) {
+                e.preventDefault();
+                const parentLi = parentLink.closest('.nav-parent');
+                const childrenUl = parentLi.querySelector('.nav-children');
+                const chevron = parentLink.querySelector('.chevron-icon');
+                const isExpanded = childrenUl.style.maxHeight && childrenUl.style.maxHeight !== "0px";
+
+                childrenUl.style.maxHeight = isExpanded ? null : childrenUl.scrollHeight + "px";
+                chevron.classList.toggle('expanded', !isExpanded);
+                return;
+            }
+
+            const actionTarget = target.closest('[data-action]');
+            const settingsModal = sidebar.querySelector('#settings-popup-modal');
+            const settingsButton = sidebar.querySelector('[data-action="toggle-settings-popup"]');
+
+            if (actionTarget) {
+                const action = actionTarget.dataset.action;
+                switch (action) {
+                    case 'toggle-settings-popup':
+                        e.stopPropagation();
+                        settingsModal?.classList.toggle('visible');
+                        return;
+                    case 'reset-app-state':
+                        if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
+                            localStorage.removeItem('navigatorAppState');
+                            window.location.reload();
+                        }
+                        return;
+                    case 'logout':
+                        if (typeof window.logout === 'function') {
+                            window.logout();
+                        }
+                        return;
+                }
+            }
+
+            if (settingsModal && settingsModal.classList.contains('visible')) {
+                if (!settingsModal.contains(target) && !settingsButton.contains(target)) {
+                    settingsModal.classList.remove('visible');
+                }
+            }
         });
 
         window.sidebarListenersAttached = true;
@@ -244,5 +284,9 @@ async function loadSharedComponents() {
     }
     
     initializeTheme();
+    // MODIFIED: Call the new data initializer function here to ensure data is ready before any page logic runs.
+    if (typeof initializeAssessmentData === 'function') {
+        initializeAssessmentData();
+    }
     Navigation.updateAll();
 }

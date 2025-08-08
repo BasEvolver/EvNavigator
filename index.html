@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- ADDED: Add auth script to protect the page -->
     <script src="js/auth.js"></script>
     
-    <!-- ADD THESE THREE SCRIPT TAGS FOR THE CHART -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
@@ -29,8 +27,9 @@
         </div>
     </div>
 
-    <!-- Load our scripts in the CORRECT order -->
+    <!-- MODIFIED: Corrected script loading order. MaturityModel.js MUST be loaded before state.js -->
     <script src="js/data.js"></script>
+    <script src="js/MaturityModel.js"></script> 
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/home.js"></script>

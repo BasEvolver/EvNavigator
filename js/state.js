@@ -40,17 +40,15 @@ function buildInitialAssessmentData(companyId) {
     return data;
 }
 
+// MODIFIED: This function now only creates the structure, preventing race conditions.
 function getInitialState() {
     return {
         selectedCompanyId: 'all',
         modeling: {
             selectedItemId: 'all-disciplines', 
             expandedNodes: {'D1': true}, 
-            // NEW STRUCTURE: 'assessments' holds data for multiple companies
-            assessments: {
-                'techflow-solutions': buildInitialAssessmentData('techflow-solutions'),
-                'cloudvantage': buildInitialAssessmentData('cloudvantage')
-            }
+            // Initialize with an empty object. Data will be populated by a separate function.
+            assessments: {} 
         },
         activeTabId: 'home',
         isReportFinalized: false,
@@ -60,6 +58,20 @@ function getInitialState() {
         ariaSettings: { isModalOpen: false, expandedCategories: {}, context: { main: true, ddDataRoom: true, investmentThesis: true, financialModel: true, meetingTranscripts: false }, domainKnowledge: { main: true, playbooks: true, kpiLibrary: true, maturityModel: true, industryBenchmarks: true, bestPractices: false }, externalData: { main: true, linkedin: true, pitchbook: false, glassdoor: true, web: true, newsFeeds: true }, internalData: { main: true, erp: true, crm: true, hcm: false, devops: true, csm: true, financialReports: true } }
     };
 }
+
+// NEW FUNCTION: This function safely populates the assessment data after scripts are loaded.
+function initializeAssessmentData() {
+    let state = loadState();
+    // Check if data is already populated to avoid overwriting user changes.
+    if (Object.keys(state.modeling.assessments).length === 0 && typeof maturityModel !== 'undefined') {
+        state.modeling.assessments = {
+            'techflow-solutions': buildInitialAssessmentData('techflow-solutions'),
+            'cloudvantage': buildInitialAssessmentData('cloudvantage')
+        };
+        saveState(state);
+    }
+}
+
 
 function saveState(state) {
     localStorage.setItem('navigatorAppState', JSON.stringify(state));
@@ -72,14 +84,12 @@ function loadState() {
     if (savedStateJSON) {
         try {
             const savedState = JSON.parse(savedStateJSON);
-            // Deep merge to ensure new properties from initialState are included
             return {
                 ...initialState,
                 ...savedState,
                 modeling: {
                     ...initialState.modeling,
                     ...(savedState.modeling || {}),
-                    // Ensure assessments object is present
                     assessments: {
                         ...initialState.modeling.assessments,
                         ...(savedState.modeling?.assessments || {})

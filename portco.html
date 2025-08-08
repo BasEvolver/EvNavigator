@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- ADDED: Add auth script to protect the page -->
     <script src="js/auth.js"></script>
 </head>
 <body>
@@ -19,8 +18,13 @@
         </div>
     </div>
 
+    <!-- MODIFIED: Added the missing container for the Gantt task modal -->
+    <div id="gantt-task-modal-container"></div>
+
+    <!-- MODIFIED: Corrected script loading order. MaturityModel.js MUST be loaded before state.js -->
     <script src="js/data.js"></script>
     <script src="js/portco-data.js"></script>
+    <script src="js/MaturityModel.js"></script>
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/portco.js"></script>

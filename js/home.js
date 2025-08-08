@@ -546,18 +546,25 @@ function drawLowerSynergyScenarioChart() {
 function initializePortfolioEventListeners() {
     const mainContent = document.getElementById('main-content');
     
+    // Use a flag to prevent attaching the listener multiple times
+    if (mainContent.dataset.listenerAttached) return;
+    mainContent.dataset.listenerAttached = 'true';
+
     mainContent.addEventListener('click', e => {
         const target = e.target.closest('[data-action], [data-prompt]');
         if (!target) return;
 
+        // This handles the "Recommended Action" buttons
         if (target.dataset.prompt) {
             runPortfolioPrompt(target.dataset.prompt);
+            return; // Stop further execution
         }
 
         const action = target.dataset.action;
         let state = loadState();
 
         switch(action) {
+            // THIS IS THE CRITICAL CASE FOR THE SEND BUTTON
             case 'ask-aria':
                 const input = document.getElementById('aria-prompt-input');
                 if (input && input.value.trim()) {

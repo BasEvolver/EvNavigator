@@ -119,9 +119,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const ntHeader = ntContainer.append("div").attr("class", "filter-header");
             ntHeader.append("h3").attr("class", "control-title").text("Node Types");
             ntHeader.append("div").html(`<button class="filter-action-btn" data-action="filter-all" data-target="#nodetype-filter-container">All</button> / <button class="filter-action-btn" data-action="filter-none" data-target="#nodetype-filter-container">None</button>`);
-            nodeTypes.forEach(nt => {
-                ntContainer.append("div").attr("class", "filter-item")
-                    .html(`<label>${nt.label}</label><label class="toggle-switch"><input type="checkbox" data-filter-key="group" data-filter-value="${nt.id}" checked><span class="slider round"></span></label>`);
+nodeTypes.forEach(nt => {
+                ntContainer.append("div").attr("class", "filter-tree-item") // Use the same class as Topics
+                    .html(`<label>${nt.label}</label>
+                           <label class="toggle-switch toggle-switch-sm"> <!-- Use the small toggle -->
+                               <input type="checkbox" data-filter-key="group" data-filter-value="${nt.id}" checked>
+                               <span class="slider round"></span>
+                           </label>`);
             });
 
             const wsContainer = d3.select("#workstream-filter-container");

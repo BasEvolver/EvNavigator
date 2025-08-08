@@ -418,7 +418,6 @@ function initializeAriaEventListeners() {
                 
                 const conversationContainer = document.getElementById('aria-conversation-container');
                 
-                // Clear previous conversation elements
                 const elementsToRemove = conversationContainer.querySelectorAll('.aria-response-bubble, .user-prompt-bubble, #aria-prompt-container');
                 elementsToRemove.forEach(el => el.remove());
 
@@ -436,7 +435,6 @@ function initializeAriaEventListeners() {
                         </div>`;
                     conversationContainer.insertAdjacentHTML('beforeend', introHTML);
                     
-                    // Immediately render the advanced prompt box
                     conversationContainer.insertAdjacentHTML('beforeend', getAdvancedPromptBoxHTML(workstreamData.suggestedQuestions));
                     document.getElementById('aria-prompt-container').scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
@@ -447,6 +445,7 @@ function initializeAriaEventListeners() {
                 if (question) runAriaSequence(question);
                 break;
             
+            // THIS IS THE CRITICAL CASE FOR THE SEND BUTTON
             case 'ask-aria':
                 const input = document.getElementById('aria-prompt-input');
                 const promptText = input ? input.value.trim() : '';
@@ -555,7 +554,6 @@ function initializeAriaEventListeners() {
                 const fileName = filePill.dataset.filename;
                 filePill.remove();
                 
-                // Also remove from state if you are tracking attached files
                 let currentState = loadState();
                 if (currentState.ariaAttachedFiles && currentState.ariaAttachedFiles[fileName]) {
                     delete currentState.ariaAttachedFiles[fileName];
@@ -591,7 +589,6 @@ function initializeAriaEventListeners() {
         }
     });
 
-    // This listener needs to be on the document because the input might not exist when the main listener is attached.
     document.addEventListener('change', handleFileAttachment);
 }
 

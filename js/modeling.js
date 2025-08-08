@@ -24,7 +24,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await loadSharedComponents();
         
+        // MODIFIED: Added robust company ID handling to ensure a specific company is always selected.
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyIdFromUrl = urlParams.get('company');
+        
         let state = loadState();
+        // Use URL param, or state if it's valid, or fallback to a default.
+        const companyId = companyIdFromUrl || (state.selectedCompanyId && state.selectedCompanyId !== 'all' ? state.selectedCompanyId : 'techflow-solutions');
+
+        state.selectedCompanyId = companyId;
+        saveState(state);
+        
+        // This ensures the header dropdown is synced with the page content
+        Navigation.updateCompanySelector();
+        
         renderModelingPage(state);
         initializeModelingEventListeners();
     }
@@ -169,7 +182,7 @@ function renderDualSlider(state) {
     const companyId = state.selectedCompanyId;
     const assessmentData = state.modeling.assessments[companyId];
     const item = findItemInModel(selectedItemId);
-    if (!item) return '';
+    if (!item || !assessmentData) return '<div class="p-4 text-secondary">Please select a specific company to view assessment data.</div>';
 
     const isDomain = selectedItemId.startsWith('D-');
     const currentValue = isDomain ? assessmentData[selectedItemId]?.current || 0 : calculateAverage(item, assessmentData).current;
@@ -281,6 +294,8 @@ function generateAriaPerspective(state) {
     const { selectedItemId } = state.modeling;
     const companyId = state.selectedCompanyId;
     const assessmentData = state.modeling.assessments[companyId];
+    if (!assessmentData) return '<p>Please select a company to see ARIA\'s perspective.</p>';
+
     const item = findItemInModel(selectedItemId);
     if (!item) return '';
 
@@ -352,6 +367,7 @@ function drawRadarChart(state) {
     const { selectedItemId } = state.modeling;
     const companyId = state.selectedCompanyId;
     const assessmentData = state.modeling.assessments[companyId];
+    if (!assessmentData) return; // Exit if no data for the company
     
     const selectedItem = findItemInModel(selectedItemId);
     

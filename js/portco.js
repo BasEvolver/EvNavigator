@@ -535,7 +535,25 @@ function renderRecommendedActions(actions) {
             </div>`;
 }
 
-function runPortcoPrompt(promptText, companyId) {
+async function typeWords(element, text, callback) {
+    if (!element) return;
+    element.innerHTML = "";
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    let i = 0;
+    const words = text.split(' ');
+    const timer = setInterval(() => {
+        if (i < words.length) {
+            element.innerHTML += words[i] + ' ';
+            i++;
+        } else {
+            clearInterval(timer);
+            if (callback) callback();
+        }
+    }, 30);
+}
+
+// MODIFIED: This function now intelligently handles both pre-canned and dynamic task overview prompts and applies the typing effect.
+async function runPortcoPrompt(promptText, companyId) {
     const conversationLog = document.getElementById('portco-conversation-log');
     const promptContainer = document.getElementById('portco-prompt-container');
     if (!conversationLog || !promptContainer) return;
@@ -552,28 +570,93 @@ function runPortcoPrompt(promptText, companyId) {
     conversationLog.insertAdjacentHTML('beforeend', `<div id="${thinkingId}" class="portfolio-response-card"><p>ARIA is thinking...</p></div>`);
     document.getElementById(thinkingId).scrollIntoView({ behavior: 'smooth' });
 
-    setTimeout(() => {
-        document.getElementById(thinkingId)?.remove(); // FIX: Safely remove the thinking bubble
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-        const response = portcoResponses[promptText];
-        let responseHTML = '';
-        let followUpQuestions = [];
+    document.getElementById(thinkingId)?.remove();
 
-        if (response && typeof response.renderFunc === 'function') {
-            responseHTML = response.renderFunc();
-            followUpQuestions = response.followUpQuestions || [];
-        } else {
-            responseHTML = `<div class="portfolio-response-card"><p>Aria is not trained to provide a response for that specific query yet.</p></div>`;
+    let response = portcoResponses[promptText];
+    let followUpQuestions = [];
+
+    // --- NEW DYNAMIC LOGIC ---
+    const taskOverviewPattern = /Provide me with a current overview and understanding of the '(.*)' task\./;
+    const taskDependencyPattern = /What are the dependencies for the '(.*)' task\?/;
+    const taskAssignmentPattern = /Who is assigned to the '(.*)' task\?/;
+
+    let match = promptText.match(taskOverviewPattern);
+    if (match && match[1]) {
+        const taskName = match[1];
+        const task = diligencePlan_v3.find(t => t.name === taskName);
+        if (task) {
+            response = {
+                renderFunc: () => {
+                    const statusDetails = projectPlanUtils.getAriaStatusDetails(task);
+                    const teamDetails = task.id === 'DD-13' 
+                        ? `<p class="response-text" data-typing-text="This specialized task is led by **Peter Wood (Sr. Director, Digital Value Creation)** and our partner, **AWS**. They have initiated the review of the provided architecture diagrams but are **blocked** pending the full documentation of the development process from task DD-12."></p>`
+                        : `<p class="response-text" data-typing-text="The task is assigned to the core deal team, with support from relevant functional experts."></p>`;
+
+                    return `<div class="portfolio-response-card">
+                                <h4 class="response-title">Deep Dive: ${task.id} ${task.name}</h4>
+                                <p class="response-text" data-typing-text="This task is a critical component of the **${task.workstream}** workstream. Its primary objective is to ${task.description.toLowerCase()}"></p>
+                                <div class="mt-4">
+                                    <h5 class="font-semibold text-sm mb-2">Team & Status:</h5>
+                                    ${teamDetails}
+                                </div>
+                                <div class="mt-4">
+                                    <h5 class="font-semibold text-sm mb-2">Critical Questions to Answer:</h5>
+                                    <p class="response-text" data-typing-text="${task.questionsAnswered}"></p>
+                                </div>
+                                <div class="judgement-box success mt-4">
+                                    <p class="judgement-title">Judgement (High Confidence - 92%):</p>
+                                    <p class="judgement-text" data-typing-text="Based on the inputs, my assessment is that ${statusDetails.text}"></p>
+                                </div>
+                            </div>`;
+                },
+                followUpQuestions: [`What are the dependencies for the '${task.name}' task?`, `Who is assigned to the '${task.name}' task?`]
+            };
         }
-        
-        conversationLog.insertAdjacentHTML('beforeend', responseHTML);
-        promptContainer.innerHTML = getPromptBoxHTML(followUpQuestions);
-        
-        initializeGanttHover(); // Re-initialize hover for any new Gantt charts
-        
-        const lastBubble = conversationLog.lastElementChild;
-        if(lastBubble) lastBubble.scrollIntoView({ behavior: 'smooth' });
-    }, 1500);
+    }
+    
+    match = promptText.match(taskDependencyPattern);
+    if (match && match[1]) {
+        const taskName = match[1];
+        const task = diligencePlan_v3.find(t => t.name === taskName);
+        if (task) {
+            response = portcoResponses[`What are the dependencies for the '${task.name}' task?`] || portcoResponses["What are the dependencies for the 'Audited Financials' task?"]; // Fallback for demo
+        }
+    }
+
+    match = promptText.match(taskAssignmentPattern);
+    if (match && match[1]) {
+        const taskName = match[1];
+        const task = diligencePlan_v3.find(t => t.name === taskName);
+        if (task) {
+             response = portcoResponses[`Who is assigned to the '${task.name}' task?`] || portcoResponses["Who is assigned to the 'Audited Financials' task?"]; // Fallback for demo
+        }
+    }
+    // --- END DYNAMIC LOGIC ---
+
+    let responseHTML = '';
+
+    if (response && typeof response.renderFunc === 'function') {
+        responseHTML = response.renderFunc();
+        followUpQuestions = response.followUpQuestions || [];
+    } else {
+        responseHTML = `<div class="portfolio-response-card"><p>Aria is not trained to provide a response for that specific query yet.</p></div>`;
+    }
+    
+    conversationLog.insertAdjacentHTML('beforeend', responseHTML);
+    const newResponseElement = conversationLog.lastElementChild;
+    
+    const typingElements = newResponseElement.querySelectorAll('[data-typing-text]');
+    for (const el of typingElements) {
+        await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
+    }
+    
+    promptContainer.innerHTML = getPromptBoxHTML(followUpQuestions);
+    
+    initializeGanttHover();
+    
+    if(newResponseElement) newResponseElement.scrollIntoView({ behavior: 'smooth' });
 }
 
 function initializePortcoEventListeners() {
