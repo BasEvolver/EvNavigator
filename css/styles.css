@@ -4663,3 +4663,12 @@ mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3
 .theme-toggle-switch input:checked ~ .moon-icon {
     color: var(--text-primary);
 }
+
+#sidebar {
+    position: relative; /* This is the crucial change */
+}
+
+#settings-popup-modal {
+    left: 1rem;
+    bottom: 70px; /* Position it just above the footer */
+}
