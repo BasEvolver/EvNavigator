@@ -1,49 +1,79 @@
 // js/knowledge-refinery.js - Interactive workflow for document ingestion
 
 // --- MOCK DATA FOR SIMULATION ---
-// We'll pretend the user uploads one of these files, and we'll use this data to populate the panes.
+const mockFileQueue = [
+    { 
+        id: 'GTM_Strategy_Deck.pptx', 
+        title: 'GTM_Strategy_Deck.pptx',
+        description: 'CRO presentation on the 18-month go-to-market strategy.',
+        source: 'Data Room',
+        date: '2025-08-10',
+        status: 'Recommended',
+        icon: 'powerpoint'
+    },
+    { 
+        id: 'Financial_Statements_2024.pdf', 
+        title: 'Financial_Statements_2024.pdf',
+        description: 'Audited financials for FY2024, including auditor notes.',
+        source: 'Data Room',
+        date: '2025-08-10',
+        status: 'Recommended',
+        icon: 'pdf'
+    },
+    { 
+        id: 'Board_Minutes_Q2.docx', 
+        title: 'Board_Minutes_Q2.docx',
+        description: 'Minutes from the most recent quarterly board meeting.',
+        source: 'Email Attachment',
+        date: '2025-08-09',
+        status: 'New',
+        icon: 'word'
+    },
+    { 
+        id: 'Competitor_Analysis_Gartner.pdf', 
+        title: 'Competitor_Analysis_Gartner.pdf',
+        description: 'Third-party report on the competitive landscape.',
+        source: 'External Data',
+        date: '2025-08-08',
+        status: 'New',
+        icon: 'pdf'
+    },
+    { 
+        id: 'Employee_Churn_Data.xlsx', 
+        title: 'Employee_Churn_Data.xlsx',
+        description: 'Raw data export of employee attrition over the last 24 months.',
+        source: 'HR System',
+        date: '2025-08-07',
+        status: 'New',
+        icon: 'excel'
+    }
+];
+
 const mockDocumentData = {
     'Financial_Statements_2024.pdf': {
         summary: "This document contains the audited financial statements for TechFlow Solutions for the fiscal year ending 2024. It includes the Income Statement, Balance Sheet, and Cash Flow Statement, along with auditor's notes.",
         aiSummary: "The document indicates a reported ARR of $12M. However, analysis of the auditor's notes reveals a non-standard revenue recognition policy for perpetual licenses, potentially overstating the true recurring revenue.",
         entityText: `...the company's reported <mark class="entity-kpi">Annual Recurring Revenue (ARR) reached $12M</mark> for FY2024. A significant portion of this is derived from the <mark class="entity-company">Global FinCorp</mark> account, which is up for renewal in <mark class="entity-date">Q4 2025</mark>. The auditor's notes highlight a <mark class="entity-risk">non-standard revenue recognition policy</mark> for perpetual licenses...`,
-        metadata: {
-            entity: 'techflow-solutions',
-            sourceType: 'internalData',
-            subSourceType: 'financialReports',
-            tags: 'FY2024, Audited, ARR Analysis'
-        },
-        extracted: {
-            kpi: { label: 'KPI: ARR', value: '$12,000,000' },
-            finding: { label: 'Key Finding:', value: 'Non-standard revenue recognition policy for perpetual licenses overstates true recurring revenue.' }
-        }
+        metadata: { entity: 'techflow-solutions', sourceType: 'internalData', subSourceType: 'financialReports', tags: 'FY2024, Audited, ARR Analysis' },
+        extracted: { kpi: { label: 'KPI: ARR', value: '$12,000,000' }, finding: { label: 'Key Finding:', value: 'Non-standard revenue recognition policy for perpetual licenses overstates true recurring revenue.' } }
     },
     'GTM_Strategy_Deck.pptx': {
         summary: "A PowerPoint presentation from the TechFlow CRO outlining the go-to-market strategy for the next 18 months. It covers sales methodology, channel partnerships, and marketing funnel targets.",
         aiSummary: "The GTM strategy relies heavily on an EMEA expansion and a new channel partner program. The plan projects 40% new ARR growth, but analysis shows historical performance is only 15%, indicating a significant credibility gap.",
         entityText: `...our growth will be driven by a <mark class="entity-risk">40% increase in new ARR</mark>, primarily from the <mark class="entity-kpi">EMEA expansion</mark>. Our key partner, <mark class="entity-company">EuroSystems GmbH</mark>, will be critical. The sales team must adopt the <mark class="entity-kpi">MEDDIC methodology</mark> by <mark class="entity-date">end of Q3</mark>...`,
-        metadata: {
-            entity: 'techflow-solutions',
-            sourceType: 'context',
-            subSourceType: 'ddDataRoom',
-            tags: 'GTM, Sales, Strategy, EMEA'
-        },
-        extracted: {
-            kpi: { label: 'KPI: Projected New ARR Growth', value: '40%' },
-            finding: { label: 'Key Finding:', value: 'Strategic plan has a credibility gap; projected growth (40%) is not supported by historical performance (15%).' }
-        }
+        metadata: { entity: 'techflow-solutions', sourceType: 'context', subSourceType: 'ddDataRoom', tags: 'GTM, Sales, Strategy, EMEA' },
+        extracted: { kpi: { label: 'KPI: Projected New ARR Growth', value: '40%' }, finding: { label: 'Key Finding:', value: 'Strategic plan has a credibility gap; projected growth (40%) is not supported by historical performance (15%).' } }
     }
 };
 
 const ICONS = {
-    pdf: `<svg class="w-12 h-12 text-red-500" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM9.5 18H8v-5h1.5a1.5 1.5 0 0 1 0 3H9v2zm2.5-2.5a1.5 1.5 0 0 1-3 0V13h3v2.5zM16 18h-1.8l-1.2-5h1.5l.7 3.4.7-3.4h1.5l-1.2 5z"/></svg>`,
-    word: `<svg class="w-12 h-12 text-blue-600" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM9.5 15.5H11L12 18h1.5l-2.25-6H9.75L7.5 18H9l1-2.5zm-2-3.5L9 8h1.5l1.5 4H10l-.75-2.25L8.5 12H7.5z"/></svg>`,
-    powerpoint: `<svg class="w-12 h-12 text-orange-500" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM8 18v-5h1.5a1.5 1.5 0 0 1 0 3H8v2zm7-5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5H13V13h2z"/></svg>`
+    pdf: `<svg class="w-10 h-10 text-red-500" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM9.5 18H8v-5h1.5a1.5 1.5 0 0 1 0 3H9v2zm2.5-2.5a1.5 1.5 0 0 1-3 0V13h3v2.5zM16 18h-1.8l-1.2-5h1.5l.7 3.4.7-3.4h1.5l-1.2 5z"/></svg>`,
+    word: `<svg class="w-10 h-10 text-blue-600" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM9.5 15.5H11L12 18h1.5l-2.25-6H9.75L7.5 18H9l1-2.5zm-2-3.5L9 8h1.5l1.5 4H10l-.75-2.25L8.5 12H7.5z"/></svg>`,
+    powerpoint: `<svg class="w-10 h-10 text-orange-500" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM8 18v-5h1.5a1.5 1.5 0 0 1 0 3H8v2zm7-5a2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5H13V13h2z"/></svg>`,
+    excel: `<svg class="w-10 h-10 text-green-600" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM9.5 18l-3-3 3-3 1.5 1.5L9.5 15l1.5 1.5-1.5 1.5zm5-5l-3-3 3-3 1.5 1.5L14.5 9l1.5 1.5-1.5 1.5z"/></svg>`
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // This event listener waits for ALL scripts to be loaded and the page to be ready.
-    // THEN it runs the page-aware check.
     if (Navigation.getCurrentPage() === 'knowledge-refinery') {
         await loadSharedComponents();
         initializeRefineryPage();
@@ -56,7 +86,6 @@ function initializeRefineryPage() {
     const pane2 = document.getElementById('refinery-pane-2');
     const pane3 = document.getElementById('refinery-pane-3');
 
-    // Ensure panes exist before trying to modify them
     if (!pane1 || !pane2 || !pane3) {
         console.error("Refinery panes not found in the DOM.");
         return;
@@ -65,34 +94,91 @@ function initializeRefineryPage() {
     pane1.innerHTML = `
         <div class="refinery-card">
             <h3 class="refinery-title">1. Source Document</h3>
-            <button id="upload-report-btn" class="primary-button w-full mb-4">Upload Report...</button>
+            <!-- MODIFICATION 1: Added data-action to this button -->
+            <button id="upload-report-btn" data-action="upload-report" class="primary-button w-full mb-4">Ingest New Document...</button>
             <div class="refinery-empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                <p>Upload a document to begin the curation process.</p>
+                <p>Select a document from the ingestion queue to begin.</p>
             </div>
         </div>
     `;
-    pane2.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">2. ARIA's Interpretation</h3><div class="refinery-empty-state"><p>Awaiting document upload...</p></div></div>`;
-    pane3.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">3. Curation & Contextualization</h3><div class="refinery-empty-state"><p>Awaiting document upload...</p></div></div>`;
+    pane2.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">2. ARIA's Interpretation</h3><div class="refinery-empty-state"><p>Awaiting document selection...</p></div></div>`;
+    pane3.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">3. Curation & Contextualization</h3><div class="refinery-empty-state"><p>Awaiting document selection...</p></div></div>`;
+}
+
+function renderFileSelectionModal() {
+    const fileListContainer = document.getElementById('ingestion-file-list');
+    if (!fileListContainer) return;
+
+    const recommended = mockFileQueue.filter(f => f.status === 'Recommended');
+    const newList = mockFileQueue.filter(f => f.status === 'New');
+
+    const renderFileItem = (file) => `
+        <div class="file-list-item" data-action="select-mock-file" data-mock-key="${file.id}">
+            <div class="file-item-icon">${ICONS[file.icon] || ICONS.pdf}</div>
+            <div class="file-item-info">
+                <h5 class="font-bold">${file.title}</h5>
+                <p class="text-xs text-secondary">${file.description}</p>
+                <div class="file-item-metadata">
+                    <span class="metadata-tag">Source: ${file.source}</span>
+                    <span class="metadata-tag">Date: ${file.date}</span>
+                </div>
+            </div>
+            <div class="file-item-status">
+                <span class="status-badge ${file.status === 'Recommended' ? 'status-warning' : 'status-info'}">${file.status}</span>
+            </div>
+        </div>
+    `;
+
+    fileListContainer.innerHTML = `
+        <h4 class="ingestion-section-title">Recommended for Curation</h4>
+        ${recommended.map(renderFileItem).join('')}
+        <h4 class="ingestion-section-title">Recently Added</h4>
+        ${newList.map(renderFileItem).join('')}
+    `;
 }
 
 function initializeRefineryListeners() {
-    const uploadButton = document.getElementById('upload-report-btn');
-    const fileInput = document.getElementById('file-upload-input');
+    document.body.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-action]');
+        if (!target) return;
 
-    if (uploadButton && fileInput) {
-        uploadButton.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFileSelect);
-    }
+        // MODIFICATION 2: Simplified the action logic to be more direct
+        const action = target.dataset.action;
+        const modal = document.getElementById('file-selection-modal');
+
+        switch (action) {
+            case 'upload-report':
+                renderFileSelectionModal();
+                if (modal) modal.style.display = 'flex';
+                break;
+            case 'close-modal':
+                if (modal) modal.style.display = 'none';
+                break;
+            case 'select-mock-file':
+                const mockKey = target.dataset.mockKey;
+                if (mockKey) {
+                    handleFileSelect(mockKey);
+                    if (modal) modal.style.display = 'none';
+                }
+                break;
+        }
+    });
 }
 
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // For simulation, we'll use our mock data. A real app would use the file name or content.
-    const mockDataKey = file.name.includes('GTM') ? 'GTM_Strategy_Deck.pptx' : 'Financial_Statements_2024.pdf';
+function handleFileSelect(mockDataKey) {
     const fileData = mockDocumentData[mockDataKey];
+    if (!fileData) {
+        alert("This document is for display only in the prototype. Please select one of the 'Recommended' documents.");
+        return;
+    }
+
+    const fileInfo = mockFileQueue.find(f => f.id === mockDataKey);
+    const file = {
+        name: fileInfo.title,
+        size: fileInfo.title.includes('pdf') ? 120400 : 2350000,
+        icon: fileInfo.icon
+    };
     
     renderPane1_Preview(file, fileData);
     simulateAriaProcessing(fileData);
@@ -100,18 +186,13 @@ function handleFileSelect(event) {
 
 function renderPane1_Preview(file, fileData) {
     const pane1 = document.getElementById('refinery-pane-1');
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    let icon = ICONS.pdf;
-    if (fileExtension.includes('doc')) icon = ICONS.word;
-    if (fileExtension.includes('ppt')) icon = ICONS.powerpoint;
-
     pane1.innerHTML = `
         <div class="refinery-card">
             <h3 class="refinery-title">1. Source Document</h3>
-            <button id="upload-report-btn" class="secondary-button w-full mb-4">Upload a Different Report...</button>
+            <button id="upload-report-btn" data-action="upload-report" class="secondary-button w-full mb-4">Select a Different Document...</button>
             <div class="source-document-viewer">
                 <div class="file-preview-card">
-                    ${icon}
+                    ${ICONS[file.icon] || ICONS.pdf}
                     <div class="file-info">
                         <h4 class="font-bold">${file.name}</h4>
                         <p class="text-xs text-secondary">${(file.size / 1024).toFixed(1)} KB</p>
@@ -121,10 +202,6 @@ function renderPane1_Preview(file, fileData) {
             </div>
         </div>
     `;
-    // Re-attach listener to the new button
-    document.getElementById('upload-report-btn').addEventListener('click', () => {
-        document.getElementById('file-upload-input').click();
-    });
 }
 
 function simulateAriaProcessing(fileData) {
@@ -145,7 +222,7 @@ function simulateAriaProcessing(fileData) {
     setTimeout(() => {
         renderPane2_Interpretation(fileData);
         renderPane3_Curation(fileData);
-    }, 2500); // 2.5 second delay
+    }, 2500);
 }
 
 function renderPane2_Interpretation(fileData) {
@@ -214,7 +291,6 @@ function renderPane3_Curation(fileData) {
         </div>
     `;
 
-    // Initialize and set the values for the cascading dropdowns
     initializeCascadingDropdowns(fileData.metadata);
 }
 
@@ -246,9 +322,8 @@ function initializeCascadingDropdowns(metadata) {
 
     sourceTypeSelect.addEventListener('change', populateSubSource);
 
-    // Set initial values from the file data
     entitySelect.value = metadata.entity;
     sourceTypeSelect.value = metadata.sourceType;
-    populateSubSource(); // Populate the sub-source dropdown
-    subSourceTypeSelect.value = metadata.subSourceType; // Then set its value
+    populateSubSource(); 
+    subSourceTypeSelect.value = metadata.subSourceType;
 }
