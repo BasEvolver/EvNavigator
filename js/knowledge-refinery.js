@@ -2,9 +2,11 @@
 
 // --- MOCK DATA FOR SIMULATION ---
 const mockFileQueue = [
-    // Source 1: Data Room Sync (TechFlow Solutions)
+    // Recommended
     { id: 'TechFlow_CIM.pptx', title: 'TechFlow CIM.pptx', description: 'Confidential Information Memorandum for Project Tiger.', source: 'Data Room', date: '2025-08-11', status: 'Recommended', icon: 'powerpoint', knowledgeType: 'Context', subType: 'DD Data Room' },
-    { id: 'Financial_Statements_2024.pdf', title: 'Financial_Statements_2024.pdf', description: 'Audited financials for FY2024, including auditor notes.', source: 'Data Room', date: '2025-08-10', status: 'Recommended', icon: 'pdf', knowledgeType: 'Internal Data', subType: 'Financial Reports' },
+    { id: 'Updated_Pricing_Model_Analysis.docx', title: 'Updated_Pricing_Model_Analysis.docx', description: 'Analysis of a proposed value-based pricing model.', source: 'Repository Upload', date: '2025-08-05', status: 'Recommended', icon: 'word', knowledgeType: 'Domain Knowledge', subType: 'Playbooks' },
+    { id: 'Financial_Statements_2024.xlsx', title: 'TechFlow Consolidated P&L.xls', description: 'Audited financials for FY2024, including P&L and Balance Sheet.', source: 'Data Room', date: '2025-08-10', status: 'Recommended', icon: 'excel', knowledgeType: 'Internal Data', subType: 'Financial Reports' },
+    // Awaiting Curation
     { id: 'Capitalization_Table_v4.xlsx', title: 'Capitalization_Table_v4.xlsx', description: 'Detailed breakdown of equity ownership and dilution.', source: 'Data Room', date: '2025-08-10', status: 'Awaiting Curation', icon: 'excel', knowledgeType: 'Context', subType: 'Financial Model' },
     { id: 'Customer_Contracts_Top_50.zip', title: 'Customer_Contracts_Top_50.zip', description: 'Archive of MSAs and SOWs for the top 50 customers.', source: 'Data Room', date: '2025-08-10', status: 'Awaiting Curation', icon: 'word', knowledgeType: 'Context', subType: 'DD Data Room' },
     { id: 'Tech_Architecture_Diagrams.vsdx', title: 'Tech_Architecture_Diagrams.vsdx', description: 'Visio diagrams of the core application architecture.', source: 'Data Room', date: '2025-08-09', status: 'Awaiting Curation', icon: 'powerpoint', knowledgeType: 'Context', subType: 'DD Data Room' },
@@ -14,18 +16,17 @@ const mockFileQueue = [
     { id: 'Security_Audit_PenTest_Results.pdf', title: 'Security_Audit_PenTest_Results.pdf', description: 'Third-party penetration test results and vulnerability report.', source: 'Data Room', date: '2025-08-08', status: 'Awaiting Curation', icon: 'pdf', knowledgeType: 'Context', subType: 'DD Data Room' },
     { id: 'Executive_Team_Resumes.zip', title: 'Executive_Team_Resumes.zip', description: 'CVs for all C-level and VP-level employees.', source: 'Data Room', date: '2025-08-08', status: 'Awaiting Curation', icon: 'word', knowledgeType: 'Context', subType: 'DD Data Room' },
     { id: 'AR_Aging_Report_June_2025.pdf', title: 'AR_Aging_Report_June_2025.pdf', description: 'Accounts receivable aging details for cash flow analysis.', source: 'Data Room', date: '2025-08-07', status: 'Awaiting Curation', icon: 'pdf', knowledgeType: 'Internal Data', subType: 'Financial Reports' },
-    // Source 2: Knowledge Repository (CloudVantage)
+    // New
     { id: 'Q3_Board_Deck_Final.pptx', title: 'Q3_Board_Deck_Final.pptx', description: 'Presentation materials for the upcoming quarterly board meeting.', source: 'Repository Upload', date: '2025-08-08', status: 'New', icon: 'powerpoint', knowledgeType: 'Context', subType: 'Meeting Transcripts' },
     { id: 'SaaS_NRR_Benchmarks_2025.pdf', title: 'SaaS_NRR_Benchmarks_2025.pdf', description: 'Industry report on Net Revenue Retention benchmarks.', source: 'Email Ingestion', date: '2025-08-07', status: 'New', icon: 'pdf', knowledgeType: 'Domain Knowledge', subType: 'Industry Benchmarks' },
     { id: 'NewCo_Synergy_Tracker_v3.xlsx', title: 'NewCo_Synergy_Tracker_v3.xlsx', description: 'Financial model tracking realization of acquisition synergies.', source: 'Repository Upload', date: '2025-08-07', status: 'New', icon: 'excel', knowledgeType: 'Context', subType: 'Financial Model' },
     { id: 'Customer_Advisory_Board_Feedback.docx', title: 'Customer_Advisory_Board_Feedback.docx', description: 'Qualitative feedback from the Q2 Customer Advisory Board.', source: 'Repository Upload', date: '2025-08-06', status: 'New', icon: 'word', knowledgeType: 'Internal Data', subType: 'Customer Success Platforms' },
     { id: 'Monthly_Flash_Report_July.pdf', title: 'Monthly_Flash_Report_July.pdf', description: 'High-level summary of July financial performance.', source: 'Repository Upload', date: '2025-08-06', status: 'New', icon: 'pdf', knowledgeType: 'Internal Data', subType: 'Financial Reports' },
-    { id: 'Updated_Pricing_Model_Analysis.docx', title: 'Updated_Pricing_Model_Analysis.docx', description: 'Analysis of a proposed value-based pricing model.', source: 'Repository Upload', date: '2025-08-05', status: 'New', icon: 'word', knowledgeType: 'Domain Knowledge', subType: 'Playbooks' },
     { id: 'Cloud_Cost_Optimization_Report.pdf', title: 'Cloud_Cost_Optimization_Report.pdf', description: 'Report on AWS cost-saving initiatives from the DevOps team.', source: 'Repository Upload', date: '2025-08-05', status: 'New', icon: 'pdf', knowledgeType: 'Internal Data', subType: 'DevOps Metrics' },
     { id: 'Onboarding_Playbook_v2.pptx', title: 'Onboarding_Playbook_v2.pptx', description: 'Updated playbook for the Customer Success team.', source: 'Repository Upload', date: '2025-08-04', status: 'New', icon: 'powerpoint', knowledgeType: 'Domain Knowledge', subType: 'Playbooks' },
     { id: 'Sales_Comp_Plan_FY26.pdf', title: 'Sales_Comp_Plan_FY26.pdf', description: 'Details of the new sales compensation structure.', source: 'Repository Upload', date: '2025-08-04', status: 'New', icon: 'pdf', knowledgeType: 'Context', subType: 'DD Data Room' },
     { id: 'Salesforce_Pipeline_Export_Q2.csv', title: 'Salesforce_Pipeline_Export_Q2.csv', description: 'Raw pipeline data from Salesforce for Q2 analysis.', source: 'Repository Upload', date: '2025-08-03', status: 'New', icon: 'excel', knowledgeType: 'Internal Data', subType: 'CRM Data' },
-    // Source 3: ARIA Chat Uploads
+    // Pending Review
     { id: 'Gartner_MQ_Cloud_Mgmt.pdf', title: 'Gartner_MQ_Cloud_Mgmt.pdf', description: 'Gartner Magic Quadrant for Cloud Management Platforms.', source: 'Chat Upload', date: '2025-08-10', status: 'Pending Review', icon: 'pdf', knowledgeType: 'External Data', subType: 'Analyst Reports' },
     { id: 'Product_Review_Meeting_Transcript.docx', title: 'Product_Review_Meeting_Transcript.docx', description: 'Auto-generated transcript from the weekly product review.', source: 'Chat Upload', date: '2025-08-09', status: 'Pending Review', icon: 'word', knowledgeType: 'Context', subType: 'Meeting Transcripts' },
     { id: 'Pitchbook_Profile_NewTarget.pdf', title: 'Pitchbook_Profile_NewTarget.pdf', description: 'Profile of a potential acquisition target from PitchBook.', source: 'Chat Upload', date: '2025-08-09', status: 'Pending Review', icon: 'pdf', knowledgeType: 'External Data', subType: 'PitchBook' },
@@ -39,20 +40,39 @@ const mockFileQueue = [
 ];
 
 const mockDocumentData = {
-    'Financial_Statements_2024.pdf': {
-        normalizedOutput: mockNormalizedOutputs['Financial_Statements_2024.pdf'].main,
-        aiSummary: "The document indicates a reported ARR of $12M. However, analysis of the auditor's notes reveals a non-standard revenue recognition policy for perpetual licenses, potentially overstating the true recurring revenue.",
-        entityText: `...the company's reported <mark class="entity-kpi">Annual Recurring Revenue (ARR) reached $12M</mark> for FY2024. A significant portion of this is derived from the <mark class="entity-company">Global FinCorp</mark> account, which is up for renewal in <mark class="entity-date">Q4 2025</mark>. The auditor's notes highlight a <mark class="entity-risk">non-standard revenue recognition policy</mark> for perpetual licenses...`,
-        metadata: { entity: 'techflow-solutions', sourceType: 'internalData', subSourceType: 'financialReports', tags: 'FY2024, Audited, ARR Analysis' },
+    'Financial_Statements_2024.xlsx': {
+        normalizedOutput: mockNormalizedOutputs['TechFlow Consolidated P&L.xls'],
+        aiSummary: "The spreadsheet contains standard financial statements (P&L, Balance Sheet) for FY2022-2024. Key metrics show revenue growing to an estimated $28M in FY2024 with a 15.1% increase in Gross Profit. EBITDA turns positive, growing to $560K in the latest year.",
+        entityText: `Analysis of the P&L shows consistent top-line growth, with <mark class="entity-kpi">Revenue</mark> reaching <mark class="entity-kpi">$28M (Est)</mark> in FY2024. <mark class="entity-kpi">Gross Profit</mark> increased by <mark class="entity-kpi">15.1%</mark> in the same period. A key positive trend is the <mark class="entity-kpi">EBITDA</mark> swinging from negative to <mark class="entity-kpi">$560K</mark>, indicating improving operational leverage. This is a critical point for the <mark class="entity-strategy">investment thesis</mark>.`,
+        metadata: { entity: 'techflow-solutions', sourceType: 'internalData', subSourceType: 'financialReports', tags: 'FY2024, Audited, P&L' },
         extracted: {
-            'Document Type': 'Audited Financial Statement',
-            'Fiscal Year': '2024',
-            'Reported ARR': '$12,000,000',
-            'Key Account Mentioned': 'Global FinCorp',
-            'Renewal Date': 'Q4 2025',
+            'Document Type': 'Audited Financial Statement (XLSX)',
+            'Fiscal Year End': '2024 (Est.)',
+            'Est. Revenue': '$28,000,000',
+            'Est. Gross Profit': '$21,840,000',
+            'Est. EBITDA': '$560,000',
             'Key Findings': [
-                "Non-standard revenue recognition policy for perpetual licenses may overstate true recurring revenue.",
-                "Significant revenue concentration with the Global FinCorp account."
+                "Strong revenue and gross profit growth year-over-year.",
+                "Company has recently achieved EBITDA profitability, showing scalability.",
+                "OpEx growth (13.7%) is tracking below Gross Profit growth (15.1%), a positive sign of operating leverage."
+            ]
+        }
+    },
+    'Updated_Pricing_Model_Analysis.docx': {
+        normalizedOutput: mockNormalizedOutputs['Updated_Pricing_Model_Analysis.docx'],
+        aiSummary: "This document outlines a strategic shift from a flat-rate pricing model to a value-based, three-tiered structure (Starter, Professional, Enterprise). The goal is to increase Net Revenue Retention (NRR) by 5-7 points by creating clear upsell paths and better aligning price with the value delivered to different customer segments.",
+        entityText: `The objective is to transition to a <mark class="entity-strategy">value-based, three-tiered structure</mark>. This change is projected to cause a <mark class="entity-kpi">5-7 point increase in Net Revenue Retention</mark>. The new model is designed to improve <mark class="entity-strategy">New Logo Acquisition</mark> via a lower-cost 'Starter' tier while driving <mark class="entity-strategy">Expansion Revenue</mark> through upsells to 'Professional' and 'Enterprise'. This aligns our pricing with competitors like <mark class="entity-company">Integrix</mark> and <mark class="entity-company">MasterData Inc.</mark>`,
+        metadata: { entity: 'techflow-solutions', sourceType: 'domainKnowledge', subSourceType: 'playbooks', tags: 'Pricing, Strategy, NRR' },
+        extracted: {
+            'Document Type': 'Strategy Analysis (DOCX)',
+            'Proposed Model': 'Three-Tiered (Starter, Pro, Enterprise)',
+            'Primary Goal': 'Increase NRR',
+            'Projected NRR Uplift': '5-7 percentage points',
+            'Key Levers': 'Expansion Revenue, New Logo Acquisition',
+            'Key Findings': [
+                "The proposed model creates a clear upsell path, which is currently lacking.",
+                "A lower-cost entry point ('Starter') could accelerate new customer acquisition.",
+                "The plan directly addresses a key value creation lever: Pricing Optimization."
             ]
         }
     },
@@ -244,10 +264,10 @@ function handleFileSelect(mockDataKey) {
         return;
     }
     
-    simulateNormalization(fileData);
+    simulateNormalization(fileData, mockDataKey);
 }
 
-async function typeGenerativeContent(element, text, speed = 2) {
+async function typeGenerativeContent(element, text, speed = 0.1) {
     return new Promise(resolve => {
         let i = 0;
         const timer = setInterval(() => {
@@ -263,77 +283,114 @@ async function typeGenerativeContent(element, text, speed = 2) {
     });
 }
 
-async function simulateNormalization(fileData) {
+async function simulateNormalization(fileData, mockDataKey) {
     const pane1 = document.getElementById('refinery-pane-1');
     const pane2 = document.getElementById('refinery-pane-2');
     const pane3 = document.getElementById('refinery-pane-3');
-    const docTitle = fileData.normalizedOutput.main ? fileData.normalizedOutput.main.match(/"document_title": "(.*?)"/)[1] : fileData.normalizedOutput.match(/"document_title": "(.*?)"/)[1];
+    
+    const fileInfo = mockFileQueue.find(f => f.id === mockDataKey);
+    const docTitle = fileInfo ? fileInfo.title : "Selected Document";
 
-    pane1.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">1. Normalize</h3><div class="normalization-terminal"></div></div>`;
+    pane1.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">1. Normalize</h3><div class="refinery-content-area normalization-terminal"></div></div>`;
     pane2.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">2. Interpret</h3><div class="refinery-loading-state"><div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div><p class="mt-4 text-secondary">Normalizing document...</p></div></div>`;
     pane3.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">3. Curate & Contextualize</h3><div class="refinery-empty-state"><p>Awaiting interpretation...</p></div></div>`;
 
     const terminal = pane1.querySelector('.normalization-terminal');
+    const normalizedOutput = fileData.normalizedOutput;
     
     terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Initializing normalization for ${docTitle}...</p>`);
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 100));
     terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Detected format: ${docTitle.split('.').pop()}. Analyzing structure...</p>`);
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 150));
 
-    if (fileData.normalizedOutput.main) {
-        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Found embedded tabular data. Generating multiple outputs...</p>`);
-        await new Promise(r => setTimeout(r, 200));
+    if (normalizedOutput.bs_metadata) { // Excel file
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Found multiple tabs. Generating 4 outputs...</p>`);
+        await new Promise(r => setTimeout(r, 100));
+        const baseName = docTitle.replace(/\.[^/.]+$/, "");
+        
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting tab metadata: ${baseName}_bs_metadata.csv</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-bs-meta" class="language-csv"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-bs-meta'), normalizedOutput.bs_metadata);
 
-        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Generating main JSON structure: ${docTitle.replace(/\.[^/.]+$/, ".json")}</p>`);
-        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-main" class="language-json"></code></pre>`);
-        await typeGenerativeContent(document.getElementById('norm-main'), fileData.normalizedOutput.main);
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting raw tab data: ${baseName}_bs_data.csv</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-bs-data" class="language-csv"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-bs-data'), normalizedOutput.bs_data);
 
-        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting table metadata: ${docTitle.replace(/\.[^/.]+$/, "_metadata.csv")}</p>`);
-        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-meta" class="language-csv"></code></pre>`);
-        await typeGenerativeContent(document.getElementById('norm-meta'), fileData.normalizedOutput.csv_metadata);
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting tab metadata: ${baseName}_pl_metadata.csv</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-pl-meta" class="language-csv"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-pl-meta'), normalizedOutput.pl_metadata);
 
-        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting raw table data: ${docTitle.replace(/\.[^/.]+$/, "_data.csv")}</p>`);
-        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-data" class="language-csv"></code></pre>`);
-        await typeGenerativeContent(document.getElementById('norm-data'), fileData.normalizedOutput.csv_data);
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting raw tab data: ${baseName}_pl_data.csv</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-pl-data" class="language-csv"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-pl-data'), normalizedOutput.pl_data);
 
-    } else {
-        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Generating main JSON structure: ${docTitle.replace(/\.[^/.]+$/, ".json")}</p>`);
-        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-main" class="language-json"></code></pre>`);
-        await typeGenerativeContent(document.getElementById('norm-main'), fileData.normalizedOutput);
+    } else if (normalizedOutput.main) { // CIM or Word Doc
+        const isJson = normalizedOutput.main.trim().startsWith('{');
+        const outputFormat = isJson ? '.json' : '.md';
+        const language = isJson ? 'json' : 'markdown';
+        const baseName = docTitle.replace(/\.[^/.]+$/, "");
+
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Generating main ${outputFormat} structure: ${baseName}${outputFormat}</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-main" class="language-${language}"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-main'), normalizedOutput.main);
     }
 
     terminal.insertAdjacentHTML('beforeend', '<p class="terminal-log success">> Normalization complete. Output saved to memory.</p>');
     
-    await new Promise(r => setTimeout(r, 500));
-    simulateInterpretationAndCuration(fileData);
+    await new Promise(r => setTimeout(r, 300));
+    simulateInterpretationAndCuration(fileData, mockDataKey);
 }
 
-async function simulateInterpretationAndCuration(fileData) {
+async function simulateInterpretationAndCuration(fileData, mockDataKey) {
     const pane2 = document.getElementById('refinery-pane-2');
-    pane2.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">2. Interpret</h3><div class="refinery-loading-state"><div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div><p class="mt-4 text-secondary">ARIA is interpreting normalized JSON...</p></div></div>`;
+    pane2.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">2. Interpret</h3><div class="refinery-loading-state"><div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div><p class="mt-4 text-secondary">ARIA is interpreting normalized content...</p></div></div>`;
 
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 1500));
 
-    renderPane2_Interpretation(fileData);
+    renderPane2_Interpretation(fileData, mockDataKey);
     renderPane3_Curation(fileData);
 }
 
-function renderPane2_Interpretation(fileData) {
+function renderPane2_Interpretation(fileData, mockDataKey) {
     const pane2 = document.getElementById('refinery-pane-2');
+    const fileInfo = mockFileQueue.find(f => f.id === mockDataKey);
+    const docTitle = fileInfo ? fileInfo.title : "Selected Document";
+    const normalizedOutput = fileData.normalizedOutput;
+
+    let filesHTML = '';
+    if (normalizedOutput.bs_metadata) { // Excel
+        const baseName = docTitle.replace(/\.[^/.]+$/, "");
+        filesHTML = `
+            <div class="normalized-file-chip">${ICONS.excel} ${baseName}_bs_metadata.csv</div>
+            <div class="normalized-file-chip">${ICONS.excel} ${baseName}_bs_data.csv</div>
+            <div class="normalized-file-chip">${ICONS.excel} ${baseName}_pl_metadata.csv</div>
+            <div class="normalized-file-chip">${ICONS.excel} ${baseName}_pl_data.csv</div>
+        `;
+    } else if (normalizedOutput.main) { // CIM or Word
+        const isJson = normalizedOutput.main.trim().startsWith('{');
+        const baseName = docTitle.replace(/\.[^/.]+$/, "");
+        const icon = isJson ? ICONS.powerpoint : ICONS.word;
+        const extension = isJson ? '.json' : '.md';
+        filesHTML = `<div class="normalized-file-chip">${icon} ${baseName}${extension}</div>`;
+    }
+
     pane2.innerHTML = `
         <div class="refinery-card">
             <h3 class="refinery-title">2. Interpret</h3>
-            <div class="interpretation-content">
+            <div class="refinery-content-area">
                 <h4 class="font-semibold">AI-Generated Summary</h4>
                 <p class="text-sm text-secondary mb-4">${fileData.aiSummary}</p>
                 <h4 class="font-semibold">Key Entity Recognition</h4>
-                <div class="entity-text-box">
+                <div class="entity-text-box mb-4">
                     ${fileData.entityText}
                 </div>
+                <h4 class="font-semibold">Normalized Source Files</h4>
+                <div class="normalized-files-container">${filesHTML}</div>
             </div>
         </div>
     `;
 }
+
 
 function renderPane3_Curation(fileData) {
     const pane3 = document.getElementById('refinery-pane-3');
@@ -357,7 +414,7 @@ function renderPane3_Curation(fileData) {
     pane3.innerHTML = `
         <div class="refinery-card">
             <h3 class="refinery-title">3. Curate & Contextualize</h3>
-            <div class="curation-form">
+            <div class="refinery-content-area curation-form">
                 <h4 class="font-semibold mb-2">Metadata</h4>
                 <div class="form-group">
                     <label for="entity-association">Associate with:</label>
