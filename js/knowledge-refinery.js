@@ -6,6 +6,8 @@ const mockFileQueue = [
     { id: 'TechFlow_CIM.pptx', title: 'TechFlow CIM.pptx', description: 'Confidential Information Memorandum for Project Tiger.', source: 'Data Room', date: '2025-08-11', status: 'Recommended', icon: 'powerpoint', knowledgeType: 'Context', subType: 'DD Data Room' },
     { id: 'Updated_Pricing_Model_Analysis.docx', title: 'Updated_Pricing_Model_Analysis.docx', description: 'Analysis of a proposed value-based pricing model.', source: 'Repository Upload', date: '2025-08-05', status: 'Recommended', icon: 'word', knowledgeType: 'Domain Knowledge', subType: 'Playbooks' },
     { id: 'Financial_Statements_2024.xlsx', title: 'TechFlow Consolidated P&L.xls', description: 'Audited financials for FY2024, including P&L and Balance Sheet.', source: 'Data Room', date: '2025-08-10', status: 'Recommended', icon: 'excel', knowledgeType: 'Internal Data', subType: 'Financial Reports' },
+    { id: 'WW_Pipeline_CloudAdvantage.xls', title: 'WW Pipeline CloudAdvantage H2 - By Stage, weighted.xls', description: 'H2 2025 sales pipeline report with weighted forecast.', source: 'Repository Upload', date: '2025-08-12', status: 'Recommended', icon: 'excel', knowledgeType: 'Internal Data', subType: 'CRM Data' },
+    { id: 'SAP_RevRec_CloudVantage.xls', title: 'SAP_RevRec_LTM_CloudVantage.xls', description: 'LTM recognized revenue by customer from SAP.', source: 'ERP System', date: '2025-08-12', status: 'Recommended', icon: 'excel', knowledgeType: 'Internal Data', subType: 'ERP Systems' },
     // Awaiting Curation
     { id: 'Capitalization_Table_v4.xlsx', title: 'Capitalization_Table_v4.xlsx', description: 'Detailed breakdown of equity ownership and dilution.', source: 'Data Room', date: '2025-08-10', status: 'Awaiting Curation', icon: 'excel', knowledgeType: 'Context', subType: 'Financial Model' },
     { id: 'Customer_Contracts_Top_50.zip', title: 'Customer_Contracts_Top_50.zip', description: 'Archive of MSAs and SOWs for the top 50 customers.', source: 'Data Room', date: '2025-08-10', status: 'Awaiting Curation', icon: 'word', knowledgeType: 'Context', subType: 'DD Data Room' },
@@ -44,7 +46,7 @@ const mockDocumentData = {
         normalizedOutput: mockNormalizedOutputs['TechFlow Consolidated P&L.xls'],
         aiSummary: "The spreadsheet contains standard financial statements (P&L, Balance Sheet) for FY2022-2024. Key metrics show revenue growing to an estimated $28M in FY2024 with a 15.1% increase in Gross Profit. EBITDA turns positive, growing to $560K in the latest year.",
         entityText: `Analysis of the P&L shows consistent top-line growth, with <mark class="entity-kpi">Revenue</mark> reaching <mark class="entity-kpi">$28M (Est)</mark> in FY2024. <mark class="entity-kpi">Gross Profit</mark> increased by <mark class="entity-kpi">15.1%</mark> in the same period. A key positive trend is the <mark class="entity-kpi">EBITDA</mark> swinging from negative to <mark class="entity-kpi">$560K</mark>, indicating improving operational leverage. This is a critical point for the <mark class="entity-strategy">investment thesis</mark>.`,
-        metadata: { entity: 'techflow-solutions', sourceType: 'internalData', subSourceType: 'financialReports', tags: 'FY2024, Audited, P&L' },
+        metadata: { entity: 'techflow-solutions', sourceType: 'context', subSourceType: 'ddDataRoom', tags: 'FY2024, Audited, P&L' },
         extracted: {
             'Document Type': 'Audited Financial Statement (XLSX)',
             'Fiscal Year End': '2024 (Est.)',
@@ -96,6 +98,40 @@ const mockDocumentData = {
                 "Low customer concentration (Top 10 = 11% of bookings) reduces single-account risk."
             ]
         }
+    },
+    'WW_Pipeline_CloudAdvantage.xls': {
+        normalizedOutput: mockNormalizedOutputs['WW_Pipeline_CloudAdvantage.xls'],
+        aiSummary: "The pipeline report for H2 2025 contains 55 opportunities with a total weighted value of $12.5M. Analysis indicates a high concentration risk, with the top 4 deals comprising 65% of the total weighted value. Notably, the largest deal, 'Project Titan' with Apex Solutions, has been in the sales cycle for an extended period of 14 months, suggesting it may be stalled.",
+        entityText: `The H2 2025 pipeline for <mark class="entity-company">CloudVantage</mark> has a weighted value of <mark class="entity-kpi">$12.5M</mark> across <mark class="entity-kpi">55 opportunities</mark>. A significant <mark class="entity-risk">concentration risk</mark> exists, with the top 4 deals representing 65% of this value. The largest opportunity, <mark class="entity-strategy">'Project Titan'</mark> with <mark class="entity-company">Apex Solutions</mark>, has a stalled sales cycle of <mark class="entity-date">14 months</mark>, posing a risk to the forecast.`,
+        metadata: { entity: 'cloudvantage', sourceType: 'internalData', subSourceType: 'cRMData', tags: 'Pipeline, H2 2025, Forecast' },
+        extracted: {
+            'Document Type': 'Pipeline Report (XLSX)',
+            'Time Period': 'H2 2025 (ending 12/31/2025)',
+            'Total Opportunities': '55',
+            'Weighted Pipeline Value': '$12,500,000',
+            'Key Findings': [
+                "High concentration risk: Top 4 deals represent 65% of total weighted pipeline.",
+                "One major deal ($2M) has been in the sales cycle for 14 months, indicating potential stagnation.",
+                "Healthy pipeline coverage at 3.5x the quarterly target."
+            ]
+        }
+    },
+    'SAP_RevRec_CloudVantage.xls': {
+        normalizedOutput: mockNormalizedOutputs['SAP_RevRec_CloudVantage.xls'],
+        aiSummary: "The LTM revenue recognition report from SAP details monthly revenue for 152 customers, totaling $78M. The data shows highly consistent monthly recurring revenue, indicative of a stable subscription base. Cohort analysis confirms strong customer health with a calculated Net Revenue Retention (NRR) of 128%. No significant customer concentration issues were identified in the recognized revenue base.",
+        entityText: `The LTM report from <mark class="entity-strategy">SAP</mark> for <mark class="entity-company">CloudVantage</mark> covers <mark class="entity-kpi">152 customers</mark> and a total recognized revenue of <mark class="entity-kpi">$78M</mark>. The data confirms a strong <mark class="entity-kpi">Net Revenue Retention of 128%</mark>, driven by consistent monthly recognition and successful upsells, such as with <mark class="entity-company">Global Health Inc.</mark> in <mark class="entity-date">Jan 2025</mark>.`,
+        metadata: { entity: 'cloudvantage', sourceType: 'internalData', subSourceType: 'eRPSystems', tags: 'LTM, Revenue, SAP, Audited' },
+        extracted: {
+            'Document Type': 'Revenue Recognition Report (XLSX)',
+            'Time Period': 'LTM (Last Twelve Months)',
+            'Total Customers': '152',
+            'Total Recognized Revenue': '$78,000,000',
+            'Key Findings': [
+                "Consistent monthly revenue recognition indicates a stable subscription base.",
+                "Cohort analysis of the data confirms a strong Net Revenue Retention (NRR) of 128%.",
+                "No significant customer concentration found in the LTM recognized revenue."
+            ]
+        }
     }
 };
 
@@ -128,14 +164,30 @@ function initializeRefineryPage() {
         <div class="refinery-card">
             <h3 class="refinery-title">1. Normalize</h3>
             <button data-action="upload-report" class="primary-button w-full mb-4">Ingest New Document...</button>
-            <div class="refinery-empty-state">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                <p>Select a document from the ingestion queue to begin.</p>
+            <div class="refinery-content-area">
+                <div class="refinery-empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <p>Select a document from the ingestion queue to begin.</p>
+                </div>
             </div>
         </div>
     `;
-    pane2.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">2. Interpret</h3><div class="refinery-empty-state"><p>Awaiting document normalization...</p></div></div>`;
-    pane3.innerHTML = `<div class="refinery-card"><h3 class="refinery-title">3. Curate & Contextualize</h3><div class="refinery-empty-state"><p>Awaiting interpretation...</p></div></div>`;
+    pane2.innerHTML = `
+        <div class="refinery-card">
+            <h3 class="refinery-title">2. Interpret</h3>
+            <div class="refinery-content-area">
+                <div class="refinery-empty-state"><p>Awaiting document normalization...</p></div>
+            </div>
+        </div>
+    `;
+    pane3.innerHTML = `
+        <div class="refinery-card">
+            <h3 class="refinery-title">3. Curate & Contextualize</h3>
+            <div class="refinery-content-area">
+                <div class="refinery-empty-state"><p>Awaiting interpretation...</p></div>
+            </div>
+        </div>
+    `;
 }
 
 function renderFileSelectionModal() {
@@ -169,42 +221,47 @@ function renderFileSelectionModal() {
     let html = '';
     for (const [status, files] of Object.entries(statusGroups)) {
         if (files.length > 0) {
-            html += `<h4 class="ingestion-section-title">${status}</h4>`;
-            html += files.map(renderFileItem).join('');
+            const isRecommended = status === 'Recommended';
+            html += `
+                <div class="ingestion-section-title" data-action="toggle-ingestion-category">
+                    <span>${status} (${files.length})</span>
+                    <svg class="chevron-icon ${isRecommended ? 'expanded' : ''}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div class="ingestion-file-list-group ${isRecommended ? '' : 'collapsed'}">
+                    ${files.map(renderFileItem).join('')}
+                </div>
+            `;
         }
     }
     fileListContainer.innerHTML = html;
+
+      const expandedGroup = fileListContainer.querySelector('.ingestion-file-list-group:not(.collapsed)');
+    if (expandedGroup) {
+        // The setTimeout ensures this runs after the browser has painted the new HTML
+        setTimeout(() => {
+            expandedGroup.style.maxHeight = expandedGroup.scrollHeight + 'px';
+        }, 0);
+    }
 }
 
 function applyIngestionFilters() {
     const searchTerm = document.getElementById('ingestion-search-input').value.toLowerCase();
     const sourceFilter = document.getElementById('ingestion-source-filter').value;
     const allItems = document.querySelectorAll('.file-list-item');
-    const headers = document.querySelectorAll('.ingestion-section-title');
+    const allHeaders = document.querySelectorAll('.ingestion-section-title');
 
     allItems.forEach(item => {
         const searchContent = item.dataset.searchContent;
         const source = item.dataset.source;
         const searchMatch = searchContent.includes(searchTerm);
         const sourceMatch = (sourceFilter === 'all' || source === sourceFilter);
-
-        if (searchMatch && sourceMatch) {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = 'none';
-        }
+        item.style.display = (searchMatch && sourceMatch) ? 'flex' : 'none';
     });
 
-    headers.forEach(header => {
-        let nextElement = header.nextElementSibling;
-        let visibleItemsInCategory = 0;
-        while (nextElement && !nextElement.classList.contains('ingestion-section-title')) {
-            if (nextElement.classList.contains('file-list-item') && nextElement.style.display !== 'none') {
-                visibleItemsInCategory++;
-            }
-            nextElement = nextElement.nextElementSibling;
-        }
-        header.style.display = visibleItemsInCategory > 0 ? 'block' : 'none';
+    allHeaders.forEach(header => {
+        const group = header.nextElementSibling;
+        const visibleItems = group.querySelectorAll('.file-list-item[style*="display: flex"]');
+        header.style.display = visibleItems.length > 0 ? 'flex' : 'none';
     });
 }
 
@@ -240,6 +297,17 @@ function initializeRefineryListeners() {
                 const confirmModal = document.getElementById('confirmation-modal');
                 if (confirmModal) confirmModal.style.display = 'none';
                 initializeRefineryPage();
+                break;
+            case 'toggle-ingestion-category':
+                const group = target.nextElementSibling;
+                const chevron = target.querySelector('.chevron-icon');
+                const isCollapsed = group.classList.toggle('collapsed');
+                chevron.classList.toggle('expanded', !isCollapsed);
+                if (!isCollapsed) {
+                    group.style.maxHeight = group.scrollHeight + 'px';
+                } else {
+                    group.style.maxHeight = null;
+                }
                 break;
         }
     });
@@ -303,7 +371,7 @@ async function simulateNormalization(fileData, mockDataKey) {
     terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Detected format: ${docTitle.split('.').pop()}. Analyzing structure...</p>`);
     await new Promise(r => setTimeout(r, 150));
 
-    if (normalizedOutput.bs_metadata) { // Excel file
+    if (normalizedOutput.bs_metadata) { // Excel file with multiple tabs
         terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Found multiple tabs. Generating 4 outputs...</p>`);
         await new Promise(r => setTimeout(r, 100));
         const baseName = docTitle.replace(/\.[^/.]+$/, "");
@@ -323,6 +391,19 @@ async function simulateNormalization(fileData, mockDataKey) {
         terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting raw tab data: ${baseName}_pl_data.csv</p>`);
         terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-pl-data" class="language-csv"></code></pre>`);
         await typeGenerativeContent(document.getElementById('norm-pl-data'), normalizedOutput.pl_data);
+
+    } else if (normalizedOutput.metadata && normalizedOutput.data) { // Excel file with single tab (e.g., Pipeline, SAP)
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Found single data table. Generating 2 outputs...</p>`);
+        await new Promise(r => setTimeout(r, 100));
+        const baseName = docTitle.replace(/\.[^/.]+$/, "");
+
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting table metadata: ${baseName}_metadata.csv</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-meta" class="language-csv"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-meta'), normalizedOutput.metadata);
+
+        terminal.insertAdjacentHTML('beforeend', `<p class="terminal-log">> Extracting raw table data: ${baseName}_data.csv</p>`);
+        terminal.insertAdjacentHTML('beforeend', `<pre><code id="norm-data" class="language-csv"></code></pre>`);
+        await typeGenerativeContent(document.getElementById('norm-data'), normalizedOutput.data);
 
     } else if (normalizedOutput.main) { // CIM or Word Doc
         const isJson = normalizedOutput.main.trim().startsWith('{');
@@ -358,17 +439,22 @@ function renderPane2_Interpretation(fileData, mockDataKey) {
     const normalizedOutput = fileData.normalizedOutput;
 
     let filesHTML = '';
-    if (normalizedOutput.bs_metadata) { // Excel
-        const baseName = docTitle.replace(/\.[^/.]+$/, "");
+    const baseName = docTitle.replace(/\.[^/.]+$/, "");
+
+    if (normalizedOutput.bs_metadata) { // P&L Excel
         filesHTML = `
             <div class="normalized-file-chip">${ICONS.excel} ${baseName}_bs_metadata.csv</div>
             <div class="normalized-file-chip">${ICONS.excel} ${baseName}_bs_data.csv</div>
             <div class="normalized-file-chip">${ICONS.excel} ${baseName}_pl_metadata.csv</div>
             <div class="normalized-file-chip">${ICONS.excel} ${baseName}_pl_data.csv</div>
         `;
+    } else if (normalizedOutput.metadata && normalizedOutput.data) { // Pipeline or SAP Excel
+        filesHTML = `
+            <div class="normalized-file-chip">${ICONS.excel} ${baseName}_metadata.csv</div>
+            <div class="normalized-file-chip">${ICONS.excel} ${baseName}_data.csv</div>
+        `;
     } else if (normalizedOutput.main) { // CIM or Word
         const isJson = normalizedOutput.main.trim().startsWith('{');
-        const baseName = docTitle.replace(/\.[^/.]+$/, "");
         const icon = isJson ? ICONS.powerpoint : ICONS.word;
         const extension = isJson ? '.json' : '.md';
         filesHTML = `<div class="normalized-file-chip">${icon} ${baseName}${extension}</div>`;
@@ -465,7 +551,7 @@ function initializeCascadingDropdowns(metadata) {
         context: ['DD Data Room', 'Investment Thesis', 'Financial Model', 'Meeting Transcripts'],
         domainKnowledge: ['Playbooks', 'KPI Library', 'Maturity Model', 'Industry Benchmarks'],
         externalData: ['Analyst Reports', 'PitchBook', 'LinkedIn', 'Glassdoor', 'Web Research', 'News Feeds'],
-        internalData: ['Financial Reports', 'CRM Data', 'HCM Systems', 'DevOps Metrics', 'Customer Success Platforms']
+        internalData: ['Financial Reports', 'CRM Data', 'ERP Systems', 'HCM Systems', 'DevOps Metrics', 'Customer Success Platforms']
     };
 
     const populateSubSource = () => {

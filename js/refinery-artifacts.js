@@ -102,5 +102,46 @@ This change aligns our pricing with market leaders like **Integrix** and **Maste
     }
   ]
 }`
+    },
+    // NEW ARTIFACT 1: Salesforce Pipeline
+    'WW_Pipeline_CloudAdvantage.xls': {
+        metadata: `column_name,dtype,description
+Opportunity Name,string,"Unique name for the sales opportunity"
+Account Name,string,"Associated customer account"
+Stage,category,"Current stage in the sales cycle"
+Amount,currency,"Total potential contract value"
+Weighted Amount,currency,"Deal value weighted by probability of close"
+Close Date,date,"Projected close date for the opportunity"
+Created Date,date,"Date the opportunity was created"`,
+        data: `Opportunity Name,Account Name,Stage,Amount,Weighted Amount,Close Date,Created Date
+Project Titan,Apex Solutions,Negotiation,2000000,1600000,2025-12-15,2024-06-10
+Project Phoenix,Global Health Inc.,Proposal,1500000,750000,2025-11-30,2025-07-01
+Project Atlas,Stellar Technologies,Proposal,1200000,600000,2025-12-20,2025-08-15
+Project Nova,Fusion Micro,Qualification,800000,160000,2025-10-25,2025-09-05
+Project Gamma,Horizon Solutions,Negotiation,1000000,800000,2025-12-28,2025-06-20`
+    },
+    // NEW ARTIFACT 2: SAP Revenue Recognition
+    'SAP_RevRec_CloudVantage.xls': {
+        metadata: `column_name,dtype,description
+CustomerID,integer,"Unique identifier for the customer account"
+CustomerName,string,"Legal name of the customer"
+Jul-24,currency,"Recognized revenue for July 2024"
+Aug-24,currency,"Recognized revenue for August 2024"
+Sep-24,currency,"Recognized revenue for September 2024"
+Oct-24,currency,"Recognized revenue for October 2024"
+Nov-24,currency,"Recognized revenue for November 2024"
+Dec-24,currency,"Recognized revenue for December 2024"
+Jan-25,currency,"Recognized revenue for January 2025"
+Feb-25,currency,"Recognized revenue for February 2025"
+Mar-25,currency,"Recognized revenue for March 2025"
+Apr-25,currency,"Recognized revenue for April 2025"
+May-25,currency,"Recognized revenue for May 2025"
+Jun-25,currency,"Recognized revenue for June 2025"`,
+        data: `CustomerID,CustomerName,Jul-24,Aug-24,Sep-24,Oct-24,Nov-24,Dec-24,Jan-25,Feb-25,Mar-25,Apr-25,May-25,Jun-25
+1001,Global Health Inc.,45000,45000,45000,45000,45000,45000,55000,55000,55000,55000,55000,55000
+1002,Apex Solutions,38000,38000,38000,38000,38000,38000,38000,38000,38000,42000,42000,42000
+1003,Stellar Technologies,22000,22000,22000,22000,25000,25000,25000,25000,25000,25000,25000,25000
+1004,Fusion Micro,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000,15000
+1005,Horizon Solutions,12500,12500,12500,12500,12500,12500,12500,12500,12500,12500,12500,12500`
     }
 };
