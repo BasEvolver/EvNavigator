@@ -4777,3 +4777,330 @@ mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3
     padding: 0.125rem 0.5rem;
     border-radius: 0.25rem;
 }
+
+/* =================================================================
+   KNOWLEDGE REFINERY - INGESTION MODAL V2
+   ================================================================= */
+.ingestion-modal-content {
+    background-color: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 700px; /* Wider modal */
+    box-shadow: 0 10px 25px var(--shadow-hover);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.ingestion-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.ingestion-modal-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.ingestion-modal-controls {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    flex-shrink: 0;
+}
+
+.ingestion-search-bar {
+    flex-grow: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+.ingestion-search-bar:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.ingestion-filter {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.ingestion-file-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ingestion-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.file-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.file-list-item:hover {
+    border-color: var(--accent-blue);
+    background-color: var(--bg-hover);
+}
+
+.file-item-icon { flex-shrink: 0; }
+.file-item-info { flex-grow: 1; }
+.file-item-status { flex-shrink: 0; }
+
+.file-item-metadata {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+.metadata-tag {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background-color: var(--bg-hover);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* css/styles.css - ADD THESE STYLES AT THE END OF THE FILE */
+
+/* =================================================================
+   KNOWLEDGE REFINERY - V3 ENHANCEMENTS
+   ================================================================= */
+
+/* --- Ingestion Modal --- */
+.ingestion-modal-content {
+    background-color: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 700px;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+.ingestion-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.ingestion-modal-header .close-btn {
+    background: none; border: none; font-size: 1.5rem;
+    color: var(--text-muted); cursor: pointer;
+}
+.ingestion-modal-controls {
+    display: flex; gap: 0.75rem; padding: 1rem 0; flex-shrink: 0;
+}
+.ingestion-search-bar {
+    flex-grow: 1; padding: 0.5rem 0.75rem; border-radius: 0.5rem;
+    border: 1px solid var(--border-color); background-color: var(--bg-secondary);
+}
+.ingestion-search-bar:focus { outline: none; border-color: var(--accent-blue); }
+.ingestion-filter {
+    padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary); color: var(--text-secondary);
+}
+.ingestion-file-list {
+    flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;
+}
+.ingestion-section-title {
+    font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
+    margin-top: 0.5rem; margin-bottom: 0.25rem; padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.file-list-item {
+    display: flex; align-items: center; gap: 1rem; padding: 0.75rem;
+    border-radius: 0.5rem; border: 1px solid transparent; cursor: pointer; transition: all 0.2s ease;
+}
+.file-list-item:hover { border-color: var(--accent-blue); background-color: var(--bg-hover); }
+.file-item-icon { flex-shrink: 0; }
+.file-item-info { flex-grow: 1; }
+.file-item-status { flex-shrink: 0; }
+.file-item-metadata { display: flex; gap: 0.75rem; margin-top: 0.25rem; }
+.metadata-tag {
+    font-size: 0.75rem; color: var(--text-muted); background-color: var(--bg-hover);
+    padding: 0.125rem 0.5rem; border-radius: 0.25rem;
+}
+
+/* --- Normalization Terminal --- */
+.normalization-terminal {
+    background-color: #0d1117; /* GitHub dark */
+    color: #c9d1d9; /* GitHub light gray */
+    font-family: 'Courier New', Courier, monospace;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 0.875rem;
+}
+.terminal-log { margin-bottom: 0.5rem; }
+.terminal-log.success { color: #56d364; /* GitHub green */ }
+#normalized-output-code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #79c0ff; /* GitHub blue for JSON */
+}
+
+/* --- Confirmation Modal --- */
+.confirmation-modal-content {
+    background-color: var(--bg-card); padding: 2rem; border-radius: 0.75rem;
+    width: 90%; max-width: 450px; text-align: center;
+}
+.confirmation-icon {
+    width: 48px; height: 48px; background-color: #D1FAE5; color: #065F46;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+}
+[data-theme="dark"] .confirmation-icon { background-color: #064e3b; color: #a7f3d0; }
+
+/* css/styles.css - ADD THESE STYLES AT THE END OF THE FILE */
+
+/* =================================================================
+   KNOWLEDGE REFINERY - V4 ENHANCEMENTS
+   ================================================================= */
+
+/* --- Multi-color Entity Highlighting --- */
+mark.entity-strategy { background-color: #dbeafe; padding: 2px 4px; border-radius: 3px; } /* blue */
+mark.entity-kpi { background-color: #dcfce7; padding: 2px 4px; border-radius: 3px; } /* green */
+mark.entity-company { background-color: #f3e8ff; padding: 2px 4px; border-radius: 3px; } /* purple */
+mark.entity-date { background-color: #feefc7; padding: 2px 4px; border-radius: 3px; } /* orange */
+mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3px; } /* red */
+
+/* --- Normalization Terminal --- */
+.normalization-terminal {
+    background-color: #0d1117; /* GitHub dark */
+    color: #c9d1d9; /* GitHub light gray */
+    font-family: 'Courier New', Courier, monospace;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 0.875rem;
+}
+.terminal-log { margin-bottom: 0.5rem; }
+.terminal-log.success { color: #56d364; /* GitHub green */ }
+#normalized-output-code, #norm-main, #norm-meta, #norm-data {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #79c0ff; /* GitHub blue for JSON */
+}
+#norm-meta, #norm-data {
+    color: #c9d1d9; /* GitHub light gray for CSV */
+}
+
+/* --- Confirmation Modal --- */
+.confirmation-modal-content {
+    background-color: var(--bg-card);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+}
+.confirmation-icon {
+    width: 48px;
+    height: 48px;
+    background-color: #D1FAE5;
+    color: #065F46;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+[data-theme="dark"] .confirmation-icon {
+    background-color: #064e3b;
+    color: #a7f3d0;
+}
+
+/* css/styles.css - ADD THESE STYLES AT THE END OF THE FILE */
+
+/* =================================================================
+   KNOWLEDGE REFINERY - V5 ENHANCEMENTS
+   ================================================================= */
+
+/* --- Multi-color Entity Highlighting --- */
+mark.entity-strategy { background-color: #dbeafe; padding: 2px 4px; border-radius: 3px; color: #1e40af; } /* blue */
+mark.entity-kpi { background-color: #dcfce7; padding: 2px 4px; border-radius: 3px; color: #166534; } /* green */
+mark.entity-company { background-color: #f3e8ff; padding: 2px 4px; border-radius: 3px; color: #581c87; } /* purple */
+mark.entity-date { background-color: #fef3c7; padding: 2px 4px; border-radius: 3px; color: #92400e; } /* amber */
+mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3px; color: #991b1b; } /* red */
+
+/* --- Normalization Terminal --- */
+.normalization-terminal {
+    background-color: #0d1117; /* GitHub dark */
+    color: #c9d1d9; /* GitHub light gray */
+    font-family: 'Courier New', Courier, monospace;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 0.875rem;
+}
+.terminal-log { margin-bottom: 0.5rem; }
+.terminal-log.success { color: #56d364; /* GitHub green */ }
+#normalized-output-code, #norm-main, #norm-meta, #norm-data {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #79c0ff; /* GitHub blue for JSON */
+}
+#norm-meta, #norm-data {
+    color: #c9d1d9; /* GitHub light gray for CSV */
+}
+
+/* --- Confirmation Modal --- */
+.confirmation-modal-content {
+    background-color: var(--bg-card);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+}
+.confirmation-icon {
+    width: 48px;
+    height: 48px;
+    background-color: #D1FAE5;
+    color: #065F46;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+[data-theme="dark"] .confirmation-icon {
+    background-color: #064e3b;
+    color: #a7f3d0;
+}
