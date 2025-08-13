@@ -47,7 +47,7 @@ function renderPortfolioPage() {
                             <svg class="chevron-icon expanded" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                         </div>
                         <div class="priority-alerts-grid expanded">
-                            <button class="suggested-action-card" data-action="navigate-to-aria-with-prompt" data-company-id="techflow-solutions" data-prompt-text="Drill down on the TechFlow diligence block." data-workstream-id="tech">
+                            <button class="suggested-action-card" data-action="navigate-to-portco-task" data-company-id="techflow-solutions" data-task-id="DD-16" data-expand-phase="phase-Phase2-DeepDive">
                                 <p class="font-semibold text-sm text-primary">[TechFlow] Technical Diligence Blocked</p>
                                 <p class="text-xs text-secondary">The 'Code Scan' task is late, blocking the entire Technology workstream.</p>
                             </button>
@@ -55,7 +55,7 @@ function renderPortfolioPage() {
                                 <p class="font-semibold text-sm text-primary">[TechFlow] Critical Anomalies Discovered</p>
                                 <p class="text-xs text-secondary">3 critical and 12 other anomalies could materially impact valuation.</p>
                             </button>
-                            <button class="suggested-action-card" data-action="navigate-to-aria-with-prompt" data-company-id="cloudvantage" data-prompt-text="Assess the CloudVantage AI feature delay." data-workstream-id="product">
+                            <button class="suggested-action-card" data-action="view-company" data-company-id="cloudvantage">
                                 <p class="font-semibold text-sm text-primary">[CloudVantage] AI Feature Launch At Risk</p>
                                 <p class="text-xs text-secondary">The flagship AI-Powered Feature is behind schedule, putting the critical Q4 launch at risk.</p>
                             </button>
@@ -129,7 +129,6 @@ function runPortfolioPrompt(promptText) {
 // --- RESPONSE DATA MAP ---
 
 const portfolioResponses = {
-    // RESTORED ALERT RESPONSES FOR IN-PAGE CONVERSATION
     "Show me the priority alerts.": {
         renderFunc: () => `
             <h2 class="response-title">Top 3 Priority Alerts</h2>
@@ -221,8 +220,6 @@ const portfolioResponses = {
         ],
         followUpQuestions: ["Who is the lead engineer on the AI feature?", "What is the new projected launch date?"]
     },
-
-    // ORIGINAL PORTFOLIO RESPONSES
     "How did the portfolio perform over the past 12 months?": {
         renderFunc: () => `<h2 class="response-title">Portfolio Performance: Last 12 Months</h2><div class="chart-wrapper"><canvas id="portfolio-performance-chart"></canvas></div><div class="chart-narrative"><p>Overall performance is strong, with a notable <strong>EBITDA dip in November</strong> from one-time integration costs and a <strong>sharp ARR spike in May</strong> driven by CloudVantage landing two major enterprise deals.</p></div>`,
         chartDrawFunc: drawPerformanceChart,
@@ -699,6 +696,14 @@ function initializePortfolioEventListeners() {
                 const workstreamId = target.dataset.workstreamId;
                 if (companyId && promptText && workstreamId) {
                     window.location.href = `aria.html?company=${companyId}&prompt=${encodeURIComponent(promptText)}&workstream=${workstreamId}`;
+                }
+                break;
+            case 'navigate-to-portco-task':
+                const companyIdTask = target.dataset.companyId;
+                const taskId = target.dataset.taskId;
+                const expandPhase = target.dataset.expandPhase;
+                if (companyIdTask && taskId && expandPhase) {
+                    window.location.href = `portco.html?company=${companyIdTask}&openTask=${taskId}&expandPhase=${expandPhase}`;
                 }
                 break;
             // THIS IS THE CRITICAL CASE FOR THE SEND BUTTON

@@ -136,6 +136,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!document.getElementById('file-attachment-input')) {
             document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
         }
+
+        // NEW LOGIC TO HANDLE INCOMING ACTIONS FROM URL
+        const taskToOpen = urlParams.get('openTask');
+        const phaseToExpand = urlParams.get('expandPhase');
+
+        if (phaseToExpand) {
+            setTimeout(() => {
+                const phaseHeader = document.querySelector(`.gantt-row[data-row-id="${phaseToExpand}"]`);
+                if (phaseHeader) {
+                    const toggleElement = phaseHeader.querySelector('[data-action="toggle-rows"]');
+                    if (toggleElement) {
+                        const icon = toggleElement.querySelector('.chevron-icon');
+                        if (icon && !icon.classList.contains('rotate-180')) {
+                            toggleElement.click();
+                        }
+                    }
+                }
+            }, 100); 
+        }
+
+        if (taskToOpen) {
+            setTimeout(() => {
+                renderTaskDetailModal(taskToOpen);
+            }, 200);
+        }
     }
 });
 
