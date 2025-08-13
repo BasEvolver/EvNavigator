@@ -71,12 +71,15 @@ const Utils = {
 function updateLogoForTheme(theme) {
     const fullLogo = document.getElementById('full-logo');
     const iconLogo = document.getElementById('icon-logo');
+    
+    // Handles the full-size logo
     if (fullLogo) {
         fullLogo.src = (theme === 'dark') ? 'Navigator lock up_white_25.png' : 'Navigator lock up_Veridian_25.png';
     }
-    // New logic for the icon logo
+    
+    // Handles the small icon logo with your new filenames
     if (iconLogo) {
-        iconLogo.src = (theme === 'dark') ? 'navigator-icon-white.png' : 'navigator-icon-blue.png';
+        iconLogo.src = (theme === 'dark') ? 'Evolver_Dark.png' : 'Evolver_light.png';
     }
 }
 
@@ -198,48 +201,79 @@ const Navigation = {
     },
     
     initializeSidebarInteractions() {
-        if (window.sidebarListenersAttached) {
-            return;
-        }
- const sidebar = document.getElementById('sidebar');
+    if (window.sidebarListenersAttached) {
+        return;
+    }
+
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    // --- THEME TOGGLE LOGIC ---
+    const themeToggleButton = document.getElementById('theme-toggle-button');
+    if (themeToggleButton) {
+        themeToggleButton.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateLogoForTheme(newTheme);
+        });
+    }
+
+    // --- SIDEBAR COLLAPSE LOGIC ---
     const collapseButton = document.getElementById('sidebar-collapse-button');
     const collapseIconLeft = document.getElementById('collapse-icon-left');
     const collapseIconRight = document.getElementById('collapse-icon-right');
 
-    if (sidebar && collapseButton && collapseIconLeft && collapseIconRight) {
-        const setSidebarState = (isCollapsed) => {
-            sidebar.classList.toggle('collapsed', isCollapsed);
+    const setSidebarState = (isCollapsed) => {
+        sidebar.classList.toggle('collapsed', isCollapsed);
+        document.documentElement.classList.remove('sidebar-collapsed-preload');
+        if (collapseIconLeft && collapseIconRight) {
             collapseIconLeft.classList.toggle('hidden', isCollapsed);
             collapseIconRight.classList.toggle('hidden', !isCollapsed);
-        };
+        }
+    };
 
-        const savedSidebarState = localStorage.getItem('sidebarCollapsed') === 'true';
-        setSidebarState(savedSidebarState);
+    // Set initial state from localStorage
+    const savedSidebarState = localStorage.getItem('sidebarCollapsed') === 'true';
+    setSidebarState(savedSidebarState);
 
+    // Listener for the main collapse button
+    if (collapseButton) {
         collapseButton.addEventListener('click', () => {
             const isCurrentlyCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', !isCurrentlyCollapsed);
-            setSidebarState(!isCurrentlyCollapsed);
+            const newState = !isCurrentlyCollapsed;
+            localStorage.setItem('sidebarCollapsed', newState);
+            setSidebarState(newState);
         });
     }
-        const themeToggleButton = document.getElementById('theme-toggle-button');
-        if (themeToggleButton) {
-            themeToggleButton.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateLogoForTheme(newTheme);
-            });
-        }
+    
+    // --- MAIN EVENT LISTENER FOR ALL OTHER SIDEBAR CLICKS ---
+    document.body.addEventListener('click', (e) => {
+        const target = e.target;
+        
+        // Logic for Submenus like "Knowledge"
+        const parentLink = target.closest('[data-is-parent="true"]');
+        if (parentLink) {
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                // If collapsed, expand the whole sidebar and open the submenu
+                e.preventDefault();
+                localStorage.setItem('sidebarCollapsed', 'false');
+                setSidebarState(false);
+                
+                // We need to wait a moment for the CSS transition to start
+                setTimeout(() => {
+                    const parentLi = parentLink.closest('.nav-parent');
+                    const childrenUl = parentLi.querySelector('.nav-children');
+                    const chevron = parentLink.querySelector('.chevron-icon');
+                    childrenUl.style.maxHeight = childrenUl.scrollHeight + "px";
+                    chevron.classList.add('expanded');
+                }, 50);
 
-        document.body.addEventListener('click', (e) => {
-            const target = e.target;
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar) return;
-
-            const parentLink = target.closest('[data-page-parent]');
-            if (parentLink) {
+            } else {
+                // If expanded, just toggle the submenu
                 e.preventDefault();
                 const parentLi = parentLink.closest('.nav-parent');
                 const childrenUl = parentLi.querySelector('.nav-children');
@@ -248,43 +282,45 @@ const Navigation = {
 
                 childrenUl.style.maxHeight = isExpanded ? null : childrenUl.scrollHeight + "px";
                 chevron.classList.toggle('expanded', !isExpanded);
-                return;
             }
+            return;
+        }
 
-            const actionTarget = target.closest('[data-action]');
-            const settingsModal = sidebar.querySelector('#settings-popup-modal');
-            const settingsButton = sidebar.querySelector('[data-action="toggle-settings-popup"]');
-
-            if (actionTarget) {
-                const action = actionTarget.dataset.action;
-                switch (action) {
-                    case 'toggle-settings-popup':
-                        e.stopPropagation();
-                        settingsModal?.classList.toggle('visible');
-                        return;
-                    case 'reset-app-state':
-                        if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
-                            localStorage.removeItem('navigatorAppState');
-                            window.location.reload();
-                        }
-                        return;
-                    case 'logout':
-                        if (typeof window.logout === 'function') {
-                            window.logout();
-                        }
-                        return;
-                }
+        // Logic for other actions like Settings and Logout
+        const actionTarget = target.closest('[data-action]');
+        if (actionTarget) {
+            const action = actionTarget.dataset.action;
+            switch (action) {
+                case 'toggle-settings-popup':
+                    e.stopPropagation();
+                    document.getElementById('settings-popup-modal')?.classList.toggle('visible');
+                    return;
+                case 'reset-app-state':
+                    if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
+                        localStorage.clear(); // Clear all local storage for a full reset
+                        window.location.reload();
+                    }
+                    return;
+                case 'logout':
+                    if (typeof window.logout === 'function') {
+                        window.logout();
+                    }
+                    return;
             }
+        }
 
-            if (settingsModal && settingsModal.classList.contains('visible')) {
-                if (!settingsModal.contains(target) && !settingsButton.contains(target)) {
-                    settingsModal.classList.remove('visible');
-                }
+        // Logic to close the settings modal if clicking outside
+        const settingsModal = document.getElementById('settings-popup-modal');
+        const settingsButton = document.getElementById('settings-icon');
+        if (settingsModal && settingsModal.classList.contains('visible')) {
+            if (!settingsModal.contains(target) && !target.closest('[data-action="toggle-settings-popup"]')) {
+                settingsModal.classList.remove('visible');
             }
-        });
+        }
+    });
 
-        window.sidebarListenersAttached = true;
-    },
+    window.sidebarListenersAttached = true;
+},
 
     updateAll() {
         this.updateHeaderTitle();
@@ -310,7 +346,6 @@ async function loadSharedComponents() {
     }
     
     initializeTheme();
-    // MODIFIED: Call the new data initializer function here to ensure data is ready before any page logic runs.
     if (typeof initializeAssessmentData === 'function') {
         initializeAssessmentData();
     }

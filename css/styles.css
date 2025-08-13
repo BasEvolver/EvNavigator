@@ -94,9 +94,16 @@ html, body {
 #sidebar {
     background-color: var(--bg-card);
     border-right-color: var(--border-color);
-    transition: background-color 0.3s ease, border-color 0.3s ease;   
-     height: 100%;
-     padding: 1.5rem 2rem; 
+    transition: all 0.3s ease-in-out; /* Changed to 'all' for width transition */
+    height: 100%;
+    /* REMOVED PADDING FROM HERE */
+    display: flex; /* Added for flex-direction */
+    flex-direction: column; /* Added for layout */
+}
+
+/* ADD this new class for the menu's padding */
+.sidebar-menu-container {
+    padding: 1rem; /* Padding is now here */
 }
 
 #sidebar .border-b, #sidebar .border-t {
@@ -4921,14 +4928,14 @@ body.page-knowledge-refinery .knowledge-refinery-layout {
 #sidebar.collapsed .sidebar-footer .sidebar-text-wrapper {
     display: none; /* Hide the left-aligned icons */
 }
+.sidebar-collapsed-preload #sidebar {
+    width: 5rem;
+}
+
 
 /* =================================================================
    NEW SIDEBAR COLLAPSE STYLES V3 (Corrected)
    ================================================================= */
-#sidebar {
-    transition: width 0.3s ease-in-out;
-}
-
 #sidebar.collapsed {
     width: 5rem; /* 80px */
 }
@@ -4998,4 +5005,172 @@ body.page-knowledge-refinery .knowledge-refinery-layout {
 }
 #sidebar.collapsed .sidebar-footer .sidebar-text-wrapper {
     display: none;
+}
+
+/* Add this entire block to the end of styles.css */
+
+/* =================================================================
+   DARK MODE CONSISTENCY FIXES (V4)
+   ================================================================= */
+
+/* --- FIX 1: Set Global Background and Text Colors --- */
+/* This is the most critical fix. It ensures all pages, including the
+   one you screenshotted, correctly adopt the dark background and light text. */
+html, body { 
+    height: 100vh;
+    overflow: hidden; 
+    background-color: var(--bg-primary); /* Ensures the entire page background changes */
+    color: var(--text-primary);           /* Sets the default text color for the whole app */
+}
+
+/* --- FIX 2: Add Dark Mode Theme for Entity Highlighting --- */
+/* This fixes the black-text-on-dark-background issue for the 
+   highlighted entities in the Knowledge Refinery and ARIA responses. */
+[data-theme="dark"] mark.entity-strategy { background-color: #1e40af; color: #bfdbfe; }
+[data-theme="dark"] mark.entity-kpi { background-color: #064e3b; color: #a7f3d0; }
+[data-theme="dark"] mark.entity-company { background-color: #3b0764; color: #e9d5ff; }
+[data-theme="dark"] mark.entity-date { background-color: #78350f; color: #fde68a; }
+[data-theme="dark"] mark.entity-risk { background-color: #7f1d1d; color: #fecaca; }
+
+
+/* --- FIX 3: Create Theme Variables for the Normalization Terminal --- */
+/* This makes the terminal's colors theme-aware, ensuring it looks
+   consistent in both light and dark modes, even though it's a dark component. */
+:root {
+    --terminal-bg: #0d1117;
+    --terminal-text: #c9d1d9;
+    --terminal-json-text: #79c0ff;
+    --terminal-success-text: #56d364;
+}
+
+[data-theme="dark"] {
+    --terminal-bg: #0d1117; /* Stays the same in dark mode */
+    --terminal-text: #c9d1d9;
+    --terminal-json-text: #79c0ff;
+    --terminal-success-text: #56d364;
+}
+
+/* --- FIX 4: Apply Theme Variables to the Terminal --- */
+/* This updates the terminal component to use the new variables,
+   making its code cleaner and more maintainable. */
+.normalization-terminal {
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
+    font-family: 'Courier New', Courier, monospace;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+.terminal-log.success { 
+    color: var(--terminal-success-text);
+}
+#normalized-output-code, #norm-main {
+    color: var(--terminal-json-text);
+}
+#norm-meta, #norm-data {
+    color: var(--terminal-text);
+}
+
+/* =================================================================
+   PORTFOLIO PAGE - PRIORITY ALERTS BOX
+   ================================================================= */
+
+.priority-alerts-container {
+    background-color: var(--alert-bg);
+    border-left: 4px solid var(--alert-border);
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+}
+
+.priority-alerts-title {
+    font-weight: 700;
+    color: var(--alert-text);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.priority-alerts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Style the alert cards to stand out on the red background */
+.priority-alerts-container .suggested-action-card {
+    background-color: var(--bg-card); /* e.g., White in light mode */
+    border-color: #FEE2E2; /* A light red border */
+}
+
+/* Dark mode specific border for the alert cards */
+[data-theme="dark"] .priority-alerts-container .suggested-action-card {
+    border-color: #7f1d1d; /* A darker red border for dark mode */
+}
+
+/* Hover effect for the alert cards */
+.priority-alerts-container .suggested-action-card:hover {
+    border-color: var(--status-error); /* A stronger red on hover */
+    background-color: var(--bg-hover);
+}
+/* =================================================================
+   PORTFOLIO PAGE - PRIORITY ALERTS BOX (V2 - COLLAPSIBLE)
+   ================================================================= */
+
+.priority-alerts-container {
+    background-color: var(--alert-bg);
+    border-left: 4px solid var(--alert-border);
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--alert-border);
+}
+
+.priority-alerts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.priority-alerts-title {
+    font-weight: 700;
+    color: var(--alert-text);
+    font-size: 1rem;
+}
+
+.priority-alerts-header .chevron-icon {
+    color: var(--alert-text);
+    transition: transform 0.3s ease-in-out;
+    transform: rotate(90deg); /* Start pointing down (expanded) */
+}
+
+.priority-alerts-header .chevron-icon:not(.expanded) {
+    transform: rotate(0deg); /* Point right when collapsed */
+}
+
+.priority-alerts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    overflow: hidden;
+    max-height: 500px; /* Set a high max-height for the transition */
+    transition: max-height 0.3s ease-in-out, margin-top 0.3s ease-in-out;
+}
+
+.priority-alerts-grid.collapsed {
+    max-height: 0;
+    margin-top: 0;
+}
+
+.priority-alerts-container .suggested-action-card {
+    background-color: var(--bg-card);
+    border-color: #FEE2E2; /* Light red border */
+}
+
+[data-theme="dark"] .priority-alerts-container .suggested-action-card {
+    border-color: #7f1d1d; /* Darker red border for dark mode */
+}
+
+.priority-alerts-container .suggested-action-card:hover {
+    border-color: var(--status-error);
+    background-color: var(--bg-hover);
 }

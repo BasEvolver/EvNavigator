@@ -38,11 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 function initializeAriaPage() {
     const params = new URLSearchParams(window.location.search);
     const companyId = params.get('company') || 'techflow-solutions';
+    const prompt = params.get('prompt');
+    const workstreamId = params.get('workstream'); // Check for workstream
     const trigger = params.get('trigger');
 
     let state = loadState();
     state.selectedCompanyId = companyId;
-    state.techflowAria.activeWorkstream = null;
+    state.techflowAria.activeWorkstream = workstreamId; // Set active workstream from URL
     state.techflowAria.minorObservationsExpanded = false;
     saveState(state);
     Navigation.updateCompanySelector();
@@ -53,13 +55,26 @@ function initializeAriaPage() {
     ariaView.innerHTML = `<div id="aria-conversation-container" class="space-y-6"></div>`;
     const conversationContainer = document.getElementById('aria-conversation-container');
 
-    // If a trigger is passed from another page, start the sequence directly
-    if (trigger && triggerToPromptMap[trigger]) {
-        runAriaSequence(triggerToPromptMap[trigger]);
-    } else {
-        // Otherwise, show the standard workstream selection view
-        conversationContainer.innerHTML = renderInitialWorkstreamCards(companyId);
+    // Render the workstream cards first in all scenarios
+    conversationContainer.innerHTML = renderInitialWorkstreamCards(companyId);
+
+    // If a workstream was passed, highlight the card
+    if (workstreamId) {
+        const cardToActivate = conversationContainer.querySelector(`.aria-workstream-card[data-workstream-id="${workstreamId}"]`);
+        if (cardToActivate) {
+            cardToActivate.classList.add('active');
+        }
     }
+
+    // If a prompt is passed from the URL, run it
+    if (prompt) {
+        runAriaSequence(prompt);
+    } 
+    // Handle the older trigger mechanism as a fallback
+    else if (trigger && triggerToPromptMap[trigger]) {
+        runAriaSequence(triggerToPromptMap[trigger]);
+    }
+    // If no prompt, the user just sees the selected workstream card
 }
 
 // --- CORE RENDERING FUNCTIONS ---

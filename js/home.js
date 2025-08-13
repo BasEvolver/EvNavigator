@@ -38,7 +38,30 @@ function renderPortfolioPage() {
         <div class="portfolio-container">
             <div class="ai-briefing-card">
                 <h1 class="briefing-title">${getDynamicGreeting()} Here is the state of the business.</h1>
-                <p class="briefing-text">The portfolio value is up <strong>$25M</strong> this quarter, driven by <strong>CloudVantage's</strong> strong NRR performance. Your attention is required on <strong>TechFlow Solutions</strong>, where diligence has flagged 3 critical anomalies. There is also a potential upside opportunity in <strong>ScaleOps's</strong> go-to-market strategy.</p>
+                <p class="briefing-text">The portfolio value is up <strong>$25M</strong> this quarter, driven by <strong>CloudVantage's</strong> strong NRR performance. Your attention is required on <strong>TechFlow Solutions</strong>, where diligence has flagged 3 critical and 12 other anomalies. There is also a potential upside opportunity in <strong>ScaleOps's</strong> go-to-market strategy.</p>
+                
+                <div class="mt-6 pt-6 border-t border-border-color">
+                    <div class="priority-alerts-container">
+                        <div class="priority-alerts-header" data-action="toggle-priority-alerts">
+                            <h4 class="priority-alerts-title">Priority Alerts (3)</h4>
+                            <svg class="chevron-icon expanded" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <div class="priority-alerts-grid expanded">
+                            <button class="suggested-action-card" data-action="navigate-to-aria-with-prompt" data-company-id="techflow-solutions" data-prompt-text="Drill down on the TechFlow diligence block." data-workstream-id="tech">
+                                <p class="font-semibold text-sm text-primary">[TechFlow] Technical Diligence Blocked</p>
+                                <p class="text-xs text-secondary">The 'Code Scan' task is late, blocking the entire Technology workstream.</p>
+                            </button>
+                            <button class="suggested-action-card" data-action="navigate-to-aria-with-prompt" data-company-id="techflow-solutions" data-prompt-text="Provide an overview of the current registered anomalies." data-workstream-id="financial">
+                                <p class="font-semibold text-sm text-primary">[TechFlow] Critical Anomalies Discovered</p>
+                                <p class="text-xs text-secondary">3 critical and 12 other anomalies could materially impact valuation.</p>
+                            </button>
+                            <button class="suggested-action-card" data-action="navigate-to-aria-with-prompt" data-company-id="cloudvantage" data-prompt-text="Assess the CloudVantage AI feature delay." data-workstream-id="product">
+                                <p class="font-semibold text-sm text-primary">[CloudVantage] AI Feature Launch At Risk</p>
+                                <p class="text-xs text-secondary">The flagship AI-Powered Feature is behind schedule, putting the critical Q4 launch at risk.</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="company-strip-container">
                 ${companies.map(company => `
@@ -106,6 +129,100 @@ function runPortfolioPrompt(promptText) {
 // --- RESPONSE DATA MAP ---
 
 const portfolioResponses = {
+    // RESTORED ALERT RESPONSES FOR IN-PAGE CONVERSATION
+    "Show me the priority alerts.": {
+        renderFunc: () => `
+            <h2 class="response-title">Top 3 Priority Alerts</h2>
+            <div class="list-container">
+                <div class="list-item">
+                    <span class="list-number text-error">1</span>
+                    <div>
+                        <h4 class="list-title">[TechFlow] Technical Diligence Blocked</h4>
+                        <p class="list-text">The 'Code Scan' (DD-16) task is late and blocking the Technology workstream. We are waiting for the target's CTO to provide GitHub credentials.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <span class="list-number text-error">2</span>
+                    <div>
+                        <h4 class="list-title">[TechFlow] Critical Anomalies Discovered</h4>
+                        <p class="list-text">ARIA has flagged 2 critical anomalies: Non-Standard ARR Composition and Failed Recent Product Launches. These could materially impact valuation.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <span class="list-number text-warning">3</span>
+                    <div>
+                        <h4 class="list-title">[CloudVantage] AI Feature Launch At Risk</h4>
+                        <p class="list-text">The 'AI-Powered Feature' development is behind schedule due to technical complexities. This puts the critical Q4 launch at risk.</p>
+                    </div>
+                </div>
+            </div>`,
+        chartDrawFunc: null,
+        recommendedActions: [
+            { text: "Draft escalation email to TechFlow CTO", description: "Generate an email to the CTO regarding the urgent need for GitHub credentials.", prompt: "Action: Draft escalation to TechFlow CTO" },
+            { text: "Generate risk mitigation plan for CloudVantage", description: "Use ARIA to create a plan to get the delayed AI feature back on track.", prompt: "Action: Generate CloudVantage risk plan" },
+            { text: "View full anomaly report for TechFlow", description: "Navigate to the ARIA workspace to see the detailed anomaly findings.", prompt: "Action: View TechFlow Anomaly Report" }
+        ],
+        followUpQuestions: [ "What is the financial impact of the TechFlow anomalies?", "Who is the lead engineer on the CloudVantage AI feature?", "What is the new critical path for the TechFlow diligence?" ]
+    },
+    "Drill down on the TechFlow diligence block.": {
+        renderFunc: () => `
+            <h2 class="response-title">Alert Deep Dive: TechFlow Diligence Block</h2>
+            <div class="judgement-box error mt-4">
+                <p class="judgement-title">Situation:</p>
+                <p class="judgement-text">The 'Code Scan' (DD-16) task is now 3 days late. This is a critical dependency for the 'Documentation' (DD-17) and 'QA Testing Review' (DD-18) tasks. The entire Technology workstream is blocked until we receive admin-level access to the target's private GitHub repository from their CTO.</p>
+            </div>
+            <div class="chart-narrative">
+                <p>A 3-day delay on this task consumes all remaining slack in the Technology workstream, putting the final 'Comprehensive DD Report' (DD-68) delivery date at risk. Any further delays will push out the final deadline.</p>
+            </div>`,
+        chartDrawFunc: null,
+        recommendedActions: [
+            { text: "Draft escalation email to TechFlow CTO", description: "Generate a polite but firm email regarding the urgent need for GitHub credentials.", prompt: "Action: Draft escalation to TechFlow CTO" },
+            { text: "Assess critical path impact of a 5-day delay", description: "Model the cascading effects if the delay extends to a full week.", prompt: "Assess the critical path impact of a 5-day delay on task DD-16." }
+        ],
+        followUpQuestions: ["What is the new critical path for the TechFlow diligence?", "Re-plan the project with a compressed QA cycle."]
+    },
+    "Analyze the critical anomalies at TechFlow.": {
+        renderFunc: () => `
+            <h2 class="response-title">Alert Deep Dive: TechFlow Critical Anomalies</h2>
+            <div class="list-container">
+                <div class="list-item">
+                    <span class="list-number text-error">1</span>
+                    <div>
+                        <h4 class="list-title">Non-Standard ARR Composition</h4>
+                        <p class="list-text">Analysis of the financials reveals that only 59% ($7.08M) of the reported $12M ARR is true, recurring subscription revenue. The remainder is comprised of non-standard perpetual license amortization and legacy maintenance fees, which will require a significant valuation adjustment.</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <span class="list-number text-error">2</span>
+                    <div>
+                        <h4 class="list-title">Failed Recent Product Launches</h4>
+                        <p class="list-text">The last three major product launches have generated zero revenue, despite a combined R&D investment of $3.2M. This indicates critical issues with product-market fit and go-to-market execution, questioning future growth projections.</p>
+                    </div>
+                </div>
+            </div>`,
+        chartDrawFunc: null,
+        recommendedActions: [
+            { text: "Model the financial impact of the ARR re-statement", description: "Simulate the valuation impact of adjusting ARR from $12M to $7.08M.", prompt: "Model the financial impact of 'Non-Standard ARR Composition'" },
+            { text: "Draft an IC memo slide on these risks", description: "Summarize these two critical risks for the next Investment Committee update.", prompt: "Draft an IC memo slide for this section." }
+        ],
+        followUpQuestions: ["What is the adjusted 'true' ARR for TechFlow?", "What's the plan to fix the failed product launches?"]
+    },
+    "Assess the CloudVantage AI feature delay.": {
+        renderFunc: () => `
+            <h2 class="response-title">Alert Deep Dive: CloudVantage AI Feature Delay</h2>
+            <div class="judgement-box warning mt-4">
+                <p class="judgement-title">Situation:</p>
+                <p class="judgement-text">The 'AI-Powered Feature' is currently 'At Risk' and behind schedule. The delay is due to unforeseen technical complexities in integrating with legacy data models from the recent NewCo acquisition. This jeopardizes the planned Q4 launch, which is a key driver of the FY25 growth plan.</p>
+            </div>`,
+        chartDrawFunc: null,
+        recommendedActions: [
+            { text: "Generate risk mitigation plan for AI feature", description: "Use ARIA to create a plan with a de-scoped MVP and dedicated resources to get the project back on track.", prompt: "Generate a risk mitigation plan for the AI feature delay." },
+            { text: "Estimate the budget impact of the delay", description: "Analyze the financial implications of the delay and the proposed mitigation plan.", prompt: "What is the budget impact of the AI feature delay?" }
+        ],
+        followUpQuestions: ["Who is the lead engineer on the AI feature?", "What is the new projected launch date?"]
+    },
+
+    // ORIGINAL PORTFOLIO RESPONSES
     "How did the portfolio perform over the past 12 months?": {
         renderFunc: () => `<h2 class="response-title">Portfolio Performance: Last 12 Months</h2><div class="chart-wrapper"><canvas id="portfolio-performance-chart"></canvas></div><div class="chart-narrative"><p>Overall performance is strong, with a notable <strong>EBITDA dip in November</strong> from one-time integration costs and a <strong>sharp ARR spike in May</strong> driven by CloudVantage landing two major enterprise deals.</p></div>`,
         chartDrawFunc: drawPerformanceChart,
@@ -554,7 +671,7 @@ function initializePortfolioEventListeners() {
         const target = e.target.closest('[data-action], [data-prompt]');
         if (!target) return;
 
-        // This handles the "Recommended Action" buttons
+        // This handles the "Recommended Action" and suggestion pill buttons
         if (target.dataset.prompt) {
             runPortfolioPrompt(target.dataset.prompt);
             return; // Stop further execution
@@ -564,6 +681,26 @@ function initializePortfolioEventListeners() {
         let state = loadState();
 
         switch(action) {
+            case 'toggle-priority-alerts':
+                const container = target.closest('.priority-alerts-container');
+                const grid = container.querySelector('.priority-alerts-grid');
+                const chevron = container.querySelector('.chevron-icon');
+                const isCollapsed = grid.classList.toggle('collapsed');
+                chevron.classList.toggle('expanded', !isCollapsed);
+                if (!isCollapsed) {
+                    grid.style.maxHeight = grid.scrollHeight + 'px';
+                } else {
+                    grid.style.maxHeight = null;
+                }
+                break;
+            case 'navigate-to-aria-with-prompt':
+                const companyId = target.dataset.companyId;
+                const promptText = target.dataset.promptText;
+                const workstreamId = target.dataset.workstreamId;
+                if (companyId && promptText && workstreamId) {
+                    window.location.href = `aria.html?company=${companyId}&prompt=${encodeURIComponent(promptText)}&workstream=${workstreamId}`;
+                }
+                break;
             // THIS IS THE CRITICAL CASE FOR THE SEND BUTTON
             case 'ask-aria':
                 const input = document.getElementById('aria-prompt-input');
@@ -573,8 +710,8 @@ function initializePortfolioEventListeners() {
                 }
                 break;
             case 'view-company':
-                const companyId = target.closest('[data-company-id]').dataset.companyId;
-                window.location.href = `portco.html?company=${companyId}`;
+                const companyIdNav = target.closest('[data-company-id]').dataset.companyId;
+                window.location.href = `portco.html?company=${companyIdNav}`;
                 break;
             case 'restart-conversation':
                 const conversationContainer = document.getElementById('portfolio-conversation-container');

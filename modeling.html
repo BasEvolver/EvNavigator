@@ -10,6 +10,18 @@
     
     <!-- ADDED: Add auth script to protect the page -->
     <script src="js/auth.js"></script>
+    <script>
+  // Prevents sidebar flicker on page load
+  (function() {
+    try {
+      if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed-preload');
+      }
+    } catch (e) {
+      console.error('Could not apply sidebar preload state.', e);
+    }
+  })();
+</script>
 </head>
 <body>
     <div class="app-container">
