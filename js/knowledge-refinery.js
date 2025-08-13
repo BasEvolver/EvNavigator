@@ -151,6 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeRefineryPage() {
+     document.body.classList.add('page-knowledge-refinery');
     const pane1 = document.getElementById('refinery-pane-1');
     const pane2 = document.getElementById('refinery-pane-2');
     const pane3 = document.getElementById('refinery-pane-3');

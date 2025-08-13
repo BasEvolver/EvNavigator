@@ -67,15 +67,10 @@
    BASE STYLES & LAYOUT
    ================================================================= */
 html, body { 
-    font-family: 'Inter', sans-serif; 
-    background-color: var(--bg-secondary); 
-    color: var(--text-primary); 
-    margin: 0;
-    padding: 0;
     height: 100vh;
-    overflow: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow: hidden; 
 }
+
 
 .app-container {
     display: flex;
@@ -91,7 +86,8 @@ html, body {
 
 #main-content {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto; /* The main area scrolls by default */
+    padding: 1.5rem 2rem; /* Your padding is fine */
 }
 
 /* Sidebar & Header */
@@ -100,6 +96,7 @@ html, body {
     border-right-color: var(--border-color);
     transition: background-color 0.3s ease, border-color 0.3s ease;   
      height: 100%;
+     padding: 1.5rem 2rem; 
 }
 
 #sidebar .border-b, #sidebar .border-t {
@@ -4443,16 +4440,19 @@ input:checked + .slider:before {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
-    height: 100%;
     width: 100%;
-    overflow: hidden;
+    /* THIS IS THE FIX: Use a calculated height, just like the working modeling page */
+    /* It assumes your header is 5rem (80px) tall. Adjust if needed. */
+    height: calc(100vh - 8rem); /* 5rem for header + 3rem for main content padding */
 }
+
 .refinery-pane {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    overflow: hidden; /* Prevents the entire pane from scrolling */
+    height: 100%; /* This now works because the parent has a fixed calc() height */
+    overflow: hidden;
 }
+
 .refinery-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -4462,14 +4462,16 @@ input:checked + .slider:before {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0; /* Important for flex children */
 }
+
 .refinery-title {
     font-size: 1.25rem;
     font-weight: 700;
     padding-bottom: 0.75rem;
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0; /* Prevents title from shrinking */
+    flex-shrink: 0; /* This is correct, keep it */
 }
 
 /* --- SCROLLING FIX & CONTENT AREAS --- */
@@ -4477,8 +4479,8 @@ input:checked + .slider:before {
 .normalization-terminal,
 .curation-form {
     flex-grow: 1;
-    overflow-y: auto;
-    min-height: 0; /* CRITICAL: Allows flex child to shrink and enables overflow */
+    overflow-y: auto; /* This will now work! */
+    min-height: 0;
 }
 
 /* --- Dynamic States (Empty/Loading) --- */
@@ -4576,10 +4578,9 @@ mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3
     width: 90%;
     max-width: 700px;
     box-shadow: 0 10px 25px var(--shadow-hover);
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    overflow-y: auto; /* ADD THIS LINE TO ENABLE SCROLLING */
+    display: flex; /* Set as a flex container */
+    flex-direction: column; /* Stack children vertically */
+    max-height: 90vh; /* Give the modal a max height */
 }
 
 .ingestion-modal-header {
@@ -4607,8 +4608,14 @@ mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3
     background-color: var(--bg-secondary); color: var(--text-secondary);
 }
 .ingestion-file-list {
-    flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem;
+    flex-grow: 1; /* Allows the list to fill available space */
+    overflow-y: auto; /* Enables scrolling within the list */
+    min-height: 0; /* THE KEY: Same reason as above */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
+
 .ingestion-section-title {
     font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
     margin-top: 0.5rem; margin-bottom: 0.25rem; padding-bottom: 0.25rem;
@@ -4730,9 +4737,10 @@ mark.entity-risk { background-color: #fee2e2; padding: 2px 4px; border-radius: 3
 }
 
 .ingestion-file-list-group:not(.collapsed) {
-    /* max-height is set by JS for smooth animation */
-    margin-bottom: 1rem; /* Add space between expanded groups */
+    /* max-height is set by JS, but this ensures space when open */
+    margin-bottom: 1rem;
 }
+
 
 body.login-body {
     background-color: var(--bg-secondary);
@@ -4742,3 +4750,252 @@ body.login-body {
     height: 100vh;
     font-family: 'Inter', sans-serif;
     overflow: auto; /* This overrides the global 'overflow: hidden' */
+}
+
+/* =================================================================
+   PAGE-SPECIFIC LAYOUT OVERRIDES
+   ================================================================= */
+
+/* --- Override for Knowledge Refinery Page --- */
+body.page-knowledge-refinery #main-content {
+    /* For this page, the main content area must NOT scroll. */
+    /* It must be a rigid boundary for the panes inside it. */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+body.page-knowledge-refinery .knowledge-refinery-layout {
+    /* This makes the grid fill the available space inside the non-scrolling #main-content */
+    flex: 1;
+    min-height: 0; /* Critical for nested flex/grid items to be constrained */
+}
+
+/* =================================================================
+   SIDEBAR LAYOUT - FINAL, ROBUST OVERRIDE
+   ================================================================= */
+#sidebar {
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+/* =================================================================
+   NEW SIDEBAR COLLAPSE STYLES
+   ================================================================= */
+#sidebar {
+    transition: width 0.3s ease-in-out;
+}
+
+#sidebar.collapsed {
+    width: 5rem; /* 80px */
+}
+
+/* Hide text and chevrons when collapsed */
+#sidebar.collapsed .sidebar-text, 
+#sidebar.collapsed .chevron-icon {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.1s ease-out, width 0.1s ease-out;
+}
+
+/* Show text and chevrons when expanded */
+#sidebar .sidebar-text, 
+#sidebar .chevron-icon {
+    opacity: 1;
+    width: auto;
+    transition: opacity 0.2s 0.1s ease-in, width 0.2s ease-in; /* Added a delay for smoother appearance */
+}
+
+/* Center items in the link when collapsed */
+#sidebar.collapsed .nav-link, 
+#sidebar.collapsed .nav-parent > a {
+    justify-content: center;
+}
+
+#sidebar.collapsed .nav-children {
+    display: none; /* Hide sub-menu items when collapsed */
+}
+
+/* General icon styling */
+.nav-icon {
+    width: 1.5rem;  /* 24px */
+    height: 1.5rem; /* 24px */
+    flex-shrink: 0;
+    margin-right: 0.75rem; /* 12px */
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+/* Remove margin when collapsed */
+#sidebar.collapsed .nav-icon {
+    margin-right: 0;
+}
+
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+    color: var(--accent-blue);
+}
+
+/* Hide the main "Navigator" text when collapsed */
+#sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+/* =================================================================
+   NEW SIDEBAR COLLAPSE STYLES V2
+   ================================================================= */
+#sidebar {
+    transition: width 0.3s ease-in-out;
+}
+
+#sidebar.collapsed {
+    width: 5rem; /* 80px */
+}
+
+/* Correctly hide text elements when collapsed */
+#sidebar.collapsed .sidebar-text, 
+#sidebar.collapsed .chevron-icon {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.1s ease-out, width 0.1s ease-out;
+}
+
+/* Smoothly show text elements when expanded */
+#sidebar .sidebar-text, 
+#sidebar .chevron-icon {
+    opacity: 1;
+    width: auto;
+    transition: opacity 0.2s 0.1s ease-in, width 0.2s ease-in; /* Delay for smoother appearance */
+}
+
+/* Center items in the link when collapsed */
+#sidebar.collapsed .nav-link, 
+#sidebar.collapsed .nav-parent > a {
+    justify-content: center;
+}
+
+#sidebar.collapsed .nav-children {
+    display: none;
+}
+
+/* General icon styling */
+.nav-icon {
+    width: 1.5rem;  /* 24px */
+    height: 1.5rem; /* 24px */
+    flex-shrink: 0;
+    margin-right: 0.75rem; /* 12px */
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+#sidebar.collapsed .nav-icon {
+    margin-right: 0;
+}
+
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+    color: var(--accent-blue);
+}
+
+/* Logo Swapping Logic */
+#sidebar #icon-logo {
+    display: none;
+}
+#sidebar.collapsed #full-logo,
+#sidebar.collapsed .sidebar-text {
+    display: none;
+}
+#sidebar.collapsed #icon-logo {
+    display: block;
+}
+
+/* Correctly hide footer icons when sidebar is collapsed */
+#sidebar.collapsed .sidebar-footer {
+    justify-content: center; /* Center the theme toggle button */
+}
+
+#sidebar.collapsed .sidebar-footer .sidebar-text-wrapper {
+    display: none; /* Hide the left-aligned icons */
+}
+
+/* =================================================================
+   NEW SIDEBAR COLLAPSE STYLES V3 (Corrected)
+   ================================================================= */
+#sidebar {
+    transition: width 0.3s ease-in-out;
+}
+
+#sidebar.collapsed {
+    width: 5rem; /* 80px */
+}
+
+/* Hide text and chevrons when collapsed */
+#sidebar.collapsed .sidebar-text, 
+#sidebar.collapsed .chevron-icon {
+    opacity: 0;
+    width: 0;
+    visibility: hidden; /* Use visibility to prevent layout shifts */
+    white-space: nowrap;
+    transition: opacity 0.1s ease-out, width 0.1s ease-out, visibility 0.1s;
+}
+
+/* Show text and chevrons when expanded */
+#sidebar .sidebar-text, 
+#sidebar .chevron-icon {
+    opacity: 1;
+    width: auto;
+    visibility: visible;
+    transition: opacity 0.2s 0.1s ease-in, width 0.2s ease-in; /* Delay for smoother appearance */
+}
+
+/* Center items in the link when collapsed */
+#sidebar.collapsed .nav-link, 
+#sidebar.collapsed .nav-parent > a {
+    justify-content: center;
+}
+
+#sidebar.collapsed .nav-children {
+    display: none;
+}
+
+/* General icon styling */
+.nav-icon {
+    width: 1.5rem;  /* 24px */
+    height: 1.5rem; /* 24px */
+    flex-shrink: 0;
+    margin-right: 0.75rem; /* 12px */
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+#sidebar.collapsed .nav-icon {
+    margin-right: 0;
+}
+
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+    color: var(--accent-blue);
+}
+
+/* Logo Swapping Logic */
+#sidebar #icon-logo {
+    display: none;
+}
+#sidebar.collapsed #full-logo {
+    display: none;
+}
+#sidebar.collapsed #icon-logo {
+    display: block;
+}
+
+/* Footer Icon Hiding Logic */
+#sidebar.collapsed .sidebar-footer {
+    justify-content: center;
+}
+#sidebar.collapsed .sidebar-footer .sidebar-text-wrapper {
+    display: none;
+}

@@ -69,11 +69,17 @@ const Utils = {
 // THEME MANAGEMENT
 // =================================================================
 function updateLogoForTheme(theme) {
-    const logo = document.getElementById('sidebar-logo');
-    if (logo) {
-        logo.src = (theme === 'dark') ? 'Navigator lock up_white_25.png' : 'Navigator lock up_Veridian_25.png';
+    const fullLogo = document.getElementById('full-logo');
+    const iconLogo = document.getElementById('icon-logo');
+    if (fullLogo) {
+        fullLogo.src = (theme === 'dark') ? 'Navigator lock up_white_25.png' : 'Navigator lock up_Veridian_25.png';
+    }
+    // New logic for the icon logo
+    if (iconLogo) {
+        iconLogo.src = (theme === 'dark') ? 'navigator-icon-white.png' : 'navigator-icon-blue.png';
     }
 }
+
 
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -195,7 +201,27 @@ const Navigation = {
         if (window.sidebarListenersAttached) {
             return;
         }
+ const sidebar = document.getElementById('sidebar');
+    const collapseButton = document.getElementById('sidebar-collapse-button');
+    const collapseIconLeft = document.getElementById('collapse-icon-left');
+    const collapseIconRight = document.getElementById('collapse-icon-right');
 
+    if (sidebar && collapseButton && collapseIconLeft && collapseIconRight) {
+        const setSidebarState = (isCollapsed) => {
+            sidebar.classList.toggle('collapsed', isCollapsed);
+            collapseIconLeft.classList.toggle('hidden', isCollapsed);
+            collapseIconRight.classList.toggle('hidden', !isCollapsed);
+        };
+
+        const savedSidebarState = localStorage.getItem('sidebarCollapsed') === 'true';
+        setSidebarState(savedSidebarState);
+
+        collapseButton.addEventListener('click', () => {
+            const isCurrentlyCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', !isCurrentlyCollapsed);
+            setSidebarState(!isCurrentlyCollapsed);
+        });
+    }
         const themeToggleButton = document.getElementById('theme-toggle-button');
         if (themeToggleButton) {
             themeToggleButton.addEventListener('click', () => {
