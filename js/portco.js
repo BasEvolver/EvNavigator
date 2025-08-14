@@ -541,6 +541,118 @@ function renderGenericDashboard_DataView(companyId) {
     `;
 }
 
+function renderCeoDashboard() {
+    const data = ceoDashboardData;
+    const kpisHTML = `
+        <div class="kpi-card"><p class="kpi-label">Overall Play Status</p><p class="kpi-value">${data.kpis.playStatus.value}</p><p class="kpi-detail">${data.kpis.playStatus.change}</p></div>
+        <div class="kpi-card"><p class="kpi-label">Budget Adherence</p><p class="kpi-value text-error">${data.kpis.budgetAdherence.value}</p><p class="kpi-detail">${data.kpis.budgetAdherence.change}</p></div>
+        <div class="kpi-card"><p class="kpi-label">Goal Completion</p><p class="kpi-value">${data.kpis.goalCompletion.value}</p><p class="kpi-detail">${data.kpis.goalCompletion.change}</p></div>
+        <div class="kpi-card"><p class="kpi-label">Active Plays</p><p class="kpi-value">${data.kpis.activePlays.value}</p><p class="kpi-detail">${data.kpis.activePlays.change}</p></div>
+    `;
+
+    const playsHTML = data.departmentPlays.map(play => {
+        const statusMap = { 'On Track': 'status-completed', 'At Risk': 'status-warning', 'Behind': 'status-error' };
+        return `
+            <div class="program-item">
+                <div class="program-name">${play.name}</div>
+                <div class="program-dept">${play.department}</div>
+                <div class="program-status-wrapper"><span class="program-status ${statusMap[play.status]}">${play.status}</span></div>
+                <div class="program-progress-container"><div class="program-progress-bar" style="width: ${play.progress}%"></div></div>
+                <div class="program-progress-text">${play.progress}%</div>
+            </div>
+        `;
+    }).join('');
+
+    const updatesHTML = data.departmentUpdates.map(update => `
+        <div class="update-card">
+            <div class="update-card-header">
+                <h5 class="update-card-title">${update.department}</h5>
+                <span class="update-card-time">${update.time}</span>
+            </div>
+            <p class="update-card-body">${update.content}</p>
+            <div class="update-card-footer">
+                <div>Complete: <span>${update.metrics.complete}%</span></div>
+                <div>Budget: <span class="${update.metrics.budget > 0 ? 'text-success' : 'text-error'}">${update.metrics.budget > 0 ? '+' : ''}${update.metrics.budget}%</span></div>
+                <div>Progress: <span class="${update.metrics.progress >= 0 ? 'text-success' : 'text-error'}">${update.metrics.progress >= 0 ? '+' : ''}${update.metrics.progress}%</span></div>
+            </div>
+        </div>
+    `).join('');
+
+    const suggestionsHTML = data.aiSuggestions.map(suggestion => `
+        <div class="portco-card">
+            <h4 class="card-title">${suggestion.title}</h4>
+            <p class="text-secondary text-sm">${suggestion.content}</p>
+        </div>
+    `).join('');
+
+    return `
+        <h2 class="text-2xl font-bold mb-4">CEO Dashboard</h2>
+        <div class="persona-dashboard-layout">
+            <div class="persona-main-column">
+                <div class="portco-card">
+                    <h3 class="card-title">Company-wide KPIs - Q1 2025</h3>
+                    <div class="kpi-grid">${kpisHTML}</div>
+                </div>
+                <div class="portco-card">
+                    <h3 class="card-title">All Executing Plays</h3>
+                    <div class="program-list">${playsHTML}</div>
+                </div>
+            </div>
+            <div class="persona-sidebar-column">
+                <div class="portco-card">
+                    <h3 class="card-title">Department Updates Feed</h3>
+                    <div class="department-updates-feed">${updatesHTML}</div>
+                </div>
+                <div class="portco-card">
+                    <h3 class="card-title">AI-Generated Suggestions</h3>
+                    <div class="flex flex-col gap-4">${suggestionsHTML}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ADD THIS ENTIRE FUNCTION
+function renderCroRenewalHub() {
+    const data = croRenewalData;
+    const tableRowsHTML = data.opportunities.map(opp => `
+        <tr>
+            <td class="font-semibold">${opp.account}</td>
+            <td><span class="segment-badge ${opp.segment.toLowerCase()}">${opp.segment}</span></td>
+            <td>$${opp.value.toLocaleString()}</td>
+            <td>${opp.date}</td>
+            <td>${opp.circumstance}</td>
+        </tr>
+    `).join('');
+
+    return `
+        <div class="persona-dashboard-layout">
+            <div class="persona-main-column">
+                <div class="portco-card">
+                    <h3 class="card-title">NewCo Acquisition - Renewal Opportunities</h3>
+                    <div class="data-table-container">
+                        <table class="renewal-opportunities-table">
+                            <thead>
+                                <tr><th>Account</th><th>Segment</th><th>Contract Value</th><th>Renewal Date</th><th>Circumstance</th></tr>
+                            </thead>
+                            <tbody>${tableRowsHTML}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="persona-sidebar-column">
+                <div class="portco-card">
+                    <h3 class="card-title">AI Strategy Co-Pilot</h3>
+                    <div id="portco-conversation-log" class="space-y-4">
+                        <div class="user-prompt-bubble"><p>Let's process renewals for our newco acquisition.</p></div>
+                    </div>
+                    <div id="portco-prompt-container" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function getPromptBoxHTML(questions = []) {
     const state = loadState();
     const promptsHTML = (Array.isArray(questions) ? questions : []).map(q => `<button class="suggestion-pill" data-action="run-prompt" data-prompt="${q}">${q}</button>`).join('');

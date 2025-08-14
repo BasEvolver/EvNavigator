@@ -259,6 +259,86 @@ function renderSettingsModal(settings) {
     `;
 }
 
+function renderAmActionCenter() {
+    const ariaView = document.getElementById('aria-main-view');
+    if (!ariaView) return;
+
+    const initialPrompts = [
+        "Please send me the conversation guide for Global. Update it with their latest support ticket status and the number of tickets we've received for them.",
+        "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term.",
+        "Done - here's the link (also in your email)"
+    ];
+
+    ariaView.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Contract Renewal Action Center</h2>
+        <div class="am-action-center-layout">
+            <div class="persona-main-column">
+                <div class="portco-card">
+                    <h3 class="card-title">Account Details</h3>
+                    <div class="account-details-grid">
+                        <div class="detail-item"><label>Account Name</label><p>Global Enterprises Inc.</p></div>
+                        <div class="detail-item"><label>Account Type</label><p>Enterprise</p></div>
+                        <div class="detail-item"><label>Opportunity Status</label><p>Renewal</p></div>
+                        <div class="detail-item"><label>Region</label><p>Americas (US)</p></div>
+                        <div class="detail-item"><label>Current Term</label><p>12 Months</p></div>
+                        <div class="detail-item"><label>Contact</label><p>Michael Wilson</p></div>
+                        <div class="detail-item"><label>Billing Frequency</label><p>Annual</p></div>
+                        <div class="detail-item"><label>Contract Owner</label><p>Connor Hayes</p></div>
+                    </div>
+                </div>
+                <div class="portco-card">
+                    <h3 class="card-title">Contract Details</h3>
+                    <div class="renewal-options-grid">
+                        <div class="option-card">
+                            <h5>Current</h5>
+                            <p class="price">80,000 USD</p>
+                            <ul>
+                                <li>Standard Package (Tier 2)</li>
+                                <li>with 100 Users & 5 Domains</li>
+                            </ul>
+                            <p class="support-tier">Platform Access: PREMIUM</p>
+                            <button class="secondary-button">View</button>
+                        </div>
+                        <div class="option-card">
+                            <h5>Option 1</h5>
+                            <p class="price">120,000 USD</p>
+                            <ul>
+                                <li>Enterprise Package (Tier 3)</li>
+                                <li>with 250 Users & 10 Domains</li>
+                            </ul>
+                            <p class="support-tier">Platform Access: ENTERPRISE</p>
+                            <button class="primary-button">Select</button>
+                        </div>
+                        <div class="option-card recommended">
+                            <h5>Recommended</h5>
+                            <p class="price">90,000 USD</p>
+                            <ul>
+                                <li>Standard Package (Tier 2)</li>
+                                <li>with 150 Users & 8 Domains</li>
+                            </ul>
+                            <p class="support-tier">Platform Access: PREMIUM+</p>
+                            <button class="primary-button">Select</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="persona-sidebar-column">
+                <div class="portco-card">
+                    <h3 class="card-title">Conversation with Pilot</h3>
+                    <div id="aria-conversation-container" class="space-y-4">
+                        <div class="aria-response-bubble">
+                            <p class="response-text">Hi Maya, you've been assigned a renewal action for **Global Enterprises Inc.**</p>
+                        </div>
+                    </div>
+                    <div id="aria-prompt-container" class="mt-4">
+                        ${getAdvancedPromptBoxHTML(initialPrompts)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // --- SIMULATION & EVENT HANDLING ---
 
 async function typeWords(element, text, callback) {
