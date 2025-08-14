@@ -147,17 +147,78 @@ const Navigation = {
 
     updateCompanySelector() {
         const selector = document.getElementById('company-selector');
-        if (selector) {
-            const state = loadState();
-            selector.value = state.selectedCompanyId || 'all';
-            selector.addEventListener('change', (e) => {
-                let state = loadState();
-                state.selectedCompanyId = e.target.value;
-                saveState(state);
-                const currentPage = Navigation.getCurrentPage();
-                window.location.href = `${currentPage}.html?company=${e.target.value}`;
-            });
+        if (!selector) return;
+
+        const state = loadState();
+        const { activePersona, selectedCompanyId } = state;
+
+        if (activePersona === 'adrian') {
+            selector.disabled = false;
+            selector.style.display = 'block';
+            selector.value = selectedCompanyId || 'all';
+        } else {
+            // For all other personas, lock to CloudVantage and disable
+            selector.value = 'cloudvantage';
+            selector.disabled = true;
+            selector.style.display = 'block'; // Ensure it's visible but disabled
         }
+        
+        // Remove old listeners to prevent duplicates
+        const newSelector = selector.cloneNode(true);
+        selector.parentNode.replaceChild(newSelector, selector);
+        
+        newSelector.addEventListener('change', (e) => {
+            let state = loadState();
+            state.selectedCompanyId = e.target.value;
+            saveState(state);
+            const currentPage = Navigation.getCurrentPage();
+            window.location.href = `${currentPage}.html?company=${e.target.value}`;
+        });
+    },
+
+    updatePersonaSwitcher() {
+        const container = document.getElementById('persona-hub-container');
+        if (!container) return;
+
+        const state = loadState();
+        const { activePersona } = state;
+        const activePersonaData = PERSONAS[activePersona];
+        const nameParts = activePersonaData.name.split(' ');
+        const initials = (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
+
+        let popupItemsHTML = '';
+        for (const [id, persona] of Object.entries(PERSONAS)) {
+            const pNameParts = persona.name.split(' ');
+            const pInitials = (pNameParts[0]?.[0] || '') + (pNameParts[1]?.[0] || '');
+            popupItemsHTML += `
+                <div class="persona-popup-item ${id === activePersona ? 'active' : ''}" data-action="switch-persona" data-persona-id="${id}">
+                    <div class="persona-avatar small" style="background-color: ${persona.avatarColor}; color: ${persona.avatarTextColor};">${pInitials}</div>
+                    <div>
+                        <div class="persona-name small">${persona.name}</div>
+                        <div class="persona-role small">${persona.role}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = `
+            <div class="persona-switcher" data-action="toggle-persona-popup">
+                <div class="persona-avatar" style="background-color: ${activePersonaData.avatarColor}; color: ${activePersonaData.avatarTextColor};">${initials}</div>
+                <div>
+                    <div class="persona-name">${activePersonaData.name}</div>
+                    <div class="persona-role">${activePersonaData.role}</div>
+                </div>
+            </div>
+            <div class="persona-popup">
+                <div class="persona-popup-header">
+                    <h6>Switch Persona</h6>
+                    <p>Select a user to view their experience.</p>
+                </div>
+                <div class="persona-popup-body">
+                    ${popupItemsHTML}
+                </div>
+            </div>
+        `;
     },
 
     updateActiveNavigation() {
@@ -196,6 +257,21 @@ const Navigation = {
                 link.href = 'index.html';
             } else {
                 link.href = `${page}.html?company=${linkCompanyId}`;
+            }
+        });
+    },
+
+    applyPersonaPermissions() {
+        const state = loadState();
+        const { activePersona } = state;
+        if (!activePersona) return;
+
+        document.querySelectorAll('#sidebar-menu li[data-roles]').forEach(li => {
+            const allowedRoles = li.dataset.roles.split(',');
+            if (allowedRoles.includes(activePersona)) {
+                li.style.display = '';
+            } else {
+                li.style.display = 'none';
             }
         });
     },
@@ -248,7 +324,7 @@ const Navigation = {
         });
     }
     
-    // --- MAIN EVENT LISTENER FOR ALL OTHER SIDEBAR CLICKS ---
+    // --- MAIN EVENT LISTENER FOR ALL OTHER CLICKS ---
     document.body.addEventListener('click', (e) => {
         const target = e.target;
         
@@ -258,12 +334,10 @@ const Navigation = {
             const isCollapsed = sidebar.classList.contains('collapsed');
             
             if (isCollapsed) {
-                // If collapsed, expand the whole sidebar and open the submenu
                 e.preventDefault();
                 localStorage.setItem('sidebarCollapsed', 'false');
                 setSidebarState(false);
                 
-                // We need to wait a moment for the CSS transition to start
                 setTimeout(() => {
                     const parentLi = parentLink.closest('.nav-parent');
                     const childrenUl = parentLi.querySelector('.nav-children');
@@ -273,7 +347,6 @@ const Navigation = {
                 }, 50);
 
             } else {
-                // If expanded, just toggle the submenu
                 e.preventDefault();
                 const parentLi = parentLink.closest('.nav-parent');
                 const childrenUl = parentLi.querySelector('.nav-children');
@@ -286,7 +359,7 @@ const Navigation = {
             return;
         }
 
-        // Logic for other actions like Settings and Logout
+        // Logic for other actions
         const actionTarget = target.closest('[data-action]');
         if (actionTarget) {
             const action = actionTarget.dataset.action;
@@ -297,7 +370,7 @@ const Navigation = {
                     return;
                 case 'reset-app-state':
                     if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
-                        localStorage.clear(); // Clear all local storage for a full reset
+                        localStorage.clear();
                         window.location.reload();
                     }
                     return;
@@ -306,16 +379,33 @@ const Navigation = {
                         window.logout();
                     }
                     return;
+                case 'toggle-persona-popup':
+                    e.stopPropagation();
+                    const popup = document.querySelector('.persona-popup');
+                    if (popup) popup.classList.toggle('visible');
+                    return;
+                case 'switch-persona':
+                    const newPersonaId = actionTarget.dataset.personaId;
+                    const persona = PERSONAS[newPersonaId];
+                    if (persona) {
+                        let state = loadState();
+                        state.activePersona = newPersonaId;
+                        state.selectedCompanyId = persona.defaultCompany;
+                        saveState(state);
+                        window.location.href = `${persona.defaultPage}?company=${persona.defaultCompany}`;
+                    }
+                    return;
             }
         }
 
-        // Logic to close the settings modal if clicking outside
+        // Logic to close popups if clicking outside
         const settingsModal = document.getElementById('settings-popup-modal');
-        const settingsButton = document.getElementById('settings-icon');
-        if (settingsModal && settingsModal.classList.contains('visible')) {
-            if (!settingsModal.contains(target) && !target.closest('[data-action="toggle-settings-popup"]')) {
-                settingsModal.classList.remove('visible');
-            }
+        if (settingsModal && settingsModal.classList.contains('visible') && !target.closest('[data-action="toggle-settings-popup"]')) {
+            settingsModal.classList.remove('visible');
+        }
+        const personaPopup = document.querySelector('.persona-popup');
+        if (personaPopup && personaPopup.classList.contains('visible') && !target.closest('[data-action="toggle-persona-popup"]')) {
+            personaPopup.classList.remove('visible');
         }
     });
 
@@ -324,7 +414,9 @@ const Navigation = {
 
     updateAll() {
         this.updateHeaderTitle();
+        this.updatePersonaSwitcher();
         this.updateCompanySelector();
+        this.applyPersonaPermissions();
         this.updateActiveNavigation();
         this.updateNavigationLinks();
         this.initializeSidebarInteractions();

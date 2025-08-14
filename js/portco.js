@@ -440,6 +440,22 @@ function renderWorkstreamTab(workstreamName) {
 
 function renderGuidedGenerativePortcoPage(companyId) {
     const mainContent = document.getElementById('main-content');
+    const state = loadState();
+    const { activePersona } = state;
+
+    // Persona-based routing for CloudVantage
+    if (companyId === 'cloudvantage') {
+        if (activePersona === 'evelyn') {
+            mainContent.innerHTML = renderCeoDashboard();
+            return;
+        }
+        if (activePersona === 'connor') {
+            mainContent.innerHTML = renderCroRenewalHub();
+            return;
+        }
+    }
+
+    // Default view for Adrian or other companies
     const companyData = getCompanySpecificData(companyId);
     mainContent.innerHTML = `
         <div class="portfolio-container">

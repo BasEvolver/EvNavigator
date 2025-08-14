@@ -165,29 +165,18 @@ const portcoResponses = {
         ],
         followUpQuestions: ["Who are the key employees to retain at NewCo?", "What has been the customer feedback on the acquisition?"]
     },
-    "Analyze NewCo renewal uplift opportunities.": {
-        renderFunc: () => {
-            const renewalOpportunities = [
-                { account: 'Global Enterprises Inc.', segment: 'Gold', value: 3245000, date: 'July 15, 2025', circumstance: 'Business Success' },
-                { account: 'Apex Solutions', segment: 'Gold', value: 2780000, date: 'August 3, 2025', circumstance: 'Technical Success' },
-                { account: 'Stellar Technologies', segment: 'Silver', value: 925000, date: 'July 28, 2025', circumstance: 'Business Success' },
-                { account: 'Fusion Micro', segment: 'Bronze', value: 125000, date: 'September 14, 2025', circumstance: 'Technical Success' },
-                { account: 'Horizon Solutions', segment: 'Bronze', value: 95000, date: 'July 25, 2025', circumstance: 'Struggler' },
-            ];
-            const segmentColors = { Gold: 'var(--status-warning)', Silver: 'var(--text-muted)', Bronze: '#cd7f32' };
-            return `<div class="portfolio-response-card">
-                <h4 class="response-title">NewCo Acquisition - Renewal Opportunities</h4>
-                <p class="response-text mb-4" data-typing-text="Let's process renewals for our newco acquisition. Playbook best practice is: 20% uplift for Gold customer segment that are under priced and currently in the Business Success circumstance. 10% uplift for all others in Gold. 10% uplift for Silver segment customers that have at least achieved Technical Success circumstance. 25% for all in the Bronze segment. Shall I move forward?"></p>
-                <div class="data-table-container"><table class="data-table">
-                    <thead><tr><th>Account</th><th>Segment</th><th>Contract Value</th><th>Renewal Date</th><th>Circumstance</th></tr></thead>
-                    <tbody>${renewalOpportunities.map(c => `<tr><td>${c.account}</td><td><span class="status-badge" style="background-color:${segmentColors[c.segment]}20; color:${segmentColors[c.segment]}">${c.segment}</span></td><td>$${c.value.toLocaleString()}</td><td>${c.date}</td><td>${c.circumstance}</td></tr>`).join('')}</tbody>
-                </table></div>
-            </div>`;
-        },
+    "Let's process renewals for our newco acquisition.": {
+        renderFunc: () => `<div class="portfolio-response-card">
+            <p class="response-text" data-typing-text="Of course. I've analyzed the renewal portfolio from the NewCo acquisition against our firm's pricing playbook. Based on customer segment, current contract value, and their success circumstance, I've identified several cohorts for specific price uplifts."></p>
+            <div class="judgement-box success mt-4">
+                <p class="judgement-title">Playbook Best Practice:</p>
+                <p class="judgement-text" data-typing-text="My recommendation is a **20% uplift** for underpriced Gold customers in 'Business Success', **10%** for other Gold customers, **10%** for Silver customers who have achieved 'Technical Success', and a standard **25%** uplift for all Bronze segment customers to align them with our standard pricing. Shall I move forward?"></p>
+            </div>
+        </div>`,
         followUpQuestions: ["Yes, please generate conversation guides for each segment action.", "Which customers are at the highest risk of churning with this increase?"]
     },
     "Yes, please generate conversation guides for each segment action.": {
-        renderFunc: () => `<div class="portfolio-response-card"><h4 class="response-title">Conversation Guides Generated</h4><p class="response-text" data-typing-text="I'm generating conversation guides for each customer segment with the latest product value additions included. This will include specific talking points for:"></p><ul class="list-disc pl-6 mt-2 text-secondary"><li>Gold segment (20% uplift for underpriced + Business Success)</li><li>Gold segment (10% standard uplift)</li><li>Silver segment (10% uplift with Technical Success)</li><li>Bronze segment (25% uplift)</li></ul><p class="response-text mt-2" data-typing-text="The documents will be displayed in the main panel once complete."></p></div>`,
+        renderFunc: () => `<div class="portfolio-response-card"><h4 class="response-title">Conversation Guides Generated</h4><p class="response-text" data-typing-text="I'm generating conversation guides for each customer segment with the latest product value additions included. This will include specific talking points for:"></p><ul class="list-disc pl-6 mt-2 text-secondary"><li>Gold segment (20% uplift for underpriced + Business Success)</li><li>Gold segment (10% standard uplift)</li><li>Silver segment (10% uplift with Technical Success)</li><li>Bronze segment (25% uplift)</li></ul><p class="response-text mt-2" data-typing-text="The documents will be displayed in the main panel once complete and assigned to the appropriate Account Managers."></p></div>`,
         followUpQuestions: ["Assign these renewal targets to the account owners.", "What is the total expected ARR uplift from this plan?"]
     },
     "Apply the recommended uplifts and show the financial impact.": {

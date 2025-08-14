@@ -1,5 +1,12 @@
 // js/state.js - Global State Management (Final Version with Multi-Company Assessments)
 
+const PERSONAS = {
+    'adrian': { name: 'Adrian Croft', role: 'Operating Partner', avatarColor: 'var(--text-secondary)', avatarTextColor: 'var(--bg-primary)', defaultCompany: 'all', defaultPage: 'index.html' },
+    'evelyn': { name: 'Evelyn Reed', role: 'CEO, CloudVantage', avatarColor: 'var(--purple)', avatarTextColor: 'var(--bg-primary)', defaultCompany: 'cloudvantage', defaultPage: 'portco.html' },
+    'connor': { name: 'Connor Hayes', role: 'CRO, CloudVantage', avatarColor: 'var(--status-warning)', avatarTextColor: 'var(--brand-primary)', defaultCompany: 'cloudvantage', defaultPage: 'portco.html' },
+    'maya': { name: 'Maya Singh', role: 'Account Manager, CloudVantage', avatarColor: 'var(--accent-teal)', avatarTextColor: 'var(--brand-primary)', defaultCompany: 'cloudvantage', defaultPage: 'aria.html' }
+};
+
 const initialScores = {
     'techflow-solutions': {
         // Diligence Target: Foundational issues need fixing.
@@ -40,14 +47,13 @@ function buildInitialAssessmentData(companyId) {
     return data;
 }
 
-// MODIFIED: This function now only creates the structure, preventing race conditions.
 function getInitialState() {
     return {
+        activePersona: 'adrian', // Default to the Operating Partner
         selectedCompanyId: 'all',
         modeling: {
             selectedItemId: 'all-disciplines', 
             expandedNodes: {'D1': true}, 
-            // Initialize with an empty object. Data will be populated by a separate function.
             assessments: {} 
         },
         activeTabId: 'home',
@@ -59,10 +65,8 @@ function getInitialState() {
     };
 }
 
-// NEW FUNCTION: This function safely populates the assessment data after scripts are loaded.
 function initializeAssessmentData() {
     let state = loadState();
-    // Check if data is already populated to avoid overwriting user changes.
     if (Object.keys(state.modeling.assessments).length === 0 && typeof maturityModel !== 'undefined') {
         state.modeling.assessments = {
             'techflow-solutions': buildInitialAssessmentData('techflow-solutions'),
@@ -71,7 +75,6 @@ function initializeAssessmentData() {
         saveState(state);
     }
 }
-
 
 function saveState(state) {
     localStorage.setItem('navigatorAppState', JSON.stringify(state));
