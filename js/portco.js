@@ -1,88 +1,4 @@
-// js/portco.js - Logic for the individual PortCo dashboards
-
-// --- NEW DATA FOR PERSONA DASHBOARDS (MOVED FROM PORTCO-DATA.JS) ---
-
-const ceoDashboardData = {
-    kpis: {
-        playStatus: { value: '78%', change: '+2% from last quarter' },
-        budgetAdherence: { value: '-1.2%', change: '-1.1% from last quarter' },
-        goalCompletion: { value: '68%', change: '+3% from last quarter' },
-        activePlays: { value: '42', change: '-5 from last quarter' }
-    },
-    departmentPlays: [
-        { name: 'Post-Acquisition Integration', department: 'Operations', status: 'On Track', progress: 80, phase: 'Transformation' },
-        { name: 'Market Expansion Strategy', department: 'Marketing', status: 'On Track', progress: 65, phase: 'Growth' },
-        { name: 'Cost Reduction Initiative', department: 'Finance', status: 'At Risk', progress: 40, phase: 'Transformation' },
-        { name: 'Systems Migration', department: 'IT', status: 'At Risk', progress: 55, phase: 'Transformation' },
-        { name: 'Talent Development Program', department: 'HR', status: 'On Track', progress: 72, phase: 'Growth' },
-        { name: 'New Product Launch', department: 'Product Dev', status: 'Behind', progress: 30, phase: 'Growth' },
-        { name: 'Vendor Consolidation', department: 'Operations', status: 'Behind', progress: 20, phase: 'Strategy' }
-    ],
-    departmentUpdates: [
-        { department: 'Product Development', time: 'Today, 10:45 AM', content: "The New Product Launch play is facing headwinds due to complexities with the cloud integration component. We've had to restructure the dev team to bring in more specialized expertise. We expect a 3-week delay to the original timeline.", metrics: { complete: 35, budget: -18.2, progress: -2.0 } },
-        { department: 'Marketing', time: 'Yesterday, 4:30 PM', content: "Market Expansion Strategy is proceeding ahead of schedule. We've successfully launched in two new territories in the APAC region, with initial lead-gen exceeding targets by 15%. Pipeline generation is up 15% and we're seeing strong early conversion data.", metrics: { complete: 65, budget: 2.0, progress: 2.0 } },
-        { department: 'Operations', time: 'Yesterday, 11:15 AM', content: "Post-Acquisition Integration of TechCore is on track. Customer data migration is 95% complete, and financial systems are running in parallel. The team is working closely with the IT department to de-risk the upcoming System Migration play by fixing known challenges with legacy system compatibility.", metrics: { complete: 80, budget: -1.2, progress: 0.0 } },
-        { department: 'Finance', time: 'Mar 17, 2025', content: "The Cost Reduction Initiative is showing mixed results. We've achieved the targeted savings in procurement and operational expenses, but IT spend is over budget due to higher cloud costs than initially projected. We've implemented additional cost controls and will take a more in-depth approach for Q2.", metrics: { complete: 40, budget: -2.3, progress: -1.0 } },
-        { department: 'Human Resources', time: 'Mar 16, 2025', content: "Talent Development Program has been rolled out successfully to all departments. We've achieved 92% employee participation and initial feedback from the new training modules is positive. The leadership training component is showing early signs of success, with a 5% improvement in management effectiveness scores.", metrics: { complete: 72, budget: 1.8, progress: 1.0 } }
-    ],
-    aiSuggestions: [
-        { title: 'Add budget context', content: "Company-wide budget adherence has improved to -1.2% variance, with Marketing and HR teams operating under budget. Finance team is working to address the 3.5% overspend in the Cost Reduction Initiative." },
-        { title: 'Add growth metrics', content: "The Market Expansion Strategy has already resulted in a 12% increase in qualified leads and a 7% increase in new customer acquisitions, exceeding our quarterly targets by 5%." },
-        { title: 'Add risk assessment', content: "The delay in the New Product Launch presents a moderate risk to Q2 revenue targets. I would recommend we develop a phased rollout approach to mitigate the impact while addressing the technical challenges." }
-    ]
-};
-
-const croRenewalData = {
-    opportunities: [
-        { account: 'Global Enterprises Inc.', segment: 'Gold', value: 3245000, date: 'July 15, 2025', circumstance: 'Business Success' },
-        { account: 'Apex Solutions', segment: 'Gold', value: 2780000, date: 'August 3, 2025', circumstance: 'Technical Success' },
-        { account: 'Titan Industries', segment: 'Gold', value: 4120000, date: 'August 17, 2025', circumstance: 'Business Success' },
-        { account: 'NeoGen Systems', segment: 'Silver', value: 785000, date: 'July 8, 2025', circumstance: 'Technical Success' },
-        { account: 'Velocity Partners', segment: 'Silver', value: 640000, date: 'September 5, 2025', circumstance: 'Struggler' },
-        { account: 'Stellar Technologies', segment: 'Silver', value: 925000, date: 'July 28, 2025', circumstance: 'Business Success' },
-        { account: 'Fusion Micro', segment: 'Bronze', value: 125000, date: 'September 14, 2025', circumstance: 'Technical Success' },
-        { account: 'Horizon Solutions', segment: 'Bronze', value: 95000, date: 'July 5, 2025', circumstance: 'Struggler' },
-        { account: 'Nimbus Data', segment: 'Bronze', value: 72000, date: 'August 11, 2025', circumstance: 'Technical Success' },
-        { account: 'Pulse Innovations', segment: 'Bronze', value: 135000, date: 'September 29, 2025', circumstance: 'Business Success' },
-    ]
-};
-
-const commandCenterData = {
-    techflow: {
-        liveScorecard: {
-            financialHealth: { score: 8.4, change: "+0.2 today" },
-            operations: { score: 7.8, change: "+0.1 today" },
-            growthPotential: { score: 9.1, change: "+0.3 today" },
-            strategicFit: { score: 6.7, change: "Under review" }
-        },
-        recentActivity: [
-            { text: "Valuation Model Complete", time: "2 hours ago", status: "success" },
-            { text: "Customer Churn Anomaly Detected", time: "4 hours ago", status: "error", action: "navigate-to-workstream-tab", target: "Commercial & Customer" },
-            { text: "Synergy Analysis Updated", time: "6 hours ago", status: "info" }
-        ],
-        workstreams: [
-            { title: "Data Extraction", status: "COMPLETED", values: [{value: 247, label: "DOCUMENTS"}, {value: "1,834", label: "DATA POINTS"}] },
-            { title: "Anomaly Detection", status: "IN PROGRESS", hasPing: true, values: [{value: 3, label: "CRITICAL FLAGS"}, {value: 12, label: "MINOR ISSUES"}] },
-            { title: "Valuation Modeling", status: "COMPLETED", values: [{value: "$85M", label: "VALUATION"}, {value: "6.8x", label: "REVENUE MULTIPLE"}] },
-            { title: "Synergy Analysis", status: "IN PROGRESS", values: [{value: "67%", label: "PORTFOLIO FIT"}, {value: "$8.2M", label: "SYNERGY VALUE"}] },
-            { title: "Growth Modeling", status: "PENDING", values: [{value: "-", label: "SCENARIOS"}, {value: "-", label: "GROWTH RATE"}] },
-            { title: "IC Dashboard", status: "PENDING", values: [{value: "-", label: "READINESS"}, {value: "5 days", label: "REMAINING"}] }
-        ]
-    },
-    cloudvantage: {
-        kpis: [
-            { label: 'ARR', value: '$78M', change: '+4% QoQ', isGood: true },
-            { label: 'Net Revenue Retention', value: '128%', change: '+3% vs Target', isGood: true },
-            { label: 'EBITDA Margin', value: '31%', change: '-1% vs Target', isGood: false },
-            { label: 'Rule of 40', value: '58%', change: 'Healthy', isGood: true }
-        ],
-        plays: [
-            { name: 'Post-Acquisition Integration', status: 'On Track' },
-            { name: 'AI-Powered Feature Dev', status: 'Behind' }
-        ],
-        aiSynthesis: "NRR is strong at 128%, but the AI Feature delay poses a moderate risk to the Q4 launch."
-    }
-};
+// js/portco.js - Main Controller for PortCo pages
 
 // --- DYNAMIC DATE CALCULATION ---
 const PROJECT_DAY_FOR_TODAY = 9;
@@ -194,14 +110,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSharedComponents();
 
     if (Navigation.getCurrentPage() === 'portco') {
+        const mainContent = document.getElementById('main-content');
         const urlParams = new URLSearchParams(window.location.search);
         let companyId = urlParams.get('company');
         let state = loadState();
         
-        if (!companyId && state.activePersona !== 'adrian') {
-            companyId = PERSONAS[state.activePersona].defaultCompany;
-        } else if (!companyId) {
-            companyId = 'all';
+        if (!companyId) {
+            companyId = state.selectedCompanyId || 'all';
         }
 
         state.selectedCompanyId = companyId;
@@ -214,13 +129,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveState(state);
         
         const { activePersona } = state;
+
+        // --- CORRECTED AND SIMPLIFIED ROUTING LOGIC ---
         if (activePersona === 'adrian') {
-            renderPortfolioCommandCenter();
-        } else if (companyId === 'techflow-solutions') {
-            renderDiligenceHub(companyId);
+            if (companyId === 'all') {
+                renderPortfolioCommandCenter();
+            } else if (companyId === 'techflow-solutions') {
+                renderDiligenceHub(companyId);
+            } else if (companyId === 'cloudvantage') {
+                mainContent.innerHTML = renderCeoDashboard();
+            } else {
+                renderGenericDashboard_DataView(companyId);
+            }
+        } else 
+            if (activePersona === 'adrian') {
+    if (companyId === 'all') {
+        renderPortfolioCommandCenter();
+    } else {
+        // Now correctly shows the diligence hub for ANY specific company for Adrian
+        renderDiligenceHub(companyId);
+    }
+} else 
+            
+            if (activePersona === 'evelyn') {
+            mainContent.innerHTML = renderCeoDashboard();
+        } else if (activePersona === 'connor') {
+            mainContent.innerHTML = renderCroRenewalHub();
+            runPortcoPrompt("Let's process renewals for our newco acquisition.", 'cloudvantage');
         } else {
-            renderGuidedGenerativePortcoPage(companyId);
+            renderGenericDashboard_DataView(companyId);
         }
+        // --- END OF CORRECTION ---
 
         Navigation.updateCompanySelector();
         initializePortcoEventListeners();
@@ -261,287 +200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
-
-// --- GANTT RENDERING ---
-function generateGanttHTML(planData, state, statusOverrides = {}) {
-    // ... (This function is complete and correct)
-}
-
-// --- DILIGENCE HUB RENDERING ---
-function renderDiligenceHub(companyId) {
-    // ... (This function is complete and correct)
-}
-// ... (All other Diligence Hub and Gantt functions are complete and correct)
-
-
-// --- NEW PERSONA-DRIVEN RENDERER ---
-function renderGuidedGenerativePortcoPage(companyId) {
-    const mainContent = document.getElementById('main-content');
-    const state = loadState();
-    const { activePersona } = state;
-
-    if (companyId === 'cloudvantage') {
-        if (activePersona === 'evelyn') {
-            mainContent.innerHTML = renderCeoDashboard();
-            return;
-        }
-        if (activePersona === 'connor') {
-            mainContent.innerHTML = renderCroRenewalHub();
-            runPortcoPrompt("Let's process renewals for our newco acquisition.", 'cloudvantage');
-            return;
-        }
-    }
-    
-    // Fallback for Adrian on a non-diligence company, or any other scenario
-    mainContent.innerHTML = renderGenericDashboard_DataView(companyId);
-}
-
-// --- NEW DASHBOARD RENDERING FUNCTIONS ---
-
-function renderPortfolioCommandCenter() {
-    const mainContent = document.getElementById('main-content');
-    const techflowData = commandCenterData.techflow;
-    const cloudvantageData = commandCenterData.cloudvantage;
-
-    const tfScorecardHTML = Object.entries(techflowData.liveScorecard).map(([key, data]) => {
-        const label = key.replace(/([A-Z])/g, ' $1').toUpperCase();
-        return `<div class="score-item">
-            <p class="score-label">${label}</p>
-            <p class="score-value">${data.score}</p>
-            <p class="kpi-detail">${data.change}</p>
-        </div>`;
-    }).join('');
-
-    const tfActivityHTML = techflowData.recentActivity.map(item => `
-        <div class="activity-item activity-${item.status}" data-action="${item.action || ''}" data-target="${item.target || ''}">
-            <p class="activity-title">${item.text}</p>
-            <p class="activity-time">${item.time}</p>
-        </div>
-    `).join('');
-
-    const tfWorkstreamsHTML = techflowData.workstreams.map(ws => `
-        <div class="portco-card">
-            <div class="flex justify-between items-center mb-2">
-                <h4 class="font-bold text-sm">${ws.title}</h4>
-                <span class="status-badge ${ws.status.toLowerCase().replace(' ', '-')}">${ws.status} ${ws.hasPing ? '<span class="status-ping-dot"></span>' : ''}</span>
-            </div>
-            <div class="flex items-baseline justify-between">
-                ${ws.values.map(v => `
-                    <div class="text-center">
-                        <p class="text-2xl font-bold">${v.value}</p>
-                        <p class="text-xs text-muted uppercase">${v.label}</p>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `).join('');
-    
-    const cvKpisHTML = cloudvantageData.kpis.map(kpi => `
-        <div class="kpi-card">
-            <p class="kpi-label">${kpi.label}</p>
-            <p class="kpi-value ${kpi.isGood ? 'text-success' : 'text-error'}">${kpi.value}</p>
-            <p class="kpi-detail">${kpi.change}</p>
-        </div>
-    `).join('');
-
-    const cvPlaysHTML = cloudvantageData.plays.map(play => `
-        <div class="flex justify-between items-center py-2 border-b border-border-color last:border-b-0">
-            <span class="font-medium text-secondary">${play.name}</span>
-            <span class="status-badge ${play.status === 'On Track' ? 'status-completed' : 'status-error'}">${play.status}</span>
-        </div>
-    `).join('');
-
-    mainContent.innerHTML = `
-    <div class="flex flex-col gap-6">
-        <!-- TechFlow Pane -->
-        <div class="portco-card">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-xl font-bold">TechFlow Solutions</h2>
-                    <p class="text-secondary">Series B SaaS • $12M ARR • Day 9 of 14</p>
-                </div>
-                <span class="status-badge status-progress">Analysis in Progress</span>
-            </div>
-            <div class="portco-card mb-4 cursor-pointer hover:border-accent-blue" data-action="navigate-to-gantt">
-                <div class="flex justify-between items-center mb-2">
-                    <h4 class="font-bold">Due Diligence Progress</h4>
-                    <span class="font-bold">65% Complete</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" style="width: 65%;"></div>
-                </div>
-                <div class="flex justify-between items-center text-xs text-muted mt-1">
-                    <span>Day 1</span>
-                    <span>Critical Path (Day 5)</span>
-                    <span>Decision Ready (Day 14)</span>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="col-span-2">
-                    <h4 class="font-bold mb-2">Live Scorecard</h4>
-                    <div class="grid grid-cols-2 gap-4">${tfScorecardHTML}</div>
-                </div>
-                <div>
-                    <h4 class="font-bold mb-2">Recent Activity</h4>
-                    <div class="flex flex-col gap-2">${tfActivityHTML}</div>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">${tfWorkstreamsHTML}</div>
-        </div>
-
-        <!-- CloudVantage Pane -->
-        <div class="portco-card">
-            <div class="flex justify-between items-center mb-4">
-                 <div>
-                    <h2 class="text-xl font-bold">CloudVantage</h2>
-                    <p class="text-secondary">Growth Stage • Q2 2025</p>
-                </div>
-                <button class="primary-button" data-action="expand-to-ceo-view">Expand to CEO View</button>
-            </div>
-            <div class="kpi-grid mb-4">${cvKpisHTML}</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="portco-card bg-secondary">
-                    <h4 class="font-bold mb-2">Executing Plays Summary</h4>
-                    ${cvPlaysHTML}
-                </div>
-                <div class="portco-card bg-secondary">
-                    <h4 class="font-bold mb-2">AI Synthesis</h4>
-                    <p class="text-secondary">${cloudvantageData.aiSynthesis}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    `;
-}
-
-function renderCeoDashboard() {
-    const data = ceoDashboardData;
-    const kpisHTML = `
-        <div class="kpi-card"><p class="kpi-label">Overall Play Status</p><p class="kpi-value">${data.kpis.playStatus.value}</p><p class="kpi-detail">${data.kpis.playStatus.change}</p></div>
-        <div class="kpi-card"><p class="kpi-label">Budget Adherence</p><p class="kpi-value text-error">${data.kpis.budgetAdherence.value}</p><p class="kpi-detail">${data.kpis.budgetAdherence.change}</p></div>
-        <div class="kpi-card"><p class="kpi-label">Goal Completion</p><p class="kpi-value">${data.kpis.goalCompletion.value}</p><p class="kpi-detail">${data.kpis.goalCompletion.change}</p></div>
-        <div class="kpi-card"><p class="kpi-label">Active Plays</p><p class="kpi-value">${data.kpis.activePlays.value}</p><p class="kpi-detail">${data.kpis.activePlays.change}</p></div>
-    `;
-
-    const playsHTML = data.departmentPlays.map(play => {
-        const statusMap = { 'On Track': 'status-completed', 'At Risk': 'status-warning', 'Behind': 'status-error' };
-        return `
-            <div class="program-item">
-                <div class="program-name">${play.name}</div>
-                <div class="program-dept">${play.department}</div>
-                <div class="program-status-wrapper"><span class="program-status ${statusMap[play.status]}">${play.status}</span></div>
-                <div class="program-progress-container"><div class="program-progress-bar" style="width: ${play.progress}%"></div></div>
-                <div class="program-progress-text">${play.progress}%</div>
-            </div>
-        `;
-    }).join('');
-
-    const updatesHTML = data.departmentUpdates.map(update => `
-        <div class="update-card">
-            <div class="update-card-header">
-                <h5 class="update-card-title">${update.department}</h5>
-                <span class="update-card-time">${update.time}</span>
-            </div>
-            <p class="update-card-body">${update.content}</p>
-            <div class="update-card-footer">
-                <div>Complete: <span>${update.metrics.complete}%</span></div>
-                <div>Budget: <span class="${update.metrics.budget > 0 ? 'text-success' : 'text-error'}">${update.metrics.budget > 0 ? '+' : ''}${update.metrics.budget}%</span></div>
-                <div>Progress: <span class="${update.metrics.progress >= 0 ? 'text-success' : 'text-error'}">${update.metrics.progress >= 0 ? '+' : ''}${update.metrics.progress}%</span></div>
-            </div>
-        </div>
-    `).join('');
-
-    const suggestionsHTML = data.aiSuggestions.map(suggestion => `
-        <div class="portco-card">
-            <h4 class="card-title">${suggestion.title}</h4>
-            <p class="text-secondary text-sm">${suggestion.content}</p>
-        </div>
-    `).join('');
-
-    return `
-        <h2 class="text-2xl font-bold mb-4">CEO Dashboard</h2>
-        <div class="persona-dashboard-layout">
-            <div class="persona-main-column">
-                <div class="portco-card">
-                    <h3 class="card-title">Company-wide KPIs - Q1 2025</h3>
-                    <div class="kpi-grid">${kpisHTML}</div>
-                </div>
-                <div class="portco-card">
-                    <h3 class="card-title">All Executing Plays</h3>
-                    <div class="program-list">${playsHTML}</div>
-                </div>
-            </div>
-            <div class="persona-sidebar-column">
-                <div class="portco-card">
-                    <h3 class="card-title">Department Updates Feed</h3>
-                    <div class="department-updates-feed">${updatesHTML}</div>
-                </div>
-                <div class="portco-card">
-                    <h3 class="card-title">AI-Generated Suggestions</h3>
-                    <div class="flex flex-col gap-4">${suggestionsHTML}</div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderCroRenewalHub() {
-    const data = croRenewalData;
-    const tableRowsHTML = data.opportunities.map(opp => `
-        <tr>
-            <td class="font-semibold">${opp.account}</td>
-            <td><span class="segment-badge ${opp.segment.toLowerCase()}">${opp.segment}</span></td>
-            <td>$${opp.value.toLocaleString()}</td>
-            <td>${opp.date}</td>
-            <td>${opp.circumstance}</td>
-        </tr>
-    `).join('');
-
-    return `
-        <div class="persona-dashboard-layout">
-            <div class="persona-main-column">
-                <div class="portco-card">
-                    <h3 class="card-title">NewCo Acquisition - Renewal Opportunities</h3>
-                    <div class="data-table-container">
-                        <table class="renewal-opportunities-table">
-                            <thead>
-                                <tr><th>Account</th><th>Segment</th><th>Contract Value</th><th>Renewal Date</th><th>Circumstance</th></tr>
-                            </thead>
-                            <tbody>${tableRowsHTML}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="persona-sidebar-column">
-                <div class="portco-card">
-                    <h3 class="card-title">AI Strategy Co-Pilot</h3>
-                    <div id="portco-conversation-log" class="space-y-4"></div>
-                    <div id="portco-prompt-container" class="mt-4">
-                        ${getPromptBoxHTML(["Let's process renewals for our newco acquisition."])}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-
-
-function renderGenericDashboard_DataView(companyId) {
-    const title = companyId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    return `
-        <div class="portco-container !p-0">
-            <div class="portco-header">
-                <div><h1 class="portco-title">${title}</h1><p class="portco-subtitle">Strategize Stage</p></div>
-                <div class="portco-status-badge status-completed"><span class="status-dot-solid"></span>Healthy</div>
-            </div>
-            <div class="portco-card text-center p-8">
-                <h2 class="card-title">Dashboard Under Construction</h2>
-                <p class="text-secondary mt-2">A detailed dashboard for ${title} is being configured.</p>
-            </div>
-        </div>
-    `;
-}
 
 function getPromptBoxHTML(questions = []) {
     const state = loadState();
@@ -595,7 +253,6 @@ async function typeWords(element, text, callback) {
     }, 30);
 }
 
-// MODIFIED: This function now intelligently handles both pre-canned and dynamic task overview prompts and applies the typing effect.
 async function runPortcoPrompt(promptText, companyId) {
     const conversationLog = document.getElementById('portco-conversation-log');
     const promptContainer = document.getElementById('portco-prompt-container');
@@ -620,7 +277,6 @@ async function runPortcoPrompt(promptText, companyId) {
     let response = portcoResponses[promptText];
     let followUpQuestions = [];
 
-    // --- NEW DYNAMIC LOGIC ---
     const taskOverviewPattern = /Provide me with a current overview and understanding of the '(.*)' task\./;
     const taskDependencyPattern = /What are the dependencies for the '(.*)' task\?/;
     const taskAssignmentPattern = /Who is assigned to the '(.*)' task\?/;
@@ -664,7 +320,7 @@ async function runPortcoPrompt(promptText, companyId) {
         const taskName = match[1];
         const task = diligencePlan_v3.find(t => t.name === taskName);
         if (task) {
-            response = portcoResponses[`What are the dependencies for the '${task.name}' task?`] || portcoResponses["What are the dependencies for the 'Audited Financials' task?"]; // Fallback for demo
+            response = portcoResponses[`What are the dependencies for the '${task.name}' task?`] || portcoResponses["What are the dependencies for the 'Audited Financials' task?"];
         }
     }
 
@@ -673,10 +329,9 @@ async function runPortcoPrompt(promptText, companyId) {
         const taskName = match[1];
         const task = diligencePlan_v3.find(t => t.name === taskName);
         if (task) {
-             response = portcoResponses[`Who is assigned to the '${task.name}' task?`] || portcoResponses["Who is assigned to the 'Audited Financials' task?"]; // Fallback for demo
+             response = portcoResponses[`Who is assigned to the '${task.name}' task?`] || portcoResponses["Who is assigned to the 'Audited Financials' task?"];
         }
     }
-    // --- END DYNAMIC LOGIC ---
 
     let responseHTML = '';
 
@@ -715,6 +370,13 @@ function initializePortcoEventListeners() {
         let state = loadState();
         const companyId = state.selectedCompanyId;
         switch(action) {
+            case 'navigate-to-gantt':
+                window.location.href = `portco.html?company=techflow-solutions`;
+                break;
+            case 'expand-to-ceo-view':
+                const targetCompanyId = target.dataset.companyId;
+                window.location.href = `portco.html?company=${targetCompanyId}`;
+                break;
             case 'run-prompt': {
                 const promptText = target.dataset.prompt;
                 if (promptText) {
@@ -794,7 +456,6 @@ function initializePortcoEventListeners() {
                 if (targetClass.startsWith('phase-')) {
                     parentGantt.querySelectorAll(`.${targetClass}[data-row-type="category"]`).forEach(row => {
                         row.classList.toggle('collapsed', isCollapsing);
-                        // Also ensure its children are collapsed if the category itself is
                         const catIcon = row.querySelector('.chevron-icon');
                         if (isCollapsing || (catIcon && !catIcon.classList.contains('rotate-180'))) {
                             const categoryId = row.dataset.rowId;

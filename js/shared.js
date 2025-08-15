@@ -138,8 +138,13 @@ const Navigation = {
 
         if (page === 'portco' || page === 'workspace' || page === 'modeling' || page === 'aria') {
             const companyId = state.selectedCompanyId;
-            const companyHeaderData = workspaceHeaders[companyId];
-            title = companyHeaderData ? `${companyHeaderData.title} - ${companyHeaderData.stage}` : 'Portfolio Company';
+            // CORRECTED: Add specific title for the command center view
+            if (companyId === 'all' && page === 'portco') {
+                title = 'Portfolio Command Center';
+            } else {
+                const companyHeaderData = workspaceHeaders[companyId];
+                title = companyHeaderData ? `${companyHeaderData.title} - ${companyHeaderData.stage}` : 'Portfolio Company';
+            }
         }
         
         titleElement.textContent = title;
@@ -167,12 +172,19 @@ const Navigation = {
         const newSelector = selector.cloneNode(true);
         selector.parentNode.replaceChild(newSelector, selector);
         
+        // CORRECTED: Add specific navigation logic for the 'all' case
         newSelector.addEventListener('change', (e) => {
             let state = loadState();
             state.selectedCompanyId = e.target.value;
             saveState(state);
             const currentPage = Navigation.getCurrentPage();
-            window.location.href = `${currentPage}.html?company=${e.target.value}`;
+            
+            if (e.target.value === 'all') {
+                 // The command center is on the portco page
+                 window.location.href = `portco.html`;
+            } else {
+                 window.location.href = `${currentPage}.html?company=${e.target.value}`;
+            }
         });
     },
 
@@ -249,14 +261,17 @@ const Navigation = {
     
     updateNavigationLinks() {
         const { selectedCompanyId } = loadState();
-        const linkCompanyId = (selectedCompanyId && selectedCompanyId !== 'all') ? selectedCompanyId : 'techflow-solutions';
+        const linkCompanyId = (selectedCompanyId && selectedCompanyId !== 'all') ? selectedCompanyId : 'all';
 
         document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
             const page = link.dataset.page;
             if (page === 'index') {
                 link.href = 'index.html';
+            } else if (page === 'portco' && linkCompanyId === 'all') {
+                link.href = 'portco.html';
             } else {
-                link.href = `${page}.html?company=${linkCompanyId}`;
+                const companyParam = (linkCompanyId === 'all') ? 'techflow-solutions' : linkCompanyId;
+                link.href = `${page}.html?company=${companyParam}`;
             }
         });
     },
@@ -392,7 +407,12 @@ const Navigation = {
                         state.activePersona = newPersonaId;
                         state.selectedCompanyId = persona.defaultCompany;
                         saveState(state);
-                        window.location.href = `${persona.defaultPage}?company=${persona.defaultCompany}`;
+                        // CORRECTED: Handle navigation for 'all' persona default
+                        if (persona.defaultCompany === 'all') {
+                            window.location.href = persona.defaultPage;
+                        } else {
+                            window.location.href = `${persona.defaultPage}?company=${persona.defaultCompany}`;
+                        }
                     }
                     return;
             }

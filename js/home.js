@@ -44,9 +44,9 @@ function renderPortfolioPage() {
                     <div class="priority-alerts-container">
                         <div class="priority-alerts-header" data-action="toggle-priority-alerts">
                             <h4 class="priority-alerts-title">Priority Alerts (3)</h4>
-                            <svg class="chevron-icon expanded" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                         </div>
-                        <div class="priority-alerts-grid expanded">
+                        <div class="priority-alerts-grid collapsed">
                             <button class="suggested-action-card" data-action="navigate-to-portco-task" data-company-id="techflow-solutions" data-task-id="DD-16" data-expand-phase="phase-Phase2-DeepDive">
                                 <p class="font-semibold text-sm text-primary">[TechFlow] Technical Diligence Blocked</p>
                                 <p class="text-xs text-secondary">The 'Code Scan' task is late, blocking the entire Technology workstream.</p>
