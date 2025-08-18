@@ -18,11 +18,11 @@ window.DiligenceHubComponent = {
         this.contentArea = this.targetElement.querySelector(`#diligence-content-area-${this.companyId}`);
 
         this._renderPlanTab();
-        this._initializeListeners();
+        this._initializeListeners(); // This sets up listeners within the component's scope
 
         if (initialPhase) {
             setTimeout(() => {
-                const phaseHeader = this.targetElement.querySelector(`.gantt-row[data-row-id="${initialPhase}"] [data-component-action="toggle-rows"]`);
+                const phaseHeader = this.targetElement.querySelector(`.gantt-row[data-row-id="${initialPhase}"] [data-action="toggle-rows"]`);
                 if (phaseHeader) phaseHeader.click();
             }, 100);
         }
@@ -30,33 +30,58 @@ window.DiligenceHubComponent = {
             setTimeout(() => this._renderTaskDetailModal(initialTask), 200);
         }
     },
- rerenderWithChanges: function(params) {
-        if (!this.contentArea) return;
+
+    // NEW FUNCTION TO RENDER A MODIFIED GANTT CHART
+    renderModifiedPlan: function(targetElement, companyId, modificationParams) {
+        this.companyId = companyId;
+        this.state = loadState();
+        this.targetElement = targetElement;
 
         let modifiedPlan = JSON.parse(JSON.stringify(diligencePlan_v3)); // Deep copy
 
-        if (params.type === 'GANTT_REPLAN' && params.params.phaseToShift) {
-            const phaseDef = [{ name: "Phase 3: Analysis", dayRange: [6, 11] }].find(p => p.name === params.params.phaseToShift);
+        if (modificationParams.phaseToShift) {
+            const phaseDef = [{ name: "Phase 3: Analysis", dayRange: [6, 11] }].find(p => p.name === modificationParams.phaseToShift);
             if (phaseDef) {
                 modifiedPlan.forEach(task => {
                     if (task.startDay >= phaseDef.dayRange[0] && task.startDay <= phaseDef.dayRange[1]) {
-                        task.startDay += params.params.startDayOffset;
+                        task.startDay += modificationParams.startDayOffset;
                     }
                 });
             }
         }
         
         const ganttHTML = this._generateGanttHTML(modifiedPlan, this.state);
-        this.contentArea.innerHTML = ganttHTML; // Redraw the Gantt chart with modified data
+        this.targetElement.innerHTML = ganttHTML;
+        this._initializeGanttHoverAndScroll(this.targetElement);
     },
     
-    _renderDiligenceTabContent: function(tabName) {
-        if (!this.contentArea) return;
-        if (tabName === 'Plan') {
-            this._renderPlanTab();
-        } else {
-            this.contentArea.innerHTML = this._renderWorkstreamTab(tabName);
-        }
+    _initializeGanttHoverAndScroll: function(container) {
+        container.querySelectorAll('.gantt-grid-container').forEach(ganttContainer => {
+            ganttContainer.addEventListener('mouseover', e => {
+                const rowTarget = e.target.closest('[data-row-id]');
+                if (rowTarget) {
+                    const rowId = rowTarget.dataset.rowId;
+                    ganttContainer.querySelectorAll(`[data-row-id="${rowId}"] .gantt-row-left, [data-row-id="${rowId}"] .gantt-row-right`).forEach(el => el.classList.add('hover'));
+                }
+            });
+            ganttContainer.addEventListener('mouseout', e => {
+                const rowTarget = e.target.closest('[data-row-id]');
+                if (rowTarget) {
+                    const rowId = rowTarget.dataset.rowId;
+                    ganttContainer.querySelectorAll(`[data-row-id="${rowId}"] .gantt-row-left, [data-row-id="${rowId}"] .gantt-row-right`).forEach(el => el.classList.remove('hover'));
+                }
+            });
+        });
+
+        setTimeout(() => {
+            const chartArea = container.querySelector('.gantt-scroll-wrapper');
+            if (chartArea) {
+                const totalWidth = chartArea.scrollWidth;
+                const visibleWidth = chartArea.clientWidth;
+                const todayPosition = (totalWidth / 17) * (CURRENT_PROJECT_DAY - 0.5);
+                chartArea.scrollLeft = todayPosition - (visibleWidth / 2) + 420;
+            }
+        }, 0);
     },
 
     _renderPlanTab: function(keepFilterOpen = false) {
@@ -71,39 +96,27 @@ window.DiligenceHubComponent = {
                             <div class="filter-group-header">
                                 <h5 class="filter-group-title">Workstreams</h5>
                                 <div class="filter-group-actions">
-                                    <button class="filter-action-btn" data-component-action="filter-all" data-type="workstreams" data-mode="select">All</button>
-                                    <button class="filter-action-btn" data-component-action="filter-all" data-type="workstreams" data-mode="deselect">None</button>
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="workstreams" data-mode="select">All</button>
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="workstreams" data-mode="deselect">None</button>
                                 </div>
                             </div>
-                            ${FILTER_DATA.workstreams.map(item => `<label class="custom-checkbox-wrapper"><input type="checkbox" data-component-action="filter" data-type="workstreams" data-value="${item.label}" ${this.state.diligenceFilters.workstreams.includes(item.label) ? 'checked' : ''}><span class="custom-checkbox"></span><span class="checkbox-label">${item.label}</span></label>`).join('')}
+                            ${FILTER_DATA.workstreams.map(item => `<label class="custom-checkbox-wrapper"><input type="checkbox" data-action="filter" data-type="workstreams" data-value="${item.label}" ${this.state.diligenceFilters.workstreams.includes(item.label) ? 'checked' : ''}><span class="custom-checkbox"></span><span class="checkbox-label">${item.label}</span></label>`).join('')}
                         </div>
                         <div class="filter-group">
                             <div class="filter-group-header">
                                 <h5 class="filter-group-title">Status</h5>
                                 <div class="filter-group-actions">
-                                    <button class="filter-action-btn" data-component-action="filter-all" data-type="statuses" data-mode="select">All</button>
-                                    <button class="filter-action-btn" data-component-action="filter-all" data-type="statuses" data-mode="deselect">None</button>
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="statuses" data-mode="select">All</button>
+                                    <button class="filter-action-btn" data-action="filter-all" data-type="statuses" data-mode="deselect">None</button>
                                 </div>
                             </div>
-                            ${FILTER_DATA.statuses.map(item => `<label class="custom-checkbox-wrapper"><input type="checkbox" data-component-action="filter" data-type="statuses" data-value="${item}" ${this.state.diligenceFilters.statuses.includes(item) ? 'checked' : ''}><span class="custom-checkbox"></span><span class="checkbox-label">${item}</span></label>`).join('')}
+                            ${FILTER_DATA.statuses.map(item => `<label class="custom-checkbox-wrapper"><input type="checkbox" data-action="filter" data-type="statuses" data-value="${item}" ${this.state.diligenceFilters.statuses.includes(item) ? 'checked' : ''}><span class="custom-checkbox"></span><span class="checkbox-label">${item}</span></label>`).join('')}
                         </div>
                     </div>
                 </div>
             </div>
         `;
-        setTimeout(() => {
-            const chartArea = this.contentArea.querySelector('.gantt-scroll-wrapper');
-            if (chartArea) {
-                const totalWidth = chartArea.scrollWidth;
-                const visibleWidth = chartArea.clientWidth;
-                const todayPosition = (totalWidth / 17) * (CURRENT_PROJECT_DAY - 0.5);
-                chartArea.scrollLeft = todayPosition - (visibleWidth / 2) + 420;
-            }
-        }, 0);
-    },
-
-    _renderWorkstreamTab: function(workstreamName) {
-        // ... (This function is unchanged)
+        this._initializeGanttHoverAndScroll(this.contentArea);
     },
 
     _renderTaskDetailModal: function(taskId) {
@@ -132,11 +145,10 @@ window.DiligenceHubComponent = {
         const predecessors = renderDependencyList(task.dependencies);
         const successors = renderDependencyList(diligencePlan_v3.filter(s => s.dependencies.includes(task.id)).map(s => s.id));
         
-        // --- CHANGE START: Corrected data-action and data attribute to align with aria.js ---
         container.innerHTML = `
-            <div class="gantt-modal-overlay visible" data-component-action="close-task-modal">
+            <div class="gantt-modal-overlay visible" data-action="close-task-modal">
                 <div class="gantt-task-modal">
-                    <div class="gantt-modal-header"><h3>${task.id}: ${task.name}</h3><button class="close-btn" data-component-action="close-task-modal">×</button></div>
+                    <div class="gantt-modal-header"><h3>${task.id}: ${task.name}</h3><button class="close-btn" data-action="close-task-modal">×</button></div>
                     <div class="gantt-modal-body">
                         <div class="modal-grid">
                             <div class="modal-info-item"><p>Workstream</p><p>${task.workstream}</p></div>
@@ -165,21 +177,15 @@ window.DiligenceHubComponent = {
                 </div>
             </div>
         `;
-        // --- CHANGE END ---
     },
 
     _initializeListeners: function() {
         this.targetElement.addEventListener('click', (e) => {
-            const target = e.target.closest('[data-component-action]');
+            const target = e.target.closest('[data-action]');
             if (!target) return;
 
-            const action = target.dataset.componentAction;
+            const action = target.dataset.action;
             switch (action) {
-                case 'switch-diligence-tab':
-                    this.targetElement.querySelectorAll('.diligence-pills .pill').forEach(p => p.classList.remove('active'));
-                    target.classList.add('active');
-                    this._renderDiligenceTabContent(target.dataset.tabName);
-                    break;
                 case 'show-task-details':
                     const taskId = target.closest('[data-task-id]').dataset.taskId;
                     this._renderTaskDetailModal(taskId);
@@ -242,7 +248,7 @@ window.DiligenceHubComponent = {
         });
 
         this.targetElement.addEventListener('change', e => {
-            const target = e.target.closest('input[data-component-action="filter"]');
+            const target = e.target.closest('input[data-action="filter"]');
             if (!target) return;
             
             const { type, value } = target.dataset;
@@ -302,13 +308,13 @@ window.DiligenceHubComponent = {
         Object.values(displayHierarchy).filter(phase => phase.categories.length > 0).forEach(phase => {
             const originalPhase = hierarchy[phase.name];
             const phaseId = `phase-${phase.name.replace(/[^a-zA-Z0-9-]/g, '').replace(/ /g, '-')}`;
-            leftPaneHTML += `<div class="gantt-row" data-row-id="${phaseId}"><div class="gantt-row-left gantt-phase-header-left" data-component-action="toggle-rows" data-target-class="${phaseId}"><div class="gantt-phase-details"><svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${phase.name}</span></div></div></div>`;
-            rightPaneHTML += `<div class="gantt-row" data-row-id="${phaseId}"><div class="gantt-row-right gantt-phase-header-right" data-component-action="toggle-rows" data-target-class="${phaseId}"><div class="gantt-timeline-grid"><div class="gantt-summary-bar phase-bar" style="grid-column: ${originalPhase.summaryStartDay} / span ${originalPhase.summaryDuration};"></div></div></div></div>`;
+            leftPaneHTML += `<div class="gantt-row" data-row-id="${phaseId}"><div class="gantt-row-left gantt-phase-header-left" data-action="toggle-rows" data-target-class="${phaseId}"><div class="gantt-phase-details"><svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${phase.name}</span></div></div></div>`;
+            rightPaneHTML += `<div class="gantt-row" data-row-id="${phaseId}"><div class="gantt-row-right gantt-phase-header-right" data-action="toggle-rows" data-target-class="${phaseId}"><div class="gantt-timeline-grid"><div class="gantt-summary-bar phase-bar" style="grid-column: ${originalPhase.summaryStartDay} / span ${originalPhase.summaryDuration};"></div></div></div></div>`;
             phase.categories.forEach(cat => {
                 const originalCategory = originalPhase.categories[cat.name];
                 const categoryId = `cat-${cat.name.replace(/[^a-zA-Z0-9-]/g, '').replace(/ /g, '-')}`;
-                leftPaneHTML += `<div class="gantt-row ${phaseId} collapsed" data-row-id="${categoryId}" data-row-type="category"><div class="gantt-row-left gantt-category-header-left" data-component-action="toggle-rows" data-target-class="${categoryId}"><div class="gantt-category-details"><svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${cat.name}</span></div></div></div>`;
-                rightPaneHTML += `<div class="gantt-row ${phaseId} collapsed" data-row-id="${categoryId}" data-row-type="category"><div class="gantt-row-right gantt-category-header-right" data-component-action="toggle-rows" data-target-class="${categoryId}"><div class="gantt-timeline-grid"><div class="gantt-summary-bar category-bar" style="grid-column: ${originalCategory.summaryStartDay} / span ${originalCategory.summaryDuration};"></div></div></div></div>`;
+                leftPaneHTML += `<div class="gantt-row ${phaseId} collapsed" data-row-id="${categoryId}" data-row-type="category"><div class="gantt-row-left gantt-category-header-left" data-action="toggle-rows" data-target-class="${categoryId}"><div class="gantt-category-details"><svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${cat.name}</span></div></div></div>`;
+                rightPaneHTML += `<div class="gantt-row ${phaseId} collapsed" data-row-id="${categoryId}" data-row-type="category"><div class="gantt-row-right gantt-category-header-right" data-action="toggle-rows" data-target-class="${categoryId}"><div class="gantt-timeline-grid"><div class="gantt-summary-bar category-bar" style="grid-column: ${originalCategory.summaryStartDay} / span ${originalCategory.summaryDuration};"></div></div></div></div>`;
                 cat.tasks.forEach(task => {
                     const commentary = projectPlanUtils.generateAriaCommentary(task, statusOverrides);
                     const workstreamClass = `ws-${task.workstream.split(' ')[0].toLowerCase().replace('&', '')}`;
@@ -317,8 +323,8 @@ window.DiligenceHubComponent = {
                     const extensionStart = taskEndDay + 1;
                     const extensionEnd = CURRENT_PROJECT_DAY + 1;
                     const workstreamColor = workstreamColors[task.workstream] || 'var(--status-error)';
-                    leftPaneHTML += `<div class="gantt-row ${phaseId} ${categoryId} collapsed" data-row-id="${task.id}"><div class="gantt-row-left" data-component-action="show-task-details" data-task-id="${task.id}"><div class="gantt-task-details"><div class="gantt-task-id">${task.id}</div><div class="gantt-task-element">${task.name}</div><div class="gantt-task-status"><div class="status-pill-column ${statusClass}">${commentary.status}</div></div></div></div></div>`;
-                    rightPaneHTML += `<div class="gantt-row ${phaseId} ${categoryId} collapsed" data-row-id="${task.id}"><div class="gantt-row-right" data-component-action="show-task-details" data-task-id="${task.id}"><div class="gantt-timeline-grid"><div class="gantt-bar ${workstreamClass}" style="grid-column: ${task.startDay} / span ${Math.max(1, Math.ceil(task.duration))};"></div>${commentary.status === 'Late' && extensionStart < extensionEnd ? `<div class="gantt-bar-extension" style="grid-column: ${extensionStart} / ${extensionEnd}; background-color: ${workstreamColor}33;"></div>` : ''}</div></div></div>`;
+                    leftPaneHTML += `<div class="gantt-row ${phaseId} ${categoryId} collapsed" data-row-id="${task.id}"><div class="gantt-row-left" data-action="show-task-details" data-task-id="${task.id}"><div class="gantt-task-details"><div class="gantt-task-id">${task.id}</div><div class="gantt-task-element">${task.name}</div><div class="gantt-task-status"><div class="status-pill-column ${statusClass}">${commentary.status}</div></div></div></div></div>`;
+                    rightPaneHTML += `<div class="gantt-row ${phaseId} ${categoryId} collapsed" data-row-id="${task.id}"><div class="gantt-row-right" data-action="show-task-details" data-task-id="${task.id}"><div class="gantt-timeline-grid"><div class="gantt-bar ${workstreamClass}" style="grid-column: ${task.startDay} / span ${Math.max(1, Math.ceil(task.duration))};"></div>${commentary.status === 'Late' && extensionStart < extensionEnd ? `<div class="gantt-bar-extension" style="grid-column: ${extensionStart} / ${extensionEnd}; background-color: ${workstreamColor}33;"></div>` : ''}</div></div></div>`;
                 });
             });
         });
@@ -329,8 +335,8 @@ window.DiligenceHubComponent = {
                 <div class="gantt-controls">
                     <h3 class="gantt-main-title">Project Diligence Plan</h3>
                     <div class="gantt-control-buttons">
-                        <button class="gantt-control-btn" data-component-action="expand-collapse-all" title="Expand/Collapse All"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></button>
-                        <button class="gantt-control-btn" data-component-action="toggle-filter-modal" title="Filter"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
+                        <button class="gantt-control-btn" data-action="expand-collapse-all" title="Expand/Collapse All"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></button>
+                        <button class="gantt-control-btn" data-action="toggle-filter-modal" title="Filter"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
                     </div>
                 </div>
                 <div class="gantt-scroll-wrapper">

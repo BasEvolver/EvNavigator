@@ -57,7 +57,6 @@ function scrollToConversationBottom() {
     }
 }
 
-// --- FIX START: Rewrote the initialization logic for clarity and correctness ---
 function initializeAriaPage() {
     const params = new URLSearchParams(window.location.search);
     const prompt = params.get('prompt');
@@ -65,33 +64,23 @@ function initializeAriaPage() {
     let state = loadState();
     const { activePersona } = state;
 
-    // This part is for shared components, it's correct
     Navigation.updateCompanySelector();
 
-    // Handle persona-specific views first
     if (activePersona === 'maya') {
         renderAmActionCenter();
-        return; // Exit early for this special view
+        return; 
     }
 
-    // The main logic:
-    // It's much simpler now. If a prompt exists in the URL, we run the sequence.
-    // If not, we show the starting screen. This covers all cases correctly.
     if (prompt) {
-        // A prompt was passed from another page (e.g., Command Center).
-        // We need to run the sequence to display the Gantt chart or other content.
         if (workstream) {
             state.techflowAria.activeWorkstream = workstream;
             saveState(state);
         }
         runAriaSequence(prompt);
     } else {
-        // No prompt in the URL, meaning the user clicked "Aria" from the sidebar.
-        // Show the clean slate with suggested prompts.
         renderAriaCleanSlate(activePersona);
     }
 }
-// --- FIX END ---
 
 
 function renderAriaCleanSlate(persona) {
@@ -365,15 +354,17 @@ async function runAriaSequence(promptText) {
         scrollToConversationBottom();
         
         setTimeout(async () => {
-            await runAriaBuildingSequence(targetElement);
-            if (staticResponseData.simulation) {
-                if (staticResponseData.simulation.type === 'GANTT_REPLAN') {
-                    const ganttContainer = document.querySelector('.diligence-hub-container');
-                    if (ganttContainer && window.DiligenceHubComponent) {
-                        window.DiligenceHubComponent.rerenderWithChanges(staticResponseData.simulation);
-                    }
+            // THIS IS THE NEW LOGIC FOR RE-PLANNING
+            if (staticResponseData.simulation && staticResponseData.simulation.type === 'GANTT_REPLAN') {
+                const replanTarget = targetElement.querySelector('[id^="gantt-replan-target-"]');
+                if (replanTarget && window.DiligenceHubComponent) {
+                    // Call the new function in the component to render the modified plan
+                    window.DiligenceHubComponent.renderModifiedPlan(replanTarget, companyId, staticResponseData.simulation.params);
                 }
             }
+            
+            await runAriaBuildingSequence(targetElement);
+            
             promptWrapper.innerHTML = getAdvancedPromptBoxHTML(staticResponseData.followUpQuestions);
             scrollToConversationBottom();
         }, 50);
@@ -386,15 +377,10 @@ async function runAriaSequence(promptText) {
 }
 
 function initializeAriaEventListeners() {
-    // --- FIX START ---
-    // The event listeners must be attached to the document, because the prompt box
-    // is now a top-level element, not inside #main-content.
-    // We use document.body to store the flag to prevent re-attaching.
     if (document.body.dataset.ariaListenerAttached) return;
     document.body.dataset.ariaListenerAttached = 'true';
     
     document.addEventListener('click', e => {
-        // Only run this logic if we are on the Aria page to avoid conflicts.
         if (Navigation.getCurrentPage() !== 'aria') return;
 
         const target = e.target.closest('[data-action]');
@@ -403,7 +389,6 @@ function initializeAriaEventListeners() {
         let state = loadState();
         const action = target.dataset.action;
 
-        // The switch statement logic is correct and remains unchanged.
         switch (action) {
             case 'run-suggested-prompt':
                 const question = target.dataset.question;
@@ -431,7 +416,6 @@ function initializeAriaEventListeners() {
                 window.history.pushState({}, '', url);
                 initializeAriaPage();
                 break;
-            // ... all other cases from your original file remain the same
             case 'toggle-settings-modal':
                 state.ariaSettings.isModalOpen = !state.ariaSettings.isModalOpen;
                 saveState(state);
@@ -534,9 +518,7 @@ function initializeAriaEventListeners() {
             target.style.height = (target.scrollHeight) + 'px';
         }
     });
-    // --- FIX END ---
 
-    // This listener is separate and correct as is.
     document.addEventListener('change', handleFileAttachment);
 }
 
