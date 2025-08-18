@@ -173,6 +173,33 @@ const projectResources = [
 ];
 
 const commandCenterAriaResponses = {
+    "Provide an overview of the TechFlow Due Diligence activities.": {
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">TechFlow Due Diligence Overview</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="We are currently on **Day 9 of a 17-day** diligence plan for the TechFlow Solutions acquisition. The process is structured across four key workstreams. My analysis indicates the project is **65% complete** but is currently **'At Risk'** due to a critical blocker in the Technology workstream."></p></div>
+            <div class="build-item workstream-grid mt-4">
+                <div class="workstream-card alert" data-action="run-suggested-prompt" data-question="Show me the Technology & Operations workstream."><div class="workstream-alert-dot"></div><h4 class="workstream-title">Technology & Operations</h4><div class="workstream-metrics"><div><p class="workstream-value">45%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-error">Blocked</p><p class="workstream-label">Status</p></div></div></div>
+                <div class="workstream-card" data-action="run-suggested-prompt" data-question="Show me the Commercial & Customer workstream."><h4 class="workstream-title">Commercial & Customer</h4><div class="workstream-metrics"><div><p class="workstream-value">80%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-success">On Track</p><p class="workstream-label">Status</p></div></div></div>
+                <div class="workstream-card" data-action="run-suggested-prompt" data-question="Show me the Financial & Risk workstream."><h4 class="workstream-title">Financial & Risk</h4><div class="workstream-metrics"><div><p class="workstream-value">70%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-success">On Track</p><p class="workstream-label">Status</p></div></div></div>
+                <div class="workstream-card" data-action="run-suggested-prompt" data-question="Show me the Business & Strategy workstream."><h4 class="workstream-title">Business & Strategy</h4><div class="workstream-metrics"><div><p class="workstream-value">90%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-success">On Track</p><p class="workstream-label">Status</p></div></div></div>
+            </div>
+        </div>`,
+        followUpQuestions: ["What is the blocker in the Technology workstream?", "Show me the key findings from the Commercial diligence.", "What is the current valuation model?"]
+    },
+    "How is the NewCo integration going for CloudVantage?": {
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">CloudVantage: NewCo Integration Status</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="The NewCo integration is progressing well and is currently rated **'On Track'**. We are 60 days into the 100-day plan. Financial system consolidation is complete, and the sales team has been enabled on cross-selling NewCo products, which is already contributing to the strong NRR performance."></p></div>
+            <div class="build-item kpi-grid mt-4">
+                <div class="kpi-card"><p class="kpi-label">Integration Progress</p><p class="kpi-value">60%</p><p class="kpi-detail">Day 60 of 100</p></div>
+                <div class="kpi-card"><p class="kpi-label">Synergy Realization</p><p class="kpi-value">$1.2M</p><p class="kpi-detail">vs. $2.1M Target</p></div>
+                <div class="kpi-card"><p class="kpi-label">Team Morale (eNPS)</p><p class="kpi-value">65</p><p class="kpi-detail">Stable</p></div>
+                <div class="kpi-card"><p class="kpi-label">Key Risks</p><p class="kpi-value">1</p><p class="kpi-detail text-warning">Moderate</p></div>
+            </div>
+             <div class="build-item judgement-box warning mt-4"><p class="judgement-title">Key Risk:</p><p class="judgement-text" data-typing-text="The primary risk is the timeline for integrating NewCo's legacy data models into the main CloudVantage platform. This is the root cause of the delay in the **AI-Powered Feature Launch** and requires close monitoring."></p></div>
+        </div>`,
+        followUpQuestions: ["Generate a risk mitigation plan for the AI feature delay.", "Analyze the key drivers of our Net Revenue Retention.", "Draft a board update on the NewCo integration."]
+    },
     "Give me a deep dive on TechFlow's financial health score.": {
         renderFunc: () => {
             const anomaly1 = techflow_anomalies.find(a => a.id === 'arr-comp');
@@ -217,7 +244,6 @@ const commandCenterAriaResponses = {
         followUpQuestions: ["What is the impact of this on the valuation model?", "Which cost synergy category was revised?"]
     }
 };
-
 const diligenceHubAriaResponses = {
     "Can we start the analysis 2 days earlier?": {
         simulation: { 

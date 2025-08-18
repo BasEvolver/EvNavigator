@@ -288,27 +288,27 @@ updateCompanySelector() {
         });
     },
     
-updateNavigationLinks() {
-    const { selectedCompanyId, activePersona } = loadState();
+    updateNavigationLinks() {
+        const { selectedCompanyId, activePersona } = loadState();
+        
+        document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
+            const page = link.dataset.page;
     
-    document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
-        const page = link.dataset.page;
-
-        if (page === 'index') {
-            link.href = 'index.html';
-        } else if (page === 'portco') {
-            // For Adrian, the PortCo link ALWAYS goes to his command center.
-            if (activePersona === 'adrian') {
-                link.href = 'portco.html';
+            if (page === 'index') {
+                link.href = 'index.html';
+            } else if (page === 'portco') {
+                if (activePersona === 'adrian') {
+                    link.href = 'portco.html';
+                } else {
+                    link.href = `portco.html?company=cloudvantage`;
+                }
             } else {
-                link.href = `portco.html?company=cloudvantage`;
+                // THIS IS THE FIX: Ensure 'all' is passed correctly to ARIA
+                const companyParam = selectedCompanyId || 'techflow-solutions';
+                link.href = `${page}.html?company=${companyParam}`;
             }
-        } else {
-            const companyParam = (selectedCompanyId && selectedCompanyId !== 'all') ? selectedCompanyId : 'techflow-solutions';
-            link.href = `${page}.html?company=${companyParam}`;
-        }
-    });
-},
+        });
+    },
 
     applyPersonaPermissions() {
         const state = loadState();

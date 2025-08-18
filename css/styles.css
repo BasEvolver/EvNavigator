@@ -6884,8 +6884,8 @@ html, body {
     z-index: 5; /* Sits below the prompt box but above the content */
 }
 
-/* 7. Remove the default padding from the main content area on this page */
-main#main-content {
+/* 7. Remove the default padding from the main content area on THIS page (ARIA) */
+body.page-aria main#main-content {
     padding: 0 !important;
 }
 
@@ -6964,7 +6964,7 @@ main#main-content {
     z-index: 5; /* Sits below the prompt box but above the content */
 }
 
-/* 7. Remove the default padding from the main content area on this page */
-main#main-content {
+/* 7. THIS IS THE FIX: Remove padding ONLY on the ARIA page. */
+body.page-aria main#main-content {
     padding: 0 !important;
 }

@@ -9,6 +9,15 @@ const generativeComponentMap = {
             "Can we start the analysis 2 days earlier?",
             "Which resources are overallocated next week?"
         ]
+    },
+    "Show me where we are on the TechFlow Diligence plan.": {
+        script: 'js/modules/diligence-hub-component.js',
+        renderer: 'DiligenceHubComponent',
+        followUpQuestions: [
+            "What is the impact of the 1-day delay on the critical path?",
+            "Can we start the analysis 2 days earlier?",
+            "Which resources are overallocated next week?"
+        ]
     }
 };
 
@@ -36,6 +45,7 @@ const companyDataMap = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (Navigation.getCurrentPage() === 'aria') {
+        document.body.classList.add('page-aria');
         const params = new URLSearchParams(window.location.search);
         const companyId = params.get('company') || 'techflow-solutions';
         let state = loadState();
@@ -61,16 +71,17 @@ function initializeAriaPage() {
     const params = new URLSearchParams(window.location.search);
     const prompt = params.get('prompt');
     const workstream = params.get('workstream');
+    const companyId = params.get('company') || 'techflow-solutions';
     let state = loadState();
     const { activePersona } = state;
-
-    Navigation.updateCompanySelector();
 
     if (activePersona === 'maya') {
         renderAmActionCenter();
         return; 
     }
 
+    Navigation.updateCompanySelector();
+    
     if (prompt) {
         if (workstream) {
             state.techflowAria.activeWorkstream = workstream;
@@ -78,20 +89,31 @@ function initializeAriaPage() {
         }
         runAriaSequence(prompt);
     } else {
-        renderAriaCleanSlate(activePersona);
+        renderAriaCleanSlate(companyId);
     }
 }
 
 
-function renderAriaCleanSlate(persona) {
+function renderAriaCleanSlate(companyId) {
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
     if (!promptWrapper) return;
+    
     let suggestedPrompts = [];
-    switch(persona) {
-        case 'adrian': suggestedPrompts = ["Compare NRR for CloudVantage vs. TechFlow.", "What are the key risks across the entire portfolio?", "Generate a summary of all Q2 board meetings."]; break;
-        case 'evelyn': suggestedPrompts = ["Prepare QBR materials for the NewCo acquisition.", "What is the budget impact of the AI feature delay?", "Draft a company-wide update on our Q2 performance."]; break;
-        case 'connor': suggestedPrompts = ["Analyze the key drivers of our Net Revenue Retention.", "Draft a revised sales comp plan.", "Which customers are the best candidates for the next upsell campaign?"]; break;
+    if (companyId === 'all') {
+        suggestedPrompts = [
+            "Provide an overview of the TechFlow Due Diligence activities.",
+            "Show me where we are on the TechFlow Diligence plan.",
+            "How is the NewCo integration going for CloudVantage?"
+        ];
+    } else {
+        const companyName = companyDataMap[companyId] ? workspaceHeaders[companyId].title : "the company";
+        suggestedPrompts = [
+            `What are the key risks for ${companyName}?`,
+            `Summarize the latest board meeting for ${companyName}.`,
+            "Show me where we are on the TechFlow Diligence plan."
+        ];
     }
+    
     promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts);
 }
 
