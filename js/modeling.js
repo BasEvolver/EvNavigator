@@ -22,21 +22,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        await loadSharedComponents();
-        
-        // MODIFIED: Added robust company ID handling to ensure a specific company is always selected.
+        // CORRECTED: State must be set BEFORE loading shared components
         const urlParams = new URLSearchParams(window.location.search);
         const companyIdFromUrl = urlParams.get('company');
-        
         let state = loadState();
-        // Use URL param, or state if it's valid, or fallback to a default.
         const companyId = companyIdFromUrl || (state.selectedCompanyId && state.selectedCompanyId !== 'all' ? state.selectedCompanyId : 'techflow-solutions');
-
         state.selectedCompanyId = companyId;
         saveState(state);
-        
-        // This ensures the header dropdown is synced with the page content
-        Navigation.updateCompanySelector();
+
+        await loadSharedComponents();
         
         renderModelingPage(state);
         initializeModelingEventListeners();

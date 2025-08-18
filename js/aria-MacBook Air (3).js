@@ -57,7 +57,6 @@ function scrollToConversationBottom() {
     }
 }
 
-// --- FIX START: Rewrote the initialization logic for clarity and correctness ---
 function initializeAriaPage() {
     const params = new URLSearchParams(window.location.search);
     const prompt = params.get('prompt');
@@ -65,33 +64,39 @@ function initializeAriaPage() {
     let state = loadState();
     const { activePersona } = state;
 
-    // This part is for shared components, it's correct
-    Navigation.updateCompanySelector();
-
-    // Handle persona-specific views first
     if (activePersona === 'maya') {
         renderAmActionCenter();
-        return; // Exit early for this special view
+        return; 
     }
 
-    // The main logic:
-    // It's much simpler now. If a prompt exists in the URL, we run the sequence.
-    // If not, we show the starting screen. This covers all cases correctly.
+    Navigation.updateCompanySelector();
+    
+    const conversationContainer = document.getElementById('aria-conversation-container');
+    const promptWrapper = document.getElementById('aria-prompt-wrapper');
+
+    // --- FIX START ---
+    // Only clear the conversation if it's a fresh start (no prompt in URL and container is empty).
+    // This preserves the Gantt chart when a follow-up prompt is clicked.
     if (prompt) {
-        // A prompt was passed from another page (e.g., Command Center).
-        // We need to run the sequence to display the Gantt chart or other content.
-        if (workstream) {
-            state.techflowAria.activeWorkstream = workstream;
-            saveState(state);
+        // If there's a prompt in the URL, it means we're starting a sequence.
+        // If the container is empty, run the sequence. If not, it means the user navigated away and back,
+        // so we don't re-run the prompt automatically.
+        if (conversationContainer && conversationContainer.innerHTML.trim() === '') {
+            if (workstream) {
+                state.techflowAria.activeWorkstream = workstream;
+                saveState(state);
+            }
+            runAriaSequence(prompt);
         }
-        runAriaSequence(prompt);
-    } else {
-        // No prompt in the URL, meaning the user clicked "Aria" from the sidebar.
-        // Show the clean slate with suggested prompts.
+    } else if (conversationContainer && conversationContainer.innerHTML.trim() === '') {
+        // If there's no prompt and the conversation is empty, render the clean slate.
+        renderAriaCleanSlate(activePersona);
+    } else if (promptWrapper && promptWrapper.innerHTML.trim() === '') {
+        // If the conversation has content but the prompt box is missing (e.g., page reload), re-render it.
         renderAriaCleanSlate(activePersona);
     }
+    // --- FIX END ---
 }
-// --- FIX END ---
 
 
 function renderAriaCleanSlate(persona) {
@@ -278,7 +283,8 @@ async function runAriaSequence(promptText) {
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
     if (!conversationContainer || !promptWrapper) return;
 
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML([]);
+    // --- FIX: Clear the prompt box suggestions, but not the whole conversation ---
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML([]); // Clear old suggestions
 
     const persona = PERSONAS[state.activePersona];
     const nameParts = persona.name.split(' ');
@@ -343,9 +349,9 @@ async function runAriaSequence(promptText) {
         
         try {
             await loadScript(componentInfo.script);
+            // --- FIX: Render the component inside the new response bubble ---
             window[componentInfo.renderer].render(targetElement, companyId);
         } catch (error) {
-            console.error(error); // Log the actual error
             targetElement.innerHTML = `<p class="text-red-500">Error loading component: ${error.message}</p>`;
         }
         
@@ -386,24 +392,17 @@ async function runAriaSequence(promptText) {
 }
 
 function initializeAriaEventListeners() {
-    // --- FIX START ---
-    // The event listeners must be attached to the document, because the prompt box
-    // is now a top-level element, not inside #main-content.
-    // We use document.body to store the flag to prevent re-attaching.
-    if (document.body.dataset.ariaListenerAttached) return;
-    document.body.dataset.ariaListenerAttached = 'true';
+    const mainContent = document.getElementById('main-content');
+    if (mainContent.dataset.listenerAttached) return;
+    mainContent.dataset.listenerAttached = 'true';
     
-    document.addEventListener('click', e => {
-        // Only run this logic if we are on the Aria page to avoid conflicts.
-        if (Navigation.getCurrentPage() !== 'aria') return;
-
+    mainContent.addEventListener('click', e => {
         const target = e.target.closest('[data-action]');
         if (!target) return;
         
         let state = loadState();
         const action = target.dataset.action;
 
-        // The switch statement logic is correct and remains unchanged.
         switch (action) {
             case 'run-suggested-prompt':
                 const question = target.dataset.question;
@@ -422,16 +421,11 @@ function initializeAriaEventListeners() {
                 }
                 break;
             case 'restart-conversation':
+                // --- FIX: Clear the conversation container and re-initialize ---
                 const conversationContainer = document.getElementById('aria-conversation-container');
-                const promptWrapper = document.getElementById('aria-prompt-wrapper');
                 if(conversationContainer) conversationContainer.innerHTML = '';
-                if(promptWrapper) promptWrapper.innerHTML = '';
-                const url = new URL(window.location);
-                url.searchParams.delete('prompt');
-                window.history.pushState({}, '', url);
                 initializeAriaPage();
                 break;
-            // ... all other cases from your original file remain the same
             case 'toggle-settings-modal':
                 state.ariaSettings.isModalOpen = !state.ariaSettings.isModalOpen;
                 saveState(state);
@@ -508,9 +502,7 @@ function initializeAriaEventListeners() {
         }
     });
 
-    document.addEventListener('change', e => {
-        if (Navigation.getCurrentPage() !== 'aria') return;
-
+    mainContent.addEventListener('change', e => {
         const target = e.target.closest('[data-action="update-setting"]');
         if (!target) return;
         let state = loadState();
@@ -525,18 +517,14 @@ function initializeAriaEventListeners() {
         updatePromptContainer(state);
     });
 
-    document.addEventListener('input', e => {
-        if (Navigation.getCurrentPage() !== 'aria') return;
-
+    mainContent.addEventListener('input', e => {
         const target = e.target;
         if (target.id === 'aria-prompt-input') {
             target.style.height = 'auto';
             target.style.height = (target.scrollHeight) + 'px';
         }
     });
-    // --- FIX END ---
 
-    // This listener is separate and correct as is.
     document.addEventListener('change', handleFileAttachment);
 }
 

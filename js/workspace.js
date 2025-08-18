@@ -18,10 +18,16 @@ const TOGGLE_CONFIG = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadSharedComponents();
-
-    // CHECK: Only run if we are on the Workspace page
     if (Navigation.getCurrentPage() === 'workspace') {
+        // CORRECTED: State must be set BEFORE loading shared components
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyId = urlParams.get('company') || 'techflow-solutions';
+        let state = loadState();
+        state.selectedCompanyId = companyId;
+        saveState(state);
+
+        await loadSharedComponents();
+        
         renderWorkspacePage();
         initializeWorkspaceListeners();
     }

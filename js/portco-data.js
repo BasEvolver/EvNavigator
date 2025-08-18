@@ -1,4 +1,112 @@
 // js/portco-data.js - Contains the data and simulation logic for the PortCo page.
+
+// --- CHANGE START ---
+// MOVED ALL CRITICAL UTILITIES AND CONSTANTS HERE FROM portco.js
+// This ensures they are loaded early and available to any component that needs them.
+
+const PROJECT_DAY_FOR_TODAY = 9;
+
+function calculateStartDate(today, projectDayForToday) {
+    let startDate = new Date(today);
+    let businessDaysToGoBack = projectDayForToday - 1;
+    while (businessDaysToGoBack > 0) {
+        startDate.setDate(startDate.getDate() - 1);
+        const dayOfWeek = startDate.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            businessDaysToGoBack--;
+        }
+    }
+    return startDate;
+}
+
+const todayDate = new Date();
+const PROJECT_START_DATE = calculateStartDate(todayDate, PROJECT_DAY_FOR_TODAY);
+const CURRENT_PROJECT_DAY = PROJECT_DAY_FOR_TODAY;
+
+const projectPlanUtils = {
+    PROJECT_START_DATE: PROJECT_START_DATE,
+    CURRENT_PROJECT_DAY: CURRENT_PROJECT_DAY,
+    mapBusinessDayToDate: (dayNumber, projectStartDate) => {
+        let currentDate = new Date(projectStartDate);
+        let businessDaysCounted = 0;
+        while (businessDaysCounted < dayNumber - 1) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            const dayOfWeek = currentDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                businessDaysCounted++;
+            }
+        }
+        return currentDate;
+    },
+    calculateTaskDates: (tasks) => {
+        const startDate = projectPlanUtils.PROJECT_START_DATE;
+        return tasks.map(task => {
+            const taskStartDate = projectPlanUtils.mapBusinessDayToDate(task.startDay, startDate);
+            const taskEndDate = projectPlanUtils.mapBusinessDayToDate(task.startDay + task.duration - 1, startDate);
+            return { ...task, startDate: taskStartDate, endDate: taskEndDate };
+        });
+    },
+    generateAriaCommentary: (task, statusOverrides = {}) => {
+        if (statusOverrides[task.id]) {
+            return { status: statusOverrides[task.id] };
+        }
+        const taskEndDay = task.startDay + task.duration - 1;
+        const currentDay = projectPlanUtils.CURRENT_PROJECT_DAY;
+        if (['DD-16', 'DD-34', 'DD-50'].includes(task.id)) return { status: 'Late' };
+        if (task.id === 'DD-13') return { status: 'Blocked' };
+        if (task.startDay > currentDay) return { status: 'Upcoming' };
+        if (taskEndDay < currentDay) return { status: 'Completed' };
+        if (task.startDay <= currentDay && taskEndDay >= currentDay) return { status: 'In Progress' };
+        return { status: 'Upcoming' };
+    },
+    getAriaStatusDetails: (task) => {
+        const commentary = projectPlanUtils.generateAriaCommentary(task);
+        const dependencies = diligencePlan_v3.filter(p => task.dependencies.includes(p.id));
+        const completedDeps = dependencies.filter(d => projectPlanUtils.generateAriaCommentary(d).status === 'Completed');
+        switch (commentary.status) {
+            case 'Late':
+                let reason = "The deadline has passed due to unforeseen delays.";
+                let actions = [];
+                if (task.id === 'DD-16') {
+                    reason = "This task is late because we are still waiting for the target company's CTO to provide admin-level access credentials to their private GitHub repository.";
+                    actions = [
+                        { text: "Draft follow-up email to CTO", prompt: `Draft a polite but firm follow-up email to the CTO of TechFlow regarding the urgent need for GitHub credentials for task DD-16.` },
+                        { text: "Assess impact on timeline", prompt: `Assess the critical path impact of a 3-day delay on task DD-16.` }
+                    ];
+                }
+                if (task.id === 'DD-34') {
+                    reason = "The initial NPS survey was sent, but the response rate is currently too low (15%) to be statistically significant. We are waiting for the marketing team to execute a reminder campaign.";
+                    actions = [{ text: "Draft reminder for marketing", prompt: `Draft an internal email to the Head of Marketing at TechFlow, asking for an ETA on the NPS survey reminder campaign for task DD-34.` }];
+                }
+                if (task.id === 'DD-50') {
+                    reason = "The external accounting firm (EY) has paused their analysis. They are waiting for the complete 2023 K-1 schedules, which have not yet been uploaded to the data room.";
+                    actions = [
+                        { text: "Request K-1s from CFO", prompt: `Draft an email to the CFO of TechFlow requesting the 2023 K-1 schedules required by EY for task DD-50.` }
+                    ];
+                }
+                return { text: `This task is late. ${reason}`, actions };
+            case 'Completed': return { text: "This task was completed successfully and all deliverables have been received.", actions: [] };
+            case 'In Progress': return { text: "This task is currently in progress and on track to be completed by its deadline.", actions: [] };
+            case 'Blocked': return { text: "This task is blocked. The 'Architecture Review' cannot start until the 'Development Process' (DD-12) is fully documented. The output from DD-12 is currently under review.", actions: [] };
+            case 'Upcoming':
+                if (dependencies.length > 0 && dependencies.length === completedDeps.length) {
+                    return {
+                        text: "All prerequisite tasks for this item are complete. It is scheduled to start on its planned date, but could potentially be started early.",
+                        actions: [
+                            { text: "Move start date earlier", prompt: `Can we start the analysis 2 days earlier?` }
+                        ]
+                    };
+                } else if (dependencies.length > 0) {
+                    const waitingOn = dependencies.filter(d => projectPlanUtils.generateAriaCommentary(d).status !== 'Completed').map(d => d.id).join(', ');
+                    return { text: `This task is scheduled to begin soon. We are waiting for the following deliverables to be completed: ${waitingOn}.`, actions: [] };
+                } else {
+                    return { text: "This task has no prerequisites and is scheduled to begin on its planned start date.", actions: [] };
+                }
+            default: return { text: "Status is pending.", actions: [] };
+        }
+    }
+};
+
 const FILTER_DATA = {
 workstreams: [ { label: 'Business & Strategy' }, { label: 'Commercial & Customer' }, { label: 'Technology & Operations' }, { label: 'Financial & Risk' }, { label: 'Synthesis' }, { label: 'Value Creation' }, { label: 'Investment Committee' }, { label: 'Final Deliverables' } ],
 statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
@@ -10,6 +118,119 @@ const projectResources = [
 { name: 'PwC', role: 'Partner', hours: 25 },
 { name: 'Sarah (Associate)', role: 'Internal', hours: 48 },
 ];
+
+// ADDED: New object for ARIA responses triggered from the Command Center
+const commandCenterAriaResponses = {
+    "Give me a deep dive on TechFlow's financial health score.": {
+        renderFunc: () => {
+            const anomaly1 = techflow_anomalies.find(a => a.id === 'arr-comp');
+            const anomaly2 = techflow_anomalies.find(a => a.id === 'maint-fee');
+            return `<div class="aria-response-content">
+                <div class="build-item"><h3 class="response-title">Deep Dive: Financial Health Score (8.4)</h3></div>
+                <div class="build-item"><p class="response-text" data-typing-text="TechFlow's Financial Health score is currently stable at 8.4. However, this score is based on reported financials. My analysis has flagged two underlying anomalies in the source data that present a risk to this score:"></p></div>
+                <div class="build-item card-base p-4 mt-4">
+                    <h3 class="font-bold text-lg">${anomaly1.title}</h3>
+                    <p class="text-sm text-secondary">${anomaly1.issue}</p>
+                    <div class="analysis-box mt-2"><p class="response-text"><span class="font-bold">Analysis:</span> ${anomaly1.analysis}</p></div>
+                </div>
+                <div class="build-item card-base p-4 mt-4">
+                    <h3 class="font-bold text-lg">${anomaly2.title}</h3>
+                    <p class="text-sm text-secondary">${anomaly2.issue}</p>
+                    <div class="analysis-box mt-2"><p class="response-text"><span class="font-bold">Analysis:</span> ${anomaly2.analysis}</p></div>
+                </div>
+            </div>`;
+        },
+        followUpQuestions: ["Model the financial impact of the ARR re-statement.", "Draft an email to the CFO about these findings."]
+    },
+    "Tell me more about the 'Valuation Model Complete' activity.": {
+        renderFunc: () => `<div class="aria-response-content build-item card-base">
+            <h4 class="response-title">Activity Detail: Valuation Model Complete</h4>
+            <p class="response-text" data-typing-text="The base case valuation model for TechFlow Solutions was completed by the deal team 2 hours ago. The preliminary valuation is pegged at **$150M**, assuming the successful mitigation of the flagged financial anomalies. The model has been uploaded to the data room."></p>
+        </div>`,
+        followUpQuestions: ["Show me the key assumptions in the valuation model.", "Run a scenario with 25% lower synergy realization."]
+    },
+    "Tell me more about the 'Customer Churn Anomaly Detected' activity.": {
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Deep Dive: Customer Churn Anomaly</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="On August 14th, I detected a **5% increase in logo churn** that deviates from the 12-month historical average. Analysis of the 8 recently churned accounts indicates a common theme: they were all heavy users of the 'Advanced Reporting Module,' a feature set that was deprecated in the last product release. This suggests the churn was driven by a product decision."></p></div>
+            <div class="build-item judgement-box error mt-4"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="This churn is likely preventable. I recommend immediately generating a list of remaining customers who are also heavy users of this deprecated module. A proactive outreach campaign from Customer Success could mitigate further churn."></p></div>
+        </div>`,
+        followUpQuestions: ["Generate a list of at-risk customers.", "Draft an email to the Head of Product about this finding."]
+    },
+    "Tell me more about the 'Synergy Analysis Updated' activity.": {
+        renderFunc: () => `<div class="aria-response-content build-item card-base">
+            <h4 class="response-title">Activity Detail: Synergy Analysis Updated</h4>
+            <p class="response-text" data-typing-text="The synergy analysis for the TechFlow acquisition was updated 6 hours ago. The total identifiable cost synergies have been revised down from $2.5M to **$2.1M** due to higher-than-expected costs for retaining key technical personnel."></p>
+        </div>`,
+        followUpQuestions: ["What is the impact of this on the valuation model?", "Which cost synergy category was revised?"]
+    }
+};
+
+const diligenceHubAriaResponses = {
+    // --- FIX #1: RESTORED SIMULATION RESPONSE ---
+    "Can we start the analysis 2 days earlier?": {
+        simulation: { 
+            type: 'GANTT_REPLAN', 
+            // This tells the Gantt component how to redraw itself
+            params: { startDayOffset: -2, phaseToShift: 'Phase 3: Analysis' } 
+        },
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Scenario: Accelerate Analysis Phase by 2 Days</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="I have simulated a 2-day acceleration of the Analysis phase, which you can see reflected in the updated plan above. This is possible, but it creates significant resource contention:"></p></div>
+            <div class="build-item list-container mt-4">
+                <div class="list-item"><span class="list-number text-success">1</span><div><h4 class="list-title">Positive Impact:</h4><p class="list-text" data-typing-text="The final IC Memo (DD-65) would be ready on Day 10 instead of Day 12, providing the deal team with an earlier read on the key findings."></p></div></div>
+                <div class="list-item"><span class="list-number text-error">2</span><div><h4 class="list-title">Negative Impact (Resource Overload):</h4><p class="list-text" data-typing-text="This would require **Alex (Analyst)** and **Sarah (Associate)** to work an estimated 65 hours each during that week, which is a high risk for burnout and errors. The external partner **EY** would also need to approve an expedited timeline."></p></div></div>
+            </div>
+        </div>`,
+        followUpQuestions: ["Show me the resource allocation for that week.", "Draft an email to EY requesting the expedited timeline."]
+    },
+    // --- FIX #2: RESTORED DETAILED ANALYSIS RESPONSE ---
+    "What is the impact of the 1-day delay on the critical path?": {
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Critical Path Impact Analysis</h3></div>
+            <div class="build-item judgement-box warning mt-4">
+                <p class="judgement-title">Judgement (Medium Confidence - 85%):</p>
+                <p class="judgement-text" data-typing-text="A 1-day delay on the current critical path task, **DD-16 (Code Scan)**, will consume all remaining slack in the Technology workstream. This puts the final **'Comprehensive DD Report' (DD-68)** delivery date at risk. Any further delays beyond this will push out the final deadline day-for-day."></p>
+            </div>
+        </div>`,
+        followUpQuestions: ["What is the new critical path for the TechFlow diligence?", "Re-plan the project with a compressed QA cycle."]
+    },
+    // --- FIX #3: RESTORED DATA TABLE RESPONSE ---
+    "Which resources are overallocated next week?": {
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Resource Allocation: Next Week (Day 11-15)</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="Based on the current plan for next week, two resources are projected to be overallocated:"></p></div>
+            <div class="build-item data-table-container mt-4">
+                <table class="data-table">
+                    <thead><tr><th>Resource</th><th>Assigned Tasks</th><th>Allocated Hours</th><th>Capacity</th><th class="text-error">Overload</th></tr></thead>
+                    <tbody>
+                        <tr><td>Alex (Analyst)</td><td>DD-52, DD-60, DD-61</td><td>48</td><td>40</td><td class="text-error">8 hours</td></tr>
+                        <tr><td>EY (Partner)</td><td>DD-50, DD-52, DD-65</td><td>55</td><td>50</td><td class="text-error">5 hours</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>`,
+        followUpQuestions: ["Which tasks can we de-prioritize to resolve this?", "Can we bring in another analyst to help Alex?"]
+    },
+    // Restoring the rich content for workstream deep dives
+    "Show me the Business & Strategy workstream.": {
+        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Business & Strategy'),
+        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
+    },
+    "Show me the Commercial & Customer workstream.": {
+        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Commercial & Customer'),
+        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
+    },
+    "Show me the Technology & Operations workstream.": {
+        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Technology & Operations'),
+        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
+    },
+    "Show me the Financial & Risk workstream.": {
+        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Financial & Risk'),
+        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
+    }
+};
+
 // --- NEW DATA FOR PERSONA DASHBOARDS ---
 const ceoDashboardData = {
 kpis: {

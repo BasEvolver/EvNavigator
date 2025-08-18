@@ -18,22 +18,22 @@
         </div>
     </div>
 
-    <!-- MODIFIED: Added the missing container for the Gantt task modal -->
     <div id="gantt-task-modal-container"></div>
 
-    <!-- MODIFIED: Corrected script loading order and modularized portco scripts -->
+    <!-- --- CHANGE START --- -->
+    <!-- CORRECTED SCRIPT LOADING ORDER -->
     <script src="js/data.js"></script>
     <script src="js/portco-data.js"></script>
     <script src="js/MaturityModel.js"></script>
     <script src="js/state.js"></script>
     <script src="js/shared.js"></script>
     
-    <!-- NEW: Load the broken-out portco modules -->
-    <script src="js/portco-diligence-hub.js"></script>
     <script src="js/portco-dashboards.js"></script>
-    <script src="js/portco.js"></script> <!-- This is now the main controller -->
+    <script src="js/portco-diligence-hub.js"></script> <!-- ADD THIS SCRIPT BACK -->
+    <script src="js/portco.js"></script> 
 
     <script src="js/knowledge-refinery.js"></script>
     <script src="js/data-quality.js"></script>
+    <!-- --- CHANGE END --- -->
 </body>
 </html>

@@ -7,30 +7,37 @@ function renderPortfolioCommandCenter() {
 
     const tfScorecardHTML = Object.entries(techflowData.liveScorecard).map(([key, data]) => {
         const label = key.replace(/([A-Z])/g, ' $1').toUpperCase();
-        return `<div class="score-item">
+        const promptText = `Give me a deep dive on TechFlow's ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} score.`;
+        return `<div class="score-item cursor-pointer hover:bg-bg-hover" 
+                     data-action="navigate-to-aria-with-prompt" 
+                     data-company-id="techflow-solutions" 
+                     data-prompt-text="${promptText}">
             <p class="score-label">${label}</p>
             <p class="score-value">${data.score}</p>
             <p class="kpi-detail">${data.change}</p>
         </div>`;
     }).join('');
 
-    const tfActivityHTML = techflowData.recentActivity.map(item => `
-        <div class="activity-item activity-${item.status}" data-action="navigate-to-workstream-tab" data-target="${item.target || ''}">
+    const tfActivityHTML = techflowData.recentActivity.map(item => {
+        const promptText = `Tell me more about the '${item.text}' activity.`;
+        return `
+        <div class="activity-item activity-${item.status}" 
+             data-action="navigate-to-aria-with-prompt"
+             data-company-id="techflow-solutions"
+             data-prompt-text="${promptText}"
+             data-workstream-id="${item.target || 'financial'}">
             <p class="activity-title">${item.text}</p>
             <p class="activity-time">${item.time}</p>
         </div>
-    `).join('');
-
+    `;
+    }).join('');
+    
     const tfAiSynthesis = `My analysis shows the valuation modeling is complete, and the financial and growth outlooks are strong. However, the anomaly detection agent has flagged <strong>3 critical issues</strong>, primarily in the Commercial and Financial workstreams. This aligns with the recent <strong>customer churn anomaly</strong>. I recommend focusing on the <strong>Commercial & Customer</strong> workstream to understand the root cause of this churn before we proceed to the IC memo.`;
     
     const cvAiSynthesis = `CloudVantage's performance is strong, with NRR at <strong>128%</strong> significantly outperforming the plan. This is driven by the successful Enterprise GTM push and strong cross-sell from the NewCo acquisition. The primary focus should be on de-risking the <strong>AI Feature Launch</strong>, which is currently behind schedule but critical for Q4 targets. Mitigating this delay is the top priority.`;
 
     const cvKpisHTML = cloudvantageData.kpis.map(kpi => {
-        return `<div class="score-item">
-            <p class="score-label">${kpi.label.toUpperCase()}</p>
-            <p class="score-value ${kpi.isGood ? 'text-success' : 'text-error'}">${kpi.value}</p>
-            <p class="kpi-detail">${kpi.change}</p>
-        </div>`;
+        return `<div class="score-item"><p class="score-label">${kpi.label.toUpperCase()}</p><p class="score-value ${kpi.isGood ? 'text-success' : 'text-error'}">${kpi.value}</p><p class="kpi-detail">${kpi.change}</p></div>`;
     }).join('');
 
     const cvPriorities = [
@@ -41,83 +48,42 @@ function renderPortfolioCommandCenter() {
 
     const cvPrioritiesHTML = cvPriorities.map(p => {
         const statusClass = p.status === 'On Track' ? 'status-completed' : 'status-warning';
-        return `
-        <div class="mb-3">
-            <div class="flex justify-between items-center mb-1">
-                <p class="font-semibold text-sm">${p.name}</p>
-                <span class="status-badge ${statusClass} !text-xs">${p.status}</span>
-            </div>
-            <div class="progress-bar-container !h-2">
-                <div class="progress-bar-fill" style="width: ${p.progress}%;"></div>
-            </div>
-        </div>
-        `
+        return `<div class="mb-3"><div class="flex justify-between items-center mb-1"><p class="font-semibold text-sm">${p.name}</p><span class="status-badge ${statusClass} !text-xs">${p.status}</span></div><div class="progress-bar-container !h-2"><div class="progress-bar-fill" style="width: ${p.progress}%;"></div></div></div>`
     }).join('');
-
 
     mainContent.innerHTML = `
     <div class="flex flex-col gap-6">
         <!-- TechFlow Pane -->
         <div class="portco-card">
             <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-xl font-bold">TechFlow Solutions</h2>
-                    <p class="text-secondary">Series B SaaS • $12M ARR • Day 9 of 14</p>
-                </div>
+                <div><h2 class="text-xl font-bold">TechFlow Solutions</h2><p class="text-secondary">Series B SaaS • $12M ARR • Day 9 of 14</p></div>
                 <span class="status-badge status-progress">Analysis in Progress</span>
             </div>
-            <div class="portco-card mb-4 cursor-pointer hover:border-accent-blue" data-action="navigate-to-gantt">
-                <div class="flex justify-between items-center mb-2">
-                    <h4 class="font-bold">Due Diligence Progress</h4>
-                    <span class="font-bold">65% Complete</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" style="width: 65%;"></div>
-                </div>
-                <div class="flex justify-between items-center text-xs text-muted mt-1">
-                    <span>Day 1</span>
-                    <span>Critical Path (Day 5)</span>
-                    <span>Decision Ready (Day 14)</span>
-                </div>
+            <div class="portco-card mb-4 cursor-pointer hover:border-accent-blue" 
+                 data-action="navigate-to-aria-with-prompt" 
+                 data-company-id="techflow-solutions" 
+                 data-prompt-text="Show me the TechFlow diligence plan.">
+                <div class="flex justify-between items-center mb-2"><h4 class="font-bold">Due Diligence Progress</h4><span class="font-bold">65% Complete</span></div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 65%;"></div></div>
+                <div class="flex justify-between items-center text-xs text-muted mt-1"><span>Day 1</span><span>Critical Path (Day 5)</span><span>Decision Ready (Day 14)</span></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="portco-card bg-secondary h-full">
-                    <h4 class="font-bold text-sm mb-2">AI Synthesis & Next Steps</h4>
-                    <p class="text-sm text-secondary">${tfAiSynthesis}</p>
-                </div>
-                <div class="portco-card bg-secondary h-full">
-                    <h4 class="font-bold text-sm mb-2">Live Scorecard</h4>
-                    <div class="grid grid-cols-2 gap-2">${tfScorecardHTML}</div>
-                </div>
-                <div class="portco-card bg-secondary h-full">
-                    <h4 class="font-bold text-sm mb-2">Recent Activity</h4>
-                    <div class="flex flex-col gap-2">${tfActivityHTML}</div>
-                </div>
+                <div class="portco-card bg-secondary h-full"><h4 class="font-bold text-sm mb-2">AI Synthesis & Next Steps</h4><p class="text-sm text-secondary">${tfAiSynthesis}</p></div>
+                <div class="portco-card bg-secondary h-full"><h4 class="font-bold text-sm mb-2">Live Scorecard</h4><div class="grid grid-cols-2 gap-2">${tfScorecardHTML}</div></div>
+                <div class="portco-card bg-secondary h-full"><h4 class="font-bold text-sm mb-2">Recent Activity</h4><div class="flex flex-col gap-2">${tfActivityHTML}</div></div>
             </div>
         </div>
 
         <!-- CloudVantage Pane -->
         <div class="portco-card">
             <div class="flex justify-between items-center mb-4">
-                 <div>
-                    <h2 class="text-xl font-bold">CloudVantage</h2>
-                    <p class="text-secondary">Growth Stage • Q2 2025</p>
-                </div>
-                <button class="primary-button" data-action="expand-to-ceo-view" data-company-id="cloudvantage">Expand to CEO View</button>
+                 <div><h2 class="text-xl font-bold">CloudVantage</h2><p class="text-secondary">Growth Stage • Q2 2025</p></div>
+                 <button class="primary-button" data-action="expand-to-ceo-view" data-company-id="cloudvantage">Expand to CEO View</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="portco-card bg-secondary h-full">
-                    <h4 class="font-bold text-sm mb-2">AI Synthesis</h4>
-                    <p class="text-sm text-secondary">${cvAiSynthesis}</p>
-                </div>
-                <div class="portco-card bg-secondary h-full">
-                    <h4 class="font-bold text-sm mb-2">Key KPIs</h4>
-                    <div class="grid grid-cols-2 gap-2">${cvKpisHTML}</div>
-                </div>
-                <div class="portco-card bg-secondary h-full">
-                    <h4 class="font-bold text-sm mb-2">Strategic Priorities</h4>
-                    ${cvPrioritiesHTML}
-                </div>
+                <div class="portco-card bg-secondary h-full"><h4 class="font-bold text-sm mb-2">AI Synthesis</h4><p class="text-sm text-secondary">${cvAiSynthesis}</p></div>
+                <div class="portco-card bg-secondary h-full"><h4 class="font-bold text-sm mb-2">Key KPIs</h4><div class="grid grid-cols-2 gap-2">${cvKpisHTML}</div></div>
+                <div class="portco-card bg-secondary h-full"><h4 class="font-bold text-sm mb-2">Strategic Priorities</h4>${cvPrioritiesHTML}</div>
             </div>
         </div>
     </div>

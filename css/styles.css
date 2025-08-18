@@ -6734,3 +6734,157 @@ html, body {
     width: 100%;
     margin-top: 1rem;
 }
+
+/* --- FIX: Styles for Persona-Aware Chat Bubbles --- */
+.persona-avatar-bubble {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border: 2px solid var(--border-color);
+}
+
+/* --- FIX: New styles for Left/Right Chat Alignment & Width --- */
+.user-prompt-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-left: auto;
+    max-width: 85%;
+}
+
+.aria-response-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    margin-right: auto;
+    max-width: 85%;
+}
+
+.user-prompt-bubble {
+    background-color: var(--accent-blue-translucent);
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--accent-blue);
+}
+
+.aria-response-bubble {
+    background-color: var(--bg-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    width: 100%; 
+}
+
+/* --- FIX: New styles for the Prompt Box Layout --- */
+#aria-prompt-container {
+    /* This container will be positioned between the avatars */
+    padding-left: 52px;  /* 40px avatar + 12px gap */
+    padding-right: 52px; /* 40px avatar + 12px gap */
+    margin-top: 1.5rem;
+}
+
+/* --- FIX: Styles for Left-Aligned Workstream Pills --- */
+.prompt-area-large-v4 .actions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0;
+}
+
+.prompt-area-large-v4 .list-header {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+
+.settings-modal .p-3 > .border-b {
+    border-bottom: none !important;
+}
+
+/* =================================================================
+   PROMPT & SCROLLBARS (FINAL - MATCHING SCREENSHOT)
+   ================================================================= */
+
+/* 1. Modern, subtle scrollbar styles for the main conversation AND the Gantt chart. */
+#aria-conversation-container::-webkit-scrollbar,
+.gantt-scroll-wrapper::-webkit-scrollbar {
+    width: 10px;  /* For vertical scrollbars */
+    height: 10px; /* For horizontal scrollbars */
+}
+#aria-conversation-container::-webkit-scrollbar-track,
+.gantt-scroll-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+#aria-conversation-container::-webkit-scrollbar-thumb,
+.gantt-scroll-wrapper::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    /* The border color should match the main background to create the padded effect */
+    border: 2px solid var(--bg-primary); 
+}
+#aria-conversation-container::-webkit-scrollbar-thumb:hover,
+.gantt-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-blue);
+}
+/* Dark mode specific border for the scrollbar thumb */
+[data-theme="dark"] #aria-conversation-container::-webkit-scrollbar-thumb,
+[data-theme="dark"] .gantt-scroll-wrapper::-webkit-scrollbar-thumb {
+    border-color: var(--bg-secondary);
+}
+
+
+/* 2. The main view becomes the positioning anchor. */
+#aria-main-view.has-floating-prompt {
+    position: relative;
+}
+
+/* 3. The prompt wrapper is floated at the bottom, aligned to the edges of the main view. */
+#aria-prompt-wrapper.floating-prompt-container {
+    position: absolute;
+    bottom: 1.5rem; /* 24px from the bottom */
+    left: 2rem;     /* 32px from the left edge */
+    right: 2rem;    /* 32px from the right edge */
+    
+    /* FIX #1: This z-index ensures it is ALWAYS on top of everything, including the Gantt modal. */
+    z-index: 1001; 
+}
+
+/* 4. The inner prompt box gets the card styling from your screenshot. */
+.floating-prompt-container .prompt-area-large-v4 {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem; /* Rounded corners */
+    box-shadow: 0 4px 30px 5px rgba(0,0,0,0.2); /* The floating shadow */
+    padding: 1rem 1.5rem; /* Controls the vertical size */
+}
+
+/* 5. FIX #2: Add padding to the conversation so the last message (and the Gantt chart) isn't hidden. */
+#aria-conversation-container {
+    padding-bottom: 16rem; /* Generous space to see the last message */
+}
+
+/* 6. The gradient fade-out effect for a seamless transition. */
+#aria-main-view.has-floating-prompt::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12rem; /* A tall gradient for a smooth fade */
+    background: linear-gradient(to top, var(--bg-primary) 25%, transparent);
+    pointer-events: none; /* Allows clicking/scrolling through the gradient */
+    z-index: 5; /* Sits below the prompt box but above the content */
+}
+
+/* 7. Remove the default padding from the main content area on this page */
+main#main-content {
+    padding: 0 !important;
+}

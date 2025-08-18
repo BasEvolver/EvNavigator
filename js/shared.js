@@ -150,42 +150,71 @@ const Navigation = {
         titleElement.textContent = title;
     },
 
-    updateCompanySelector() {
+updateCompanySelector() {
         const selector = document.getElementById('company-selector');
         if (!selector) return;
+
+        // This clone-and-replace pattern is correct for preventing duplicate event listeners.
+        const newSelector = selector.cloneNode(true);
+        selector.parentNode.replaceChild(newSelector, selector);
 
         const state = loadState();
         const { activePersona, selectedCompanyId } = state;
 
+        // --- CHANGE START: New, robust persona-based filtering logic ---
+
         if (activePersona === 'adrian') {
-            selector.disabled = false;
-            selector.style.display = 'block';
-            selector.value = selectedCompanyId || 'all';
+            // Adrian's Path: He can see everything.
+            
+            // 1. Make sure all options are visible.
+            for (const option of newSelector.options) {
+                option.style.display = '';
+            }
+            
+            // 2. Enable the dropdown for interaction.
+            newSelector.disabled = false;
+            newSelector.style.display = 'block';
+
+            // 3. Set the currently selected value based on the application state.
+            newSelector.value = selectedCompanyId || 'all';
+
         } else {
-            // For all other personas, lock to CloudVantage and disable
-            selector.value = 'cloudvantage';
-            selector.disabled = true;
-            selector.style.display = 'block'; // Ensure it's visible but disabled
+            // Non-Adrian Persona Path (e.g., Evelyn, Connor): They only see their own company.
+
+            const allowedCompanyId = PERSONAS[activePersona].defaultCompany;
+
+            // 1. Iterate through all options and hide the ones that are not allowed.
+            for (const option of newSelector.options) {
+                if (option.value !== allowedCompanyId) {
+                    option.style.display = 'none';
+                } else {
+                    option.style.display = ''; // Ensure the correct one is visible
+                }
+            }
+            
+            // 2. Set the value to their specific company.
+            newSelector.value = allowedCompanyId;
+
+            // 3. Disable the dropdown so they cannot change it.
+            newSelector.disabled = true;
+            newSelector.style.display = 'block';
         }
         
-        // Remove old listeners to prevent duplicates
-        const newSelector = selector.cloneNode(true);
-        selector.parentNode.replaceChild(newSelector, selector);
-        
-        // CORRECTED: Add specific navigation logic for the 'all' case
+        // The event listener for navigation remains the same.
         newSelector.addEventListener('change', (e) => {
             let state = loadState();
             state.selectedCompanyId = e.target.value;
             saveState(state);
-            const currentPage = Navigation.getCurrentPage();
             
             if (e.target.value === 'all') {
-                 // The command center is on the portco page
-                 window.location.href = `portco.html`;
+                window.location.href = `portco.html`;
             } else {
-                 window.location.href = `${currentPage}.html?company=${e.target.value}`;
+                const companyName = e.target.options[e.target.selectedIndex].text;
+                const promptText = `Give me a high-level overview of ${companyName}.`;
+                window.location.href = `aria.html?company=${e.target.value}&prompt=${encodeURIComponent(promptText)}`;
             }
         });
+        // --- CHANGE END ---
     },
 
     updatePersonaSwitcher() {
@@ -259,22 +288,27 @@ const Navigation = {
         });
     },
     
-    updateNavigationLinks() {
-        const { selectedCompanyId } = loadState();
-        const linkCompanyId = (selectedCompanyId && selectedCompanyId !== 'all') ? selectedCompanyId : 'all';
+updateNavigationLinks() {
+    const { selectedCompanyId, activePersona } = loadState();
+    
+    document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
+        const page = link.dataset.page;
 
-        document.querySelectorAll('#sidebar-menu .nav-link[data-page]').forEach(link => {
-            const page = link.dataset.page;
-            if (page === 'index') {
-                link.href = 'index.html';
-            } else if (page === 'portco' && linkCompanyId === 'all') {
+        if (page === 'index') {
+            link.href = 'index.html';
+        } else if (page === 'portco') {
+            // For Adrian, the PortCo link ALWAYS goes to his command center.
+            if (activePersona === 'adrian') {
                 link.href = 'portco.html';
             } else {
-                const companyParam = (linkCompanyId === 'all') ? 'techflow-solutions' : linkCompanyId;
-                link.href = `${page}.html?company=${companyParam}`;
+                link.href = `portco.html?company=cloudvantage`;
             }
-        });
-    },
+        } else {
+            const companyParam = (selectedCompanyId && selectedCompanyId !== 'all') ? selectedCompanyId : 'techflow-solutions';
+            link.href = `${page}.html?company=${companyParam}`;
+        }
+    });
+},
 
     applyPersonaPermissions() {
         const state = loadState();
@@ -291,146 +325,158 @@ const Navigation = {
         });
     },
     
-    initializeSidebarInteractions() {
-    if (window.sidebarListenersAttached) {
-        return;
-    }
-
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-
-    // --- THEME TOGGLE LOGIC ---
-    const themeToggleButton = document.getElementById('theme-toggle-button');
-    if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateLogoForTheme(newTheme);
-        });
-    }
-
-    // --- SIDEBAR COLLAPSE LOGIC ---
-    const collapseButton = document.getElementById('sidebar-collapse-button');
-    const collapseIconLeft = document.getElementById('collapse-icon-left');
-    const collapseIconRight = document.getElementById('collapse-icon-right');
-
-    const setSidebarState = (isCollapsed) => {
-        sidebar.classList.toggle('collapsed', isCollapsed);
-        document.documentElement.classList.remove('sidebar-collapsed-preload');
-        if (collapseIconLeft && collapseIconRight) {
-            collapseIconLeft.classList.toggle('hidden', isCollapsed);
-            collapseIconRight.classList.toggle('hidden', !isCollapsed);
-        }
-    };
-
-    // Set initial state from localStorage
-    const savedSidebarState = localStorage.getItem('sidebarCollapsed') === 'true';
-    setSidebarState(savedSidebarState);
-
-    // Listener for the main collapse button
-    if (collapseButton) {
-        collapseButton.addEventListener('click', () => {
-            const isCurrentlyCollapsed = sidebar.classList.contains('collapsed');
-            const newState = !isCurrentlyCollapsed;
-            localStorage.setItem('sidebarCollapsed', newState);
-            setSidebarState(newState);
-        });
-    }
-    
-    // --- MAIN EVENT LISTENER FOR ALL OTHER CLICKS ---
-    document.body.addEventListener('click', (e) => {
-        const target = e.target;
-        
-        // Logic for Submenus like "Knowledge"
-        const parentLink = target.closest('[data-is-parent="true"]');
-        if (parentLink) {
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            
-            if (isCollapsed) {
-                e.preventDefault();
-                localStorage.setItem('sidebarCollapsed', 'false');
-                setSidebarState(false);
-                
-                setTimeout(() => {
-                    const parentLi = parentLink.closest('.nav-parent');
-                    const childrenUl = parentLi.querySelector('.nav-children');
-                    const chevron = parentLink.querySelector('.chevron-icon');
-                    childrenUl.style.maxHeight = childrenUl.scrollHeight + "px";
-                    chevron.classList.add('expanded');
-                }, 50);
-
-            } else {
-                e.preventDefault();
-                const parentLi = parentLink.closest('.nav-parent');
-                const childrenUl = parentLi.querySelector('.nav-children');
-                const chevron = parentLink.querySelector('.chevron-icon');
-                const isExpanded = childrenUl.style.maxHeight && childrenUl.style.maxHeight !== "0px";
-
-                childrenUl.style.maxHeight = isExpanded ? null : childrenUl.scrollHeight + "px";
-                chevron.classList.toggle('expanded', !isExpanded);
-            }
+   initializeSidebarInteractions() {
+        if (window.sidebarListenersAttached) {
             return;
         }
 
-        // Logic for other actions
-        const actionTarget = target.closest('[data-action]');
-        if (actionTarget) {
-            const action = actionTarget.dataset.action;
-            switch (action) {
-                case 'toggle-settings-popup':
-                    e.stopPropagation();
-                    document.getElementById('settings-popup-modal')?.classList.toggle('visible');
-                    return;
-                case 'reset-app-state':
-                    if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
-                        localStorage.clear();
-                        window.location.reload();
-                    }
-                    return;
-                case 'logout':
-                    if (typeof window.logout === 'function') {
-                        window.logout();
-                    }
-                    return;
-                case 'toggle-persona-popup':
-                    e.stopPropagation();
-                    const popup = document.querySelector('.persona-popup');
-                    if (popup) popup.classList.toggle('visible');
-                    return;
-                case 'switch-persona':
-                    const newPersonaId = actionTarget.dataset.personaId;
-                    const persona = PERSONAS[newPersonaId];
-                    if (persona) {
-                        let state = loadState();
-                        state.activePersona = newPersonaId;
-                        state.selectedCompanyId = persona.defaultCompany;
-                        saveState(state);
-                        // CORRECTED: Handle navigation for 'all' persona default
-                        if (persona.defaultCompany === 'all') {
-                            window.location.href = persona.defaultPage;
-                        } else {
-                            window.location.href = `${persona.defaultPage}?company=${persona.defaultCompany}`;
-                        }
-                    }
-                    return;
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+
+        // --- THEME TOGGLE LOGIC ---
+        const themeToggleButton = document.getElementById('theme-toggle-button');
+        if (themeToggleButton) {
+            themeToggleButton.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateLogoForTheme(newTheme);
+            });
+        }
+
+        // --- SIDEBAR COLLAPSE LOGIC ---
+        const collapseButton = document.getElementById('sidebar-collapse-button');
+        const collapseIconLeft = document.getElementById('collapse-icon-left');
+        const collapseIconRight = document.getElementById('collapse-icon-right');
+
+        const setSidebarState = (isCollapsed) => {
+            sidebar.classList.toggle('collapsed', isCollapsed);
+            document.documentElement.classList.remove('sidebar-collapsed-preload');
+            if (collapseIconLeft && collapseIconRight) {
+                collapseIconLeft.classList.toggle('hidden', isCollapsed);
+                collapseIconRight.classList.toggle('hidden', !isCollapsed);
             }
-        }
+        };
 
-        // Logic to close popups if clicking outside
-        const settingsModal = document.getElementById('settings-popup-modal');
-        if (settingsModal && settingsModal.classList.contains('visible') && !target.closest('[data-action="toggle-settings-popup"]')) {
-            settingsModal.classList.remove('visible');
-        }
-        const personaPopup = document.querySelector('.persona-popup');
-        if (personaPopup && personaPopup.classList.contains('visible') && !target.closest('[data-action="toggle-persona-popup"]')) {
-            personaPopup.classList.remove('visible');
-        }
-    });
+        const savedSidebarState = localStorage.getItem('sidebarCollapsed') === 'true';
+        setSidebarState(savedSidebarState);
 
-    window.sidebarListenersAttached = true;
-},
+        if (collapseButton) {
+            collapseButton.addEventListener('click', () => {
+                const isCurrentlyCollapsed = sidebar.classList.contains('collapsed');
+                const newState = !isCurrentlyCollapsed;
+                localStorage.setItem('sidebarCollapsed', newState);
+                setSidebarState(newState);
+            });
+        }
+        
+        // --- MAIN EVENT LISTENER FOR ALL OTHER CLICKS ---
+        document.body.addEventListener('click', (e) => {
+            const target = e.target;
+
+            // --- FIX START: Add specific logic for Adrian clicking the Portfolio link ---
+            const portfolioLinkTarget = target.closest('a.nav-link[data-page="index"]');
+            if (portfolioLinkTarget) {
+                const state = loadState();
+                if (state.activePersona === 'adrian') {
+                    e.preventDefault(); // Stop the link from navigating immediately
+                    state.selectedCompanyId = 'all'; // Reset the company selection
+                    saveState(state); // Save the new state
+                    window.location.href = portfolioLinkTarget.href; // Now, navigate to the home page
+                    return; // Stop further processing for this click
+                }
+                // For any other persona, the link will behave normally without this special logic.
+            }
+            // --- FIX END ---
+            
+            // Logic for Submenus like "Knowledge"
+            const parentLink = target.closest('[data-is-parent="true"]');
+            if (parentLink) {
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    e.preventDefault();
+                    localStorage.setItem('sidebarCollapsed', 'false');
+                    setSidebarState(false);
+                    
+                    setTimeout(() => {
+                        const parentLi = parentLink.closest('.nav-parent');
+                        const childrenUl = parentLi.querySelector('.nav-children');
+                        const chevron = parentLink.querySelector('.chevron-icon');
+                        childrenUl.style.maxHeight = childrenUl.scrollHeight + "px";
+                        chevron.classList.add('expanded');
+                    }, 50);
+
+                } else {
+                    e.preventDefault();
+                    const parentLi = parentLink.closest('.nav-parent');
+                    const childrenUl = parentLi.querySelector('.nav-children');
+                    const chevron = parentLink.querySelector('.chevron-icon');
+                    const isExpanded = childrenUl.style.maxHeight && childrenUl.style.maxHeight !== "0px";
+
+                    childrenUl.style.maxHeight = isExpanded ? null : childrenUl.scrollHeight + "px";
+                    chevron.classList.toggle('expanded', !isExpanded);
+                }
+                return;
+            }
+
+            // Logic for other actions
+            const actionTarget = target.closest('[data-action]');
+            if (actionTarget) {
+                const action = actionTarget.dataset.action;
+                switch (action) {
+                    case 'toggle-settings-popup':
+                        e.stopPropagation();
+                        document.getElementById('settings-popup-modal')?.classList.toggle('visible');
+                        return;
+                    case 'reset-app-state':
+                        if (confirm("Are you sure you want to reset the application? All changes will be lost.")) {
+                            localStorage.clear();
+                            window.location.reload();
+                        }
+                        return;
+                    case 'logout':
+                        if (typeof window.logout === 'function') {
+                            window.logout();
+                        }
+                        return;
+                    case 'toggle-persona-popup':
+                        e.stopPropagation();
+                        const popup = document.querySelector('.persona-popup');
+                        if (popup) popup.classList.toggle('visible');
+                        return;
+                    case 'switch-persona':
+                        const newPersonaId = actionTarget.dataset.personaId;
+                        const persona = PERSONAS[newPersonaId];
+                        if (persona) {
+                            let state = loadState();
+                            state.activePersona = newPersonaId;
+                            state.selectedCompanyId = persona.defaultCompany;
+                            saveState(state);
+                            if (persona.defaultCompany === 'all') {
+                                window.location.href = persona.defaultPage;
+                            } else {
+                                window.location.href = `${persona.defaultPage}?company=${persona.defaultCompany}`;
+                            }
+                        }
+                        return;
+                }
+            }
+
+            // Logic to close popups if clicking outside
+            const settingsModal = document.getElementById('settings-popup-modal');
+            if (settingsModal && settingsModal.classList.contains('visible') && !target.closest('[data-action="toggle-settings-popup"]')) {
+                settingsModal.classList.remove('visible');
+            }
+            const personaPopup = document.querySelector('.persona-popup');
+            if (personaPopup && personaPopup.classList.contains('visible') && !target.closest('[data-action="toggle-persona-popup"]')) {
+                personaPopup.classList.remove('visible');
+            }
+        });
+
+        window.sidebarListenersAttached = true;
+    },
 
     updateAll() {
         this.updateHeaderTitle();

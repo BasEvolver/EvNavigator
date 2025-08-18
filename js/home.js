@@ -716,7 +716,14 @@ function initializePortfolioEventListeners() {
                 break;
             case 'view-company':
                 const companyIdNav = target.closest('[data-company-id]').dataset.companyId;
-                window.location.href = `portco.html?company=${companyIdNav}`;
+                // For Adrian, viewing a diligence target goes straight to the ARIA plan
+                if (state.activePersona === 'adrian' && companyIdNav === 'techflow-solutions') {
+                    const promptText = "Show me the TechFlow diligence plan.";
+                    window.location.href = `aria.html?company=${companyIdNav}&prompt=${encodeURIComponent(promptText)}`;
+                } else {
+                    // For other companies or personas, it goes to the PortCo command center/dashboard
+                    window.location.href = `portco.html?company=${companyIdNav}`;
+                }
                 break;
             case 'restart-conversation':
                 const conversationContainer = document.getElementById('portfolio-conversation-container');
