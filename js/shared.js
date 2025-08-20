@@ -154,67 +154,47 @@ updateCompanySelector() {
         const selector = document.getElementById('company-selector');
         if (!selector) return;
 
-        // This clone-and-replace pattern is correct for preventing duplicate event listeners.
         const newSelector = selector.cloneNode(true);
         selector.parentNode.replaceChild(newSelector, selector);
 
         const state = loadState();
         const { activePersona, selectedCompanyId } = state;
 
-        // --- CHANGE START: New, robust persona-based filtering logic ---
-
         if (activePersona === 'adrian') {
-            // Adrian's Path: He can see everything.
-            
-            // 1. Make sure all options are visible.
             for (const option of newSelector.options) {
                 option.style.display = '';
             }
-            
-            // 2. Enable the dropdown for interaction.
             newSelector.disabled = false;
             newSelector.style.display = 'block';
-
-            // 3. Set the currently selected value based on the application state.
             newSelector.value = selectedCompanyId || 'all';
-
         } else {
-            // Non-Adrian Persona Path (e.g., Evelyn, Connor): They only see their own company.
-
             const allowedCompanyId = PERSONAS[activePersona].defaultCompany;
-
-            // 1. Iterate through all options and hide the ones that are not allowed.
             for (const option of newSelector.options) {
                 if (option.value !== allowedCompanyId) {
                     option.style.display = 'none';
                 } else {
-                    option.style.display = ''; // Ensure the correct one is visible
+                    option.style.display = '';
                 }
             }
-            
-            // 2. Set the value to their specific company.
             newSelector.value = allowedCompanyId;
-
-            // 3. Disable the dropdown so they cannot change it.
             newSelector.disabled = true;
             newSelector.style.display = 'block';
         }
         
-        // The event listener for navigation remains the same.
+        // --- FIX START: Corrected navigation logic ---
         newSelector.addEventListener('change', (e) => {
             let state = loadState();
-            state.selectedCompanyId = e.target.value;
+            const newCompanyId = e.target.value;
+            state.selectedCompanyId = newCompanyId;
             saveState(state);
+
+            const currentPage = Navigation.getCurrentPage();
             
-            if (e.target.value === 'all') {
-                window.location.href = `portco.html`;
-            } else {
-                const companyName = e.target.options[e.target.selectedIndex].text;
-                const promptText = `Give me a high-level overview of ${companyName}.`;
-                window.location.href = `aria.html?company=${e.target.value}&prompt=${encodeURIComponent(promptText)}`;
-            }
+            // Reload the current page with the new company ID as a query parameter.
+            // This allows each page to re-initialize with the new context without jumping to a different page.
+            window.location.href = `${currentPage}.html?company=${newCompanyId}`;
         });
-        // --- CHANGE END ---
+        // --- FIX END ---
     },
 
     updatePersonaSwitcher() {
@@ -376,18 +356,18 @@ updateCompanySelector() {
             const target = e.target;
 
             // --- FIX START: Add specific logic for Adrian clicking the Portfolio link ---
-            const portfolioLinkTarget = target.closest('a.nav-link[data-page="index"]');
-            if (portfolioLinkTarget) {
-                const state = loadState();
-                if (state.activePersona === 'adrian') {
-                    e.preventDefault(); // Stop the link from navigating immediately
-                    state.selectedCompanyId = 'all'; // Reset the company selection
-                    saveState(state); // Save the new state
-                    window.location.href = portfolioLinkTarget.href; // Now, navigate to the home page
-                    return; // Stop further processing for this click
-                }
-                // For any other persona, the link will behave normally without this special logic.
-            }
+const portfolioLinkTarget = target.closest('a.nav-link[data-page="index"]');
+if (portfolioLinkTarget) {
+    const state = loadState();
+    if (state.activePersona === 'adrian') {
+        e.preventDefault(); // Stop the link from navigating immediately
+        state.selectedCompanyId = 'all'; // Reset the company selection
+        saveState(state); // Save the new state
+        window.location.href = portfolioLinkTarget.href; // Now, navigate to the home page
+        return; // Stop further processing for this click
+    }
+    // For any other persona, the link will behave normally without this special logic.
+}
             // --- FIX END ---
             
             // Logic for Submenus like "Knowledge"

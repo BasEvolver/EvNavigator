@@ -179,6 +179,29 @@ window.DiligenceHubComponent = {
         `;
     },
 
+    // --- FIX START: Added the renderWorkstreamTab function to this component ---
+    _renderWorkstreamTab: function(workstreamName) {
+        const allFindings = [...techflow_anomalies, ...otherObservations_v2];
+        const relevantFindings = allFindings.filter(f => f.workstream === workstreamName);
+        const openQuestions = diligencePlan_v3.filter(item => item.workstream === workstreamName && item.startDay > 7);
+        return `
+            <div class="workstream-synthesis">
+                <h3 class="synthesis-title">Aria's Synthesis for ${workstreamName}</h3>
+                <p class="synthesis-text">Analysis of the <strong>${workstreamName}</strong> workstream has surfaced ${relevantFindings.length} key findings that require attention. The primary areas of concern are [Example: non-standard revenue recognition and high customer concentration]. There are currently ${openQuestions.length} open items from the diligence plan for this area.</p>
+            </div>
+            <div class="finding-cards-grid">
+                ${relevantFindings.length > 0 ? relevantFindings.map(finding => `<div class="finding-card"><div class="finding-card-header"><span class="font-semibold">${finding.title || finding.text}</span>${finding.severity ? `<span class="ws-item-badge severity-${finding.severity.toLowerCase()}">${finding.severity}</span>` : ''}</div><p class="finding-card-body">${finding.impact || finding.description || ''}</p><div class="finding-card-actions"><button class="card-action-button" data-action="run-prompt" data-prompt="Model the financial impact of '${finding.title || finding.text}'">Model Impact</button><button class="card-action-button" data-action="run-prompt" data-prompt="Draft an email to the CFO about '${finding.title || finding.text}'">Draft Email</button><button class="card-action-button" data-action="run-prompt" data-prompt="Add '${finding.title || finding.text}' to the IC memo">Add to Memo</button></div></div>`).join('') : '<p class="text-secondary">No specific findings flagged for this workstream yet.</p>'}
+            </div>
+            <div class="open-questions-box">
+                 <h3 class="synthesis-title">Aria's Open Questions</h3>
+                 <ul class="open-questions-list">
+                    ${openQuestions.length > 0 ? openQuestions.map(item => `<li><span class="font-semibold">${item.id}: ${item.name}</span></li>`).join('') : '<li class="text-secondary">All diligence questions for this workstream have been initiated.</li>'}
+                 </ul>
+            </div>
+        `;
+    },
+    // --- FIX END ---
+
     _initializeListeners: function() {
         this.targetElement.addEventListener('click', (e) => {
             const target = e.target.closest('[data-action]');

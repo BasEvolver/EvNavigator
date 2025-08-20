@@ -244,6 +244,65 @@ const commandCenterAriaResponses = {
         followUpQuestions: ["What is the impact of this on the valuation model?", "Which cost synergy category was revised?"]
     }
 };
+
+function renderAriaWorkstreamResponse(workstreamName) {
+    // Find the corresponding data (color, etc.) for the workstream
+    const wsData = techflow_workstreamData.find(ws => ws.title === workstreamName);
+    if (!wsData) return `<div class="aria-response-content"><p>Error: Data for ${workstreamName} not found.</p></div>`;
+
+    // Get the relevant findings and open questions for this workstream
+    const allFindings = [...techflow_anomalies, ...otherObservations_v2];
+    const relevantFindings = allFindings.filter(f => f.workstream === workstreamName);
+    const openQuestions = diligencePlan_v3.filter(item => item.workstream === workstreamName && item.startDay > 7);
+
+    // Create the dynamic synthesis text
+    const synthesisText = `Analysis of the **${workstreamName}** workstream has surfaced ${relevantFindings.length} key findings that require attention. The primary areas of concern are [Example: non-standard revenue recognition and high customer concentration]. There are currently ${openQuestions.length} open items from the diligence plan for this area.`;
+
+    // Build the HTML for the findings cards
+    const findingsHTML = relevantFindings.length > 0 
+        ? relevantFindings.map(finding => `
+            <div class="finding-card">
+                <div class="finding-card-header">
+                    <span class="font-semibold">${finding.title || finding.text}</span>
+                    ${finding.severity ? `<span class="ws-item-badge severity-${finding.severity.toLowerCase()}">${finding.severity}</span>` : ''}
+                </div>
+                <p class="finding-card-body">${finding.impact || finding.description || ''}</p>
+                <div class="finding-card-actions">
+                    <button class="card-action-button" data-action="run-prompt" data-prompt="Model the financial impact of '${finding.title || finding.text}'">Model Impact</button>
+                    <button class="card-action-button" data-action="run-prompt" data-prompt="Draft an email to the CFO about '${finding.title || finding.text}'">Draft Email</button>
+                    <button class="card-action-button" data-action="run-prompt" data-prompt="Add '${finding.title || finding.text}' to the IC memo">Add to Memo</button>
+                </div>
+            </div>`).join('') 
+        : '<p class="text-secondary">No specific findings flagged for this workstream yet.</p>';
+
+    // Build the HTML for the open questions list
+    const openQuestionsHTML = openQuestions.length > 0 
+        ? openQuestions.map(item => `<li><span class="font-semibold">${item.id}: ${item.name}</span></li>`).join('') 
+        : '<li class="text-secondary">All diligence questions for this workstream have been initiated.</li>';
+
+    // Assemble the final response with the themed synthesis box
+    return `
+        <div class="aria-response-content">
+            <div class="build-item themed-synthesis-box" style="--theme-color: ${wsData.color};">
+                <div class="synthesis-content-wrapper">
+                    <h3 class="response-title">Aria's Synthesis for ${workstreamName}</h3>
+                    <p class="response-text" data-typing-text="${synthesisText}"></p>
+                </div>
+            </div>
+            <div class="build-item finding-cards-grid">
+                ${findingsHTML}
+            </div>
+            <div class="build-item open-questions-box">
+                 <h3 class="synthesis-title">Aria's Open Questions</h3>
+                 <ul class="open-questions-list">
+                    ${openQuestionsHTML}
+                 </ul>
+            </div>
+        </div>
+    `;
+}
+
+
 const diligenceHubAriaResponses = {
     "Can we start the analysis 2 days earlier?": {
         simulation: { 
@@ -288,23 +347,9 @@ const diligenceHubAriaResponses = {
             </div>
         </div>`,
         followUpQuestions: ["Which tasks can we de-prioritize to resolve this?", "Can we bring in another analyst to help Alex?"]
-    },
-    "Show me the Business & Strategy workstream.": {
-        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Business & Strategy'),
-        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
-    },
-    "Show me the Commercial & Customer workstream.": {
-        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Commercial & Customer'),
-        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
-    },
-    "Show me the Technology & Operations workstream.": {
-        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Technology & Operations'),
-        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
-    },
-    "Show me the Financial & Risk workstream.": {
-        renderFunc: () => DiligenceHubComponent._renderWorkstreamTab('Financial & Risk'),
-        followUpQuestions: ["Summarize the key risks for this workstream.", "Who are the key contacts for this area?"]
     }
+    // REMOVED the conflicting workstream prompts from this object.
+    // The correct ones from data.js will now be used.
 };
 
 const ceoDashboardData = {

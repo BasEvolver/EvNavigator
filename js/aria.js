@@ -9,15 +9,6 @@ const generativeComponentMap = {
             "Can we start the analysis 2 days earlier?",
             "Which resources are overallocated next week?"
         ]
-    },
-    "Show me where we are on the TechFlow Diligence plan.": {
-        script: 'js/modules/diligence-hub-component.js',
-        renderer: 'DiligenceHubComponent',
-        followUpQuestions: [
-            "What is the impact of the 1-day delay on the critical path?",
-            "Can we start the analysis 2 days earlier?",
-            "Which resources are overallocated next week?"
-        ]
     }
 };
 
@@ -77,44 +68,99 @@ function initializeAriaPage() {
 
     if (activePersona === 'maya') {
         renderAmActionCenter();
-        return; 
+        return;
     }
 
     Navigation.updateCompanySelector();
-    
-    if (prompt) {
+
+    const conversationContainer = document.getElementById('aria-conversation-container');
+    const promptWrapper = document.getElementById('aria-prompt-wrapper');
+
+if (prompt) {
+    // If a prompt is in the URL, run the sequence.
+    // We still check if the container is empty to prevent re-running on a page refresh.
+    if (conversationContainer && conversationContainer.innerHTML.trim() === '') {
         if (workstream) {
             state.techflowAria.activeWorkstream = workstream;
             saveState(state);
         }
         runAriaSequence(prompt);
-    } else {
-        renderAriaCleanSlate(companyId);
     }
+} else {
+    // If there is NO prompt in the URL, ALWAYS render the clean slate.
+    // This is the main fix that ensures a reset when clicking the sidebar link.
+    renderAriaCleanSlate(companyId);
+}
 }
 
-
 function renderAriaCleanSlate(companyId) {
+    const conversationContainer = document.getElementById('aria-conversation-container');
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
-    if (!promptWrapper) return;
-    
+    if (!promptWrapper || !conversationContainer) return;
+
+    let welcomeMessage = "";
+    if (companyId === 'techflow-solutions') {
+        welcomeMessage = "Hello. I'm ready to assist with the TechFlow diligence. You can start with an overview of the plan or select a specific workstream below to begin your analysis.";
+    } else if (companyId === 'all') {
+        welcomeMessage = "Hello. I'm ready to assist with your portfolio analysis. Please select a starting point below.";
+    } else {
+        const companyName = companyDataMap[companyId] ? workspaceHeaders[companyId].title : "the company";
+        welcomeMessage = `Hello. I'm ready to assist with ${companyName}. Please select a starting point below.`;
+    }
+
+    if (conversationContainer.innerHTML.trim() === '') {
+        conversationContainer.innerHTML = `
+            <div class="aria-response-wrapper">
+                <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
+                <div class="aria-response-bubble">
+                    <p class="font-semibold">Aria:</p>
+                    <p class="response-text">${welcomeMessage}</p>
+                </div>
+            </div>
+        `;
+    }
+
     let suggestedPrompts = [];
-    if (companyId === 'all') {
+    let contextualPills = null;
+
+    if (companyId === 'techflow-solutions') {
+        const isGanttVisible = conversationContainer.querySelector('.diligence-hub-container');
+        const workstreamPillsList = [
+            { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
+            { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
+            { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
+            { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
+        ];
+
+        if (!isGanttVisible) {
+            workstreamPillsList.unshift({ label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" });
+        }
+        
+        contextualPills = {
+            title: "Explore Diligence:",
+            pills: workstreamPillsList
+        };
+        
+        // THIS IS THE FIX: Always show some general prompts as a fallback.
+        suggestedPrompts = [
+            "What are the key risks for TechFlow Solutions?",
+            "Summarize the latest board meeting for TechFlow Solutions."
+        ];
+
+    } else if (companyId === 'all') {
         suggestedPrompts = [
             "Provide an overview of the TechFlow Due Diligence activities.",
-            "Show me where we are on the TechFlow Diligence plan.",
             "How is the NewCo integration going for CloudVantage?"
         ];
     } else {
         const companyName = companyDataMap[companyId] ? workspaceHeaders[companyId].title : "the company";
         suggestedPrompts = [
             `What are the key risks for ${companyName}?`,
-            `Summarize the latest board meeting for ${companyName}.`,
-            "Show me where we are on the TechFlow Diligence plan."
+            `Summarize the latest board meeting for ${companyName}.`
         ];
     }
     
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts);
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts, contextualPills);
 }
 
 function renderAmActionCenter() {
@@ -289,7 +335,8 @@ async function runAriaSequence(promptText) {
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
     if (!conversationContainer || !promptWrapper) return;
 
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML([]);
+    // --- FIX: Clear the prompt box suggestions, but not the whole conversation ---
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML([]); // Clear old suggestions
 
     const persona = PERSONAS[state.activePersona];
     const nameParts = persona.name.split(' ');
@@ -354,9 +401,9 @@ async function runAriaSequence(promptText) {
         
         try {
             await loadScript(componentInfo.script);
+            // --- FIX: Render the component inside the new response bubble ---
             window[componentInfo.renderer].render(targetElement, companyId);
         } catch (error) {
-            console.error(error); // Log the actual error
             targetElement.innerHTML = `<p class="text-red-500">Error loading component: ${error.message}</p>`;
         }
         
@@ -376,18 +423,33 @@ async function runAriaSequence(promptText) {
         scrollToConversationBottom();
         
         setTimeout(async () => {
-            // THIS IS THE NEW LOGIC FOR RE-PLANNING
-            if (staticResponseData.simulation && staticResponseData.simulation.type === 'GANTT_REPLAN') {
-                const replanTarget = targetElement.querySelector('[id^="gantt-replan-target-"]');
-                if (replanTarget && window.DiligenceHubComponent) {
-                    // Call the new function in the component to render the modified plan
-                    window.DiligenceHubComponent.renderModifiedPlan(replanTarget, companyId, staticResponseData.simulation.params);
+            await runAriaBuildingSequence(targetElement);
+            if (staticResponseData.simulation) {
+                if (staticResponseData.simulation.type === 'GANTT_REPLAN') {
+                    const ganttContainer = document.querySelector('.diligence-hub-container');
+                    if (ganttContainer && window.DiligenceHubComponent) {
+                        window.DiligenceHubComponent.rerenderWithChanges(staticResponseData.simulation);
+                    }
                 }
             }
-            
-            await runAriaBuildingSequence(targetElement);
-            
-            promptWrapper.innerHTML = getAdvancedPromptBoxHTML(staticResponseData.followUpQuestions);
+            // --- FIX START: Logic for persistent pills ---
+            const isWorkstreamPrompt = promptText.includes("workstream");
+            if (companyId === 'techflow-solutions' && (isWorkstreamPrompt || conversationContainer.querySelector('.diligence-hub-container'))) {
+                const workstreamPills = {
+                    title: "Explore Diligence:",
+                    pills: [
+                        { label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" },
+                        { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
+                        { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
+                        { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
+                        { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
+                    ]
+                };
+                promptWrapper.innerHTML = getAdvancedPromptBoxHTML(staticResponseData.followUpQuestions, workstreamPills);
+            } else {
+                promptWrapper.innerHTML = getAdvancedPromptBoxHTML(staticResponseData.followUpQuestions);
+            }
+            // --- FIX END ---
             scrollToConversationBottom();
         }, 50);
 

@@ -43,22 +43,25 @@
         </div>
     </div>
 
-    <!-- This script order is correct -->
+    <!-- --- FIX START: Corrected script loading order --- -->
+    <!-- 1. Core Data Models -->
     <script src="js/data.js"></script>
-    <script src="js/portco-data.js"></script>
     <script src="js/knowledge-data.js"></script>
     <script src="js/MaturityModel.js"></script>
     <script src="js/state.js"></script>
+
+    <!-- 2. Shared UI and Navigation Logic -->
     <script src="js/shared.js"></script>
-    <script src="js/report-generator.js"></script>
-    <script src="js/home.js"></script>
-    <script src="js/modules/diligence-hub-component.js"></script>
-    <script src="js/portco.js"></script>
+
+    <!-- 3. Component scripts that ARIA might need to load dynamically or reference -->
+    <!-- This MUST be loaded before portco-data.js -->
+    <script src="js/modules/diligence-hub-component.js"></script> 
+    
+    <!-- This can now be loaded, as its dependency (DiligenceHubComponent) exists -->
+    <script src="js/portco-data.js"></script>
+
+    <!-- 4. The main script FOR THIS PAGE ONLY (MUST BE LAST) -->
     <script src="js/aria.js"></script>
-    <script src="js/workspace.js"></script>
-    <script src="js/modeling.js"></script>
-    <script src="js/knowledge.js"></script>
-    <script src="js/knowledge-refinery.js"></script>
-    <script src="js/data-quality.js"></script>
+    <!-- --- FIX END --- -->
 </body>
 </html>
