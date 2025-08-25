@@ -27,8 +27,8 @@ jobs:
           action: "upload"
           app_location: "/"         # Your app is in the root
           api_location: "api"       # Your api is in the 'api' folder
-          output_location: ""       # No build output folder for a static site
-          app_build_command: ""  
+          output_location: "public"       # No build output folder for a static site
+
           # The line below has been removed
           # skip_app_build: true
 
