@@ -11,7 +11,7 @@ const generativeComponentMap = {
         ]
     }
 };
-
+ 
 async function loadScript(url) {
     return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${url}"]`)) { return resolve(); }
