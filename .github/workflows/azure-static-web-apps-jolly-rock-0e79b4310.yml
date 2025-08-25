@@ -23,11 +23,14 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_ROCK_0E79B4310 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          app_location: "/"
-          api_location: "api"
-          output_location: "/"
+          
+          ###### FINAL CORRECTED CONFIGURATION ######
+          app_location: "/"            # 1. The frontend files are in the root.
+          api_location: "api"          # 2. The backend API files are in the 'api' folder.
+          skip_app_build: true         # 3. CRITICAL: Tell Azure to NOT build the frontend.
+          ###### END OF CORRECTIONS ######
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -40,7 +43,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_ROCK_0E79B4310 }}
           action: "close"
-          # --- THIS IS THE FIX ---
-          # The app_location is also required for the 'close' action.
+          # This input is also required for the close action
           app_location: "/"
-          # ---------------------
