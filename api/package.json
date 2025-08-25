@@ -1,5 +1,11 @@
 {
-  "name": "navigator-api",
+  "name": "navigator-api-function",
   "version": "1.0.0",
-  "description": "Backend API functions for the Navigator app."
+  "description": "Azure Function backend for Navigator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }
