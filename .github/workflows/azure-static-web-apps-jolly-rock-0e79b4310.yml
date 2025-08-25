@@ -18,17 +18,17 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-          lfs: false
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_ROCK_0E79B4310 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/"
           api_location: "api"
-          skip_app_build: true
+          app_build_command: "npm install"
+          api_build_command: "npm install"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -41,6 +41,3 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_ROCK_0E79B4310 }}
           action: "close"
-          # --- THIS IS THE LINE THAT WAS MISSING ---
-          app_location: "/"
-          # -----------------------------------------

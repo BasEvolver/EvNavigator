@@ -1,11 +1,8 @@
 {
-  "name": "navigator-api-function",
+  "name": "navigator-api",
   "version": "1.0.0",
-  "description": "Azure Function backend for Navigator",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+  "description": "Backend API functions for the Navigator app.",
+  "dependencies": {
+    "@google/generative-ai": "^0.11.4"
+  }
 }
