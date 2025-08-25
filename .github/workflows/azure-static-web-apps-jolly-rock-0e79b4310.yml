@@ -26,12 +26,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_ROCK_0E79B4310 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          
-          ###### CORRECTED CONFIGURATIONS ######
-          app_location: "/"            # Your frontend code is in the root
-          api_location: "api"          # Your backend Azure Function is in the 'api' folder
-          skip_app_build: true         # Tell Azure not to look for a build script
-          ###### END OF CORRECTIONS ######
+          app_location: "/"
+          api_location: "api"
+          skip_app_build: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -44,3 +41,6 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_ROCK_0E79B4310 }}
           action: "close"
+          # --- THIS IS THE LINE THAT WAS MISSING ---
+          app_location: "/"
+          # -----------------------------------------
