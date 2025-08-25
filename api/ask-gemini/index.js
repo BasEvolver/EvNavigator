@@ -33,5 +33,5 @@ module.exports = async function (context, req) {
             status: 500,
             body: { error: "Failed to get response from Gemini." }
         };
-    }
+    } 
 };
