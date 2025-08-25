@@ -29,7 +29,7 @@ jobs:
           ###### FINAL CORRECTED CONFIGURATION ######
           app_location: "/"            # 1. The frontend files are in the root.
           api_location: "api"          # 2. The backend API files are in the 'api' folder.
-          skip_app_build: true         # 3. CRITICAL: Tell Azure to NOT build the frontend.
+         output_location: ""   
           ###### END OF CORRECTIONS ######
 
   close_pull_request_job:
