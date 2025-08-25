@@ -1,3 +1,4 @@
+// File: /api/ask-gemini/function.json
 {
   "bindings": [
     {
@@ -16,4 +17,4 @@
       "name": "res"
     }
   ]
-} 
+}
