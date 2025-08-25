@@ -1,11 +1,5 @@
 {
-  "routes": [
-    {
-      "route": "/api/*",
-      "methods": ["POST", "GET"],
-      "rewrite": "/api/*"
-    }
-  ],
+  "routes": [],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["/css/*", "/js/*", "/images/*"]
