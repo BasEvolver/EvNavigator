@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigator - Modeling</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- ADDED: Add auth script to protect the page -->
+    <script src="js/auth.js"></script>
+    <script>
+  // Prevents sidebar flicker on page load
+  (function() {
+    try {
+      if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed-preload');
+      }
+    } catch (e) {
+      console.error('Could not apply sidebar preload state.', e);
+    }
+  })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <div class="main-content-wrapper">
+            <div id="header-container"></div>
+            <main id="main-content">
+                <div class="flex items-center justify-center h-full">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+<script src="js/data.js"></script>
+    <script src="js/MaturityModel.js"></script> 
+    <script src="js/state.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/modeling.js"></script>
+</body>
+</html>

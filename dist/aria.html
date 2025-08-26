@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigator - Aria</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="js/auth.js"></script>
+    <script>
+      // Prevents sidebar flicker on page load
+      (function() {
+        try {
+          if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed-preload');
+          }
+        } catch (e) {
+          console.error('Could not apply sidebar preload state.', e);
+        }
+      })();
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <div class="main-content-wrapper">
+            <div id="header-container"></div>
+            <!-- The main content area itself has no padding -->
+            <main id="main-content" class="p-0 sm:p-0 flex flex-col">
+                <!-- This view is the anchor for the floating prompt -->
+                <div id="aria-main-view" class="w-full h-full flex flex-col has-floating-prompt">
+                    <!-- The conversation has the padding and scrolls -->
+                    <div id="aria-conversation-container" class="flex-grow space-y-6 overflow-y-auto px-6 sm:px-8 pt-6">
+                        <!-- All chat bubbles will be rendered here -->
+                    </div>
+                    <!-- The prompt wrapper is the floating element -->
+                    <div id="aria-prompt-wrapper" class="floating-prompt-container">
+                        <!-- The prompt box will be rendered here by JS -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- --- FIX START: Corrected script loading order --- -->
+    <!-- 1. Core Data Models -->
+    <script src="js/data.js"></script>
+    <script src="js/knowledge-data.js"></script>
+    <script src="js/MaturityModel.js"></script>
+    <script src="js/state.js"></script>
+
+    <!-- 2. Shared UI and Navigation Logic -->
+    <script src="js/shared.js"></script>
+
+    <!-- 3. Component scripts that ARIA might need to load dynamically or reference -->
+    <!-- This MUST be loaded before portco-data.js -->
+    <script src="js/modules/diligence-hub-component.js"></script> 
+    
+    <!-- This can now be loaded, as its dependency (DiligenceHubComponent) exists -->
+    <script src="js/portco-data.js"></script>
+
+    <!-- 4. The main script FOR THIS PAGE ONLY (MUST BE LAST) -->
+    <script src="js/aria.js"></script>
+    <!-- --- FIX END --- -->
+</body>
+</html>

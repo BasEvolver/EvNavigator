@@ -1,0 +1,104 @@
+<!-- data-quality.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigator - Data Quality</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="js/auth.js"></script>
+    <script>
+  // Prevents sidebar flicker on page load
+  (function() {
+    try {
+      if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed-preload');
+      }
+    } catch (e) {
+      console.error('Could not apply sidebar preload state.', e);
+    }
+  })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <div class="main-content-wrapper">
+            <div id="header-container"></div>
+            <main id="main-content" class="p-6 sm:p-8 flex flex-col">
+                <div class="data-quality-layout">
+                    <h2 class="text-2xl font-bold">Data Quality Control Center</h2>
+                    
+                    <div class="dq-filter-toolbar">
+                        <select><option>Entity: TechFlow Solutions</option></select>
+                        <select><option>Source: All</option></select>
+                        <input type="text" placeholder="Filter by tags...">
+                        <select><option>Date: Last 7 Days</option></select>
+                        <button class="secondary-button">Apply Filters</button>
+                    </div>
+
+                    <div class="dq-kpi-grid">
+                        <div class="kpi-card"><p class="kpi-label">Total Documents</p><p class="kpi-value">15</p></div>
+                        <div class="kpi-card"><p class="kpi-label">Curation Status</p><p class="kpi-value">80%</p><p class="kpi-detail">12 of 15 Curated</p></div>
+                        <div class="kpi-card"><p class="kpi-label">Avg. ARIA Confidence</p><p class="kpi-value">85%</p></div>
+                        <div class="kpi-card"><p class="kpi-label">Avg. User Quality Score</p><p class="kpi-value">4.5<span class="text-base">/5</span></p></div>
+                    </div>
+
+                    <div class="dq-synthesis-box">
+                        <h4 class="font-bold text-primary">Aria's Quality Synthesis</h4>
+                        <p class="text-secondary text-sm mt-1">We have ingested 15 documents for TechFlow this week. Overall quality is high, with an average user rating of 4.5/5. However, <strong>3 financial documents are still pending review</strong> and should be prioritized to ensure the accuracy of the financial model.</p>
+                    </div>
+
+                    <div class="data-table-container mt-4">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Document Name</th>
+                                    <th>Source</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>User Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Financial_Statements_2024.pdf</td>
+                                    <td>Internal Data > Financial Reports</td>
+                                    <td>2025-08-05</td>
+                                    <td><span class="status-badge status-completed">Curated</span></td>
+                                    <td>5/5</td>
+                                    <td><button class="secondary-button text-xs py-1 px-2">Review</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Revenue_Recognition_Policy.pdf</td>
+                                    <td>Context > DD Data Room</td>
+                                    <td>2025-08-04</td>
+                                    <td><span class="status-badge status-completed">Curated</span></td>
+                                    <td>4/5</td>
+                                    <td><button class="secondary-button text-xs py-1 px-2">Review</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Sales_Pipeline_Analysis.xlsx</td>
+                                    <td>Internal Data > CRM Data</td>
+                                    <td>2025-08-03</td>
+                                    <td><span class="status-badge status-warning">Pending Review</span></td>
+                                    <td>N/A</td>
+                                    <td><button class="primary-button text-xs py-1 px-2">Curate Now</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+<script src="js/MaturityModel.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/data-quality.js"></script>
+</body>
+</html>
