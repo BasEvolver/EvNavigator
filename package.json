@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-"build": "rm -rf dist && mkdir dist && cp -r *.html css js components *.png dist/"
+    "build": "rm -rf dist && mkdir dist && cp -r *.html css js components *.png dist/"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,9 @@
   "bugs": {
     "url": "https://github.com/BasEvolver/EvNavigator/issues"
   },
-  "homepage": "https://github.com/BasEvolver/EvNavigator#readme"
-
-  
+  "homepage": "https://github.com/BasEvolver/EvNavigator#readme",
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "rimraf": "^6.0.1"
+  }
 }
