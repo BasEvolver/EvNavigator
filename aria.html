@@ -43,25 +43,21 @@
         </div>
     </div>
 
-    <!-- --- FIX START: Corrected script loading order --- -->
-    <!-- 1. Core Data Models -->
-    <script src="js/data.js"></script>
-    <script src="js/knowledge-data.js"></script>
+<!-- SCRIPT SECTION (CORRECTED ORDER V3) -->
+
+    <!-- 1. Core Data Models & State (These have no dependencies on other app files) -->
     <script src="js/MaturityModel.js"></script>
     <script src="js/state.js"></script>
+    <script src="js/data.js"></script> <!-- Contains diligencePlan_v3 -->
 
-    <!-- 2. Shared UI and Navigation Logic -->
-    <script src="js/shared.js"></script>
+    <!-- 2. Shared Utilities & Page-Specific Data (These depend on the core models) -->
+    <script src="js/shared.js"></script> 
+    <script src="js/portco-data.js"></script> <!-- Contains projectPlanUtils, which needs diligencePlan_v3 -->
 
-    <!-- 3. Component scripts that ARIA might need to load dynamically or reference -->
-    <!-- This MUST be loaded before portco-data.js -->
-    <script src="js/modules/diligence-hub-component.js"></script> 
+    <!-- 3. Reusable Components (These depend on the utilities and data files) -->
+    <script src="js/modules/diligence-hub-component.js"></script>
     
-    <!-- This can now be loaded, as its dependency (DiligenceHubComponent) exists -->
-    <script src="js/portco-data.js"></script>
-
-    <!-- 4. The main script FOR THIS PAGE ONLY (MUST BE LAST) -->
+    <!-- 4. Main Page Controller (MUST BE LAST) -->
     <script src="js/aria.js"></script>
-    <!-- --- FIX END --- -->
 </body>
 </html>

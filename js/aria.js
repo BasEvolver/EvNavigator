@@ -1,4 +1,4 @@
-// js/aria.js - Logic for the main Aria AI Assistant page
+// js/aria.js - Central Conversational Engine for the Navigator Application (CORRECTED & ROBUST)
 
 const generativeComponentMap = {
     "Show me the TechFlow diligence plan.": {
@@ -11,7 +11,40 @@ const generativeComponentMap = {
         ]
     }
 };
- 
+
+const companyDataMap = {
+    'techflow-solutions': {
+        ariaResponses: { 
+            ...(typeof techflow_ariaResponses !== 'undefined' ? techflow_ariaResponses : {}), 
+            ...(typeof diligenceHubAriaResponses !== 'undefined' ? diligenceHubAriaResponses : {}), 
+            ...(typeof portco_ariaResponses !== 'undefined' ? portco_ariaResponses : {}) 
+        }
+    },
+    'cloudvantage': {
+        ariaResponses: { 
+            ...(typeof cloudvantage_ariaResponses !== 'undefined' ? cloudvantage_ariaResponses : {}) 
+        }
+    },
+    'all': {
+        ariaResponses: { 
+            ...(typeof portfolio_ariaResponses !== 'undefined' ? portfolio_ariaResponses : {}), 
+            ...(typeof commandCenterAriaResponses !== 'undefined' ? commandCenterAriaResponses : {}) 
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (Navigation.getCurrentPage() === 'aria') {
+        document.body.classList.add('page-aria');
+        await loadSharedComponents();
+        initializeAriaPage();
+        initializeAriaEventListeners();
+        if (!document.getElementById('file-attachment-input')) {
+            document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
+        }
+    }
+});
+
 async function loadScript(url) {
     return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${url}"]`)) { return resolve(); }
@@ -22,34 +55,6 @@ async function loadScript(url) {
         document.head.appendChild(script);
     });
 }
-
-const companyDataMap = {
-    'techflow-solutions': {
-        workstreamData: techflow_workstreamData,
-        ariaResponses: techflow_ariaResponses
-    },
-    'cloudvantage': {
-        workstreamData: cloudvantage_workstreamData,
-        ariaResponses: cloudvantage_ariaResponses
-    }
-};
-
-document.addEventListener('DOMContentLoaded', async () => {
-    if (Navigation.getCurrentPage() === 'aria') {
-        document.body.classList.add('page-aria');
-        const params = new URLSearchParams(window.location.search);
-        const companyId = params.get('company') || 'techflow-solutions';
-        let state = loadState();
-        state.selectedCompanyId = companyId;
-        saveState(state);
-        await loadSharedComponents();
-        initializeAriaPage();
-        initializeAriaEventListeners();
-        if (!document.getElementById('file-attachment-input')) {
-            document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
-        }
-    }
-});
 
 function scrollToConversationBottom() {
     const conversationContainer = document.getElementById('aria-conversation-container');
@@ -62,8 +67,13 @@ function initializeAriaPage() {
     const params = new URLSearchParams(window.location.search);
     const prompt = params.get('prompt');
     const workstream = params.get('workstream');
-    const companyId = params.get('company') || 'techflow-solutions';
+    const contextSource = params.get('contextSource');
+    
     let state = loadState();
+    const companyId = params.get('company') || state.selectedCompanyId || 'techflow-solutions';
+    state.selectedCompanyId = companyId;
+    saveState(state);
+
     const { activePersona } = state;
 
     if (activePersona === 'maya') {
@@ -74,23 +84,42 @@ function initializeAriaPage() {
     Navigation.updateCompanySelector();
 
     const conversationContainer = document.getElementById('aria-conversation-container');
-    const promptWrapper = document.getElementById('aria-prompt-wrapper');
+    if (!conversationContainer) return;
 
-if (prompt) {
-    // If a prompt is in the URL, run the sequence.
-    // We still check if the container is empty to prevent re-running on a page refresh.
-    if (conversationContainer && conversationContainer.innerHTML.trim() === '') {
+    if (contextSource) {
+        try {
+            const contextData = JSON.parse(atob(contextSource));
+            renderContextualHeader(contextData);
+        } catch (e) {
+            console.error("Failed to parse context source:", e);
+        }
+    }
+
+    if (prompt) {
         if (workstream) {
             state.techflowAria.activeWorkstream = workstream;
             saveState(state);
         }
         runAriaSequence(prompt);
+    } else {
+        renderAriaCleanSlate(companyId);
     }
-} else {
-    // If there is NO prompt in the URL, ALWAYS render the clean slate.
-    // This is the main fix that ensures a reset when clicking the sidebar link.
-    renderAriaCleanSlate(companyId);
 }
+
+function renderContextualHeader(contextData) {
+    const conversationContainer = document.getElementById('aria-conversation-container');
+    if (!conversationContainer || !contextData) return;
+
+    let headerHTML = `
+        <div class="context-header-wrapper">
+            <p class="context-header-pre-title">Based on your selection:</p>
+            <div class="context-header-card">
+                <h4 class="context-header-title">${contextData.title}</h4>
+                <p class="context-header-description">${contextData.description}</p>
+            </div>
+        </div>
+    `;
+    conversationContainer.innerHTML += headerHTML;
 }
 
 function renderAriaCleanSlate(companyId) {
@@ -99,13 +128,37 @@ function renderAriaCleanSlate(companyId) {
     if (!promptWrapper || !conversationContainer) return;
 
     let welcomeMessage = "";
+    let suggestedPrompts = [];
+    let contextualPills = null;
+
     if (companyId === 'techflow-solutions') {
         welcomeMessage = "Hello. I'm ready to assist with the TechFlow diligence. You can start with an overview of the plan or select a specific workstream below to begin your analysis.";
-    } else if (companyId === 'all') {
-        welcomeMessage = "Hello. I'm ready to assist with your portfolio analysis. Please select a starting point below.";
+        const workstreamPillsList = [
+            { label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" },
+            { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
+            { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
+            { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
+            { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
+        ];
+        contextualPills = { title: "Explore Diligence:", pills: workstreamPillsList };
+        suggestedPrompts = [
+            "What are the key risks for TechFlow Solutions?",
+            "Summarize the latest board meeting for TechFlow Solutions."
+        ];
+    } else if (companyId === 'cloudvantage') {
+        welcomeMessage = "Hello. I'm ready to assist with CloudVantage. Please select a starting point below.";
+        suggestedPrompts = [
+            "How is the NewCo integration going for CloudVantage?",
+            "Analyze the key drivers of our Net Revenue Retention.",
+            "Generate a board-level summary of Q2 financial performance."
+        ];
     } else {
-        const companyName = companyDataMap[companyId] ? workspaceHeaders[companyId].title : "the company";
-        welcomeMessage = `Hello. I'm ready to assist with ${companyName}. Please select a starting point below.`;
+        welcomeMessage = "Hello. I'm ready to assist with your portfolio analysis. Please select a starting point below.";
+        suggestedPrompts = [
+            "How did the portfolio perform over the past 12 months?",
+            "Forecast portfolio ARR for the next 6 months.",
+            "Model the next 12 months assuming we acquire TechFlow."
+        ];
     }
 
     if (conversationContainer.innerHTML.trim() === '') {
@@ -118,46 +171,6 @@ function renderAriaCleanSlate(companyId) {
                 </div>
             </div>
         `;
-    }
-
-    let suggestedPrompts = [];
-    let contextualPills = null;
-
-    if (companyId === 'techflow-solutions') {
-        const isGanttVisible = conversationContainer.querySelector('.diligence-hub-container');
-        const workstreamPillsList = [
-            { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
-            { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
-            { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
-            { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
-        ];
-
-        if (!isGanttVisible) {
-            workstreamPillsList.unshift({ label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" });
-        }
-        
-        contextualPills = {
-            title: "Explore Diligence:",
-            pills: workstreamPillsList
-        };
-        
-        // THIS IS THE FIX: Always show some general prompts as a fallback.
-        suggestedPrompts = [
-            "What are the key risks for TechFlow Solutions?",
-            "Summarize the latest board meeting for TechFlow Solutions."
-        ];
-
-    } else if (companyId === 'all') {
-        suggestedPrompts = [
-            "Provide an overview of the TechFlow Due Diligence activities.",
-            "How is the NewCo integration going for CloudVantage?"
-        ];
-    } else {
-        const companyName = companyDataMap[companyId] ? workspaceHeaders[companyId].title : "the company";
-        suggestedPrompts = [
-            `What are the key risks for ${companyName}?`,
-            `Summarize the latest board meeting for ${companyName}.`
-        ];
     }
     
     promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts, contextualPills);
@@ -227,62 +240,6 @@ function renderAmActionCenter() {
     `;
 }
 
-function getAdvancedPromptBoxHTML(questions = [], contextualPills = null) {
-    const state = loadState();
-    const promptsHTML = (Array.isArray(questions) ? questions : []).map(q => `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${q}">${q}</button>`).join('');
-    
-    let contextualPillsHTML = '';
-    if (contextualPills) {
-        const pillButtons = contextualPills.pills.map(p => 
-            `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${p.prompt}" style="background-color: ${p.color}20; border-color: ${p.color}; color: ${p.color};">
-                ${p.label}
-            </button>`
-        ).join('');
-        contextualPillsHTML = `
-            <div class="flex items-center gap-3 mb-2">
-                <h4 class="list-header !mb-0">${contextualPills.title}</h4>
-                <div class="actions-list !mt-0 !gap-2">${pillButtons}</div>
-            </div>`;
-    }
-
-    return `
-        <div id="aria-prompt-container" class="mt-auto pt-4 flex-shrink-0">
-            <div class="prompt-area-large-v4">
-                ${contextualPillsHTML}
-                <div class="suggestion-pills-container ${contextualPills ? 'pt-4 border-t border-border-color' : ''}">${promptsHTML}</div>
-                <textarea id="aria-prompt-input" class="prompt-textarea" rows="1" placeholder="Ask a follow-up..."></textarea>
-                <div id="file-attachment-display" class="file-attachment-display"></div>
-                <div class="prompt-actions-bottom-bar">
-                    <div class="prompt-actions-left">
-                        <button data-action="attach-file" class="prompt-action-button" title="Attach File"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-                        <div class="relative"><button data-action="toggle-settings-modal" class="prompt-action-button" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg></button>${renderSettingsModal(state.ariaSettings)}</div>
-                    </div>
-                    <div class="prompt-actions-right">
-                        <button data-action="restart-conversation" class="prompt-action-button" title="Restart Conversation"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></button>
-                        <button class="prompt-send-button" data-action="ask-aria" title="Send"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderSettingsModal(settings) {
-    const { isModalOpen, expandedCategories = {} } = settings;
-    const settingsStructure = {
-        context: { label: 'Context', main: settings.context?.main, items: { ddDataRoom: 'DD Data Room', investmentThesis: 'Investment Thesis', financialModel: 'Financial Model', meetingTranscripts: 'Meeting Transcripts' } },
-        domainKnowledge: { label: 'Domain Knowledge', main: settings.domainKnowledge?.main, items: { playbooks: 'Playbooks', kpiLibrary: 'KPI Library', maturityModel: 'Maturity Model', industryBenchmarks: 'Industry Benchmarks' } },
-        externalData: { label: 'External Data', main: settings.externalData?.main, items: { linkedin: 'LinkedIn', pitchbook: 'PitchBook', glassdoor: 'Glassdoor', web: 'Web Research' } },
-        internalData: { label: 'Internal Data', main: settings.internalData?.main, items: { erp: 'ERP Systems', crm: 'CRM Data', hcm: 'HCM Systems', devops: 'DevOps Metrics' } }
-    };
-    const renderCategory = (categoryKey, category) => {
-        const isExpanded = expandedCategories[categoryKey] || false;
-        const subItemsHTML = Object.entries(category.items).map(([itemKey, itemLabel]) => `<div class="flex items-center justify-between pl-6 py-1"><label for="setting-${categoryKey}-${itemKey}" class="text-xs text-secondary">${itemLabel}</label><label class="toggle-switch toggle-switch-sm"><input type="checkbox" id="setting-${categoryKey}-${itemKey}" data-action="update-setting" data-parent="${categoryKey}" data-key="${itemKey}" ${settings[categoryKey]?.[itemKey] ? 'checked' : ''}><span class="slider round"></span></label></div>`).join('');
-        return `<div class="border-b border-border-color last:border-b-0"><div class="flex items-center justify-between py-2 cursor-pointer" data-action="toggle-category" data-category="${categoryKey}"><div class="flex items-center gap-2"><svg class="w-4 h-4 text-text-muted transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg><span class="text-sm font-bold text-text-primary">${category.label}</span></div><label class="toggle-switch" onclick="event.stopPropagation();"><input type="checkbox" data-action="update-setting" data-parent="${categoryKey}" data-key="main" ${category.main ? 'checked' : ''}><span class="slider round"></span></label></div><div class="category-content ${isExpanded ? 'expanded' : ''}">${subItemsHTML}</div></div>`;
-    };
-    return `<div id="settings-modal" class="settings-modal ${isModalOpen ? 'visible' : ''}" style="bottom: 125%; left: 0;"><div class="p-3 space-y-1 text-sm"><div class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 pb-1 border-b border-border-color">Data Sources</div>${Object.entries(settingsStructure).map(([key, category]) => renderCategory(key, category)).join('')}</div></div>`;
-}
-
 async function typeWords(element, text, callback) {
     element.innerHTML = "";
     text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
@@ -325,11 +282,7 @@ async function runAriaSequence(promptText) {
     let state = loadState();
     const companyId = state.selectedCompanyId;
     
-    const allStaticResponses = { 
-        ...companyDataMap[companyId]?.ariaResponses, 
-        ...commandCenterAriaResponses,
-        ...diligenceHubAriaResponses 
-    };
+    const allStaticResponses = companyDataMap[companyId]?.ariaResponses || {};
 
     const conversationContainer = document.getElementById('aria-conversation-container');
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
@@ -352,13 +305,26 @@ async function runAriaSequence(promptText) {
     conversationContainer.insertAdjacentHTML('beforeend', userPromptHTML);
     scrollToConversationBottom();
     
-    // REMOVED the old "Aria is thinking..." message here.
-
     const componentInfo = generativeComponentMap[promptText];
     let staticResponseData = allStaticResponses[promptText];
 
+    const getResponseFooterHTML = (responseId) => {
+        const isFlagged = state.diligenceWorkspace.keyRisks[responseId];
+        return `
+            <div class="response-actions-footer">
+                <div class="feedback-controls">
+                    <button class="feedback-icon" data-action="thumb-up" title="Good response">👍</button>
+                    <button class="feedback-icon" data-action="thumb-down" title="Bad response">👎</button>
+                    <button class="feedback-icon" data-action="feedback" title="Provide Feedback">💬</button>
+                </div>
+                <div class="workspace-controls">
+                    <button class="feedback-icon ${isFlagged ? 'filled' : ''}" data-action="flag-response" data-response-id="${responseId}" title="Flag for Workspace">🚩</button>
+                </div>
+            </div>
+        `;
+    };
+
     if (componentInfo || staticResponseData) {
-        // --- CURATED PROMPT LOGIC (Unchanged) ---
         const reasoningId = `reasoning-${Date.now()}`;
         const reasoningHTML = `<div id="${reasoningId}" class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><p>Aria is thinking...</p></div></div>`;
         conversationContainer.insertAdjacentHTML('beforeend', reasoningHTML);
@@ -367,19 +333,26 @@ async function runAriaSequence(promptText) {
         document.getElementById(reasoningId)?.remove();
 
         const responseId = `aria-content-target-${Date.now()}`;
+        const responseDataId = staticResponseData?.id || 'component-response';
+        
         const ariaHeaderHTML = `
             <div class="aria-response-wrapper">
                 <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
                 <div class="aria-response-bubble">
-                    <p class="font-semibold">Aria:</p>
-                    <div id="${responseId}"></div>
+                    <div class="response-main-content">
+                        <p class="font-semibold">Aria:</p>
+                        <div id="${responseId}"></div>
+                    </div>
+                    ${getResponseFooterHTML(responseDataId)}
                 </div>
             </div>`;
         conversationContainer.insertAdjacentHTML('beforeend', ariaHeaderHTML);
         const targetElement = document.getElementById(responseId);
 
         if (componentInfo) {
-            // ... (component loading logic) ...
+            await loadScript(componentInfo.script);
+            window[componentInfo.renderer].render(targetElement, companyId);
+            promptWrapper.innerHTML = getAdvancedPromptBoxHTML(componentInfo.followUpQuestions);
         } else if (staticResponseData) {
             targetElement.innerHTML = staticResponseData.renderFunc(state);
             scrollToConversationBottom();
@@ -390,24 +363,22 @@ async function runAriaSequence(promptText) {
             }, 50);
         }
     } else {
-        // --- LIVE GEMINI CALL WITH TYPING INDICATOR ---
         const responseId = `aria-content-target-${Date.now()}`;
         const typingIndicatorHTML = `
             <div class="aria-response-wrapper">
                 <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
                 <div class="aria-response-bubble">
-                    <p class="font-semibold">Aria:</p>
-                    <div id="${responseId}" class="response-text">
-                        <div class="typing-indicator">
-                            <span></span>
-                            <span></span>
-                            <span></span>
+                    <div class="response-main-content">
+                        <p class="font-semibold">Aria:</p>
+                        <div id="${responseId}" class="response-text">
+                            <div class="typing-indicator"><span></span><span></span><span></span></div>
                         </div>
                     </div>
                 </div>
             </div>`;
         conversationContainer.insertAdjacentHTML('beforeend', typingIndicatorHTML);
         const targetElement = document.getElementById(responseId);
+        const responseBubble = targetElement.closest('.aria-response-bubble');
         scrollToConversationBottom();
         
         try {
@@ -417,19 +388,15 @@ async function runAriaSequence(promptText) {
                 body: JSON.stringify({ prompt: promptText })
             });
 
-            if (!apiResponse.ok) {
-                const errData = await apiResponse.json();
-                throw new Error(errData.error || `API error: ${apiResponse.statusText}`);
-            }
+            if (!apiResponse.ok) throw new Error(`API error: ${apiResponse.statusText}`);
 
             const data = await apiResponse.json();
-            // The typeWords function will automatically replace the typing indicator
             await typeWords(targetElement, data.response);
+            responseBubble.insertAdjacentHTML('beforeend', getResponseFooterHTML('gemini-response'));
 
         } catch (error) {
             console.error("Error calling Gemini API:", error);
-            // Replace the indicator with an error message
-            targetElement.innerHTML = `<p class="text-error">Sorry, I encountered an error trying to respond. Please ensure the backend server is running and check the console for details.</p>`;
+            targetElement.innerHTML = `<p class="text-error">Sorry, I encountered an error trying to respond.</p>`;
         }
         
         promptWrapper.innerHTML = getAdvancedPromptBoxHTML([
@@ -440,7 +407,6 @@ async function runAriaSequence(promptText) {
     
     scrollToConversationBottom();
 }
-
 
 function initializeAriaEventListeners() {
     if (document.body.dataset.ariaListenerAttached) return;
@@ -459,8 +425,6 @@ function initializeAriaEventListeners() {
             case 'run-suggested-prompt':
                 const question = target.dataset.question;
                 if (question) {
-                    const modal = document.querySelector('.gantt-modal-overlay');
-                    if (modal) modal.remove();
                     runAriaSequence(question);
                 }
                 break;
@@ -474,11 +438,10 @@ function initializeAriaEventListeners() {
                 break;
             case 'restart-conversation':
                 const conversationContainer = document.getElementById('aria-conversation-container');
-                const promptWrapper = document.getElementById('aria-prompt-wrapper');
                 if(conversationContainer) conversationContainer.innerHTML = '';
-                if(promptWrapper) promptWrapper.innerHTML = '';
                 const url = new URL(window.location);
                 url.searchParams.delete('prompt');
+                url.searchParams.delete('contextSource');
                 window.history.pushState({}, '', url);
                 initializeAriaPage();
                 break;
@@ -497,15 +460,23 @@ function initializeAriaEventListeners() {
             case 'flag-response':
                 const responseId = target.dataset.responseId;
                 if (!responseId) break;
-                const allSources = [techflow_anomalies, techflow_minorObservations, ...Object.values(techflow_ariaResponses), ...Object.values(cloudvantage_ariaResponses)];
-                const responseData = allSources.flat().find(item => item.id === responseId);
+                
+                const allSources = [...techflow_anomalies, ...otherObservations_v2];
+                const responseData = allSources.find(item => item.id === responseId);
+
                 if (responseData) {
                     const flagButton = target.closest('button');
                     if (state.diligenceWorkspace.keyRisks[responseId]) {
                         delete state.diligenceWorkspace.keyRisks[responseId];
                         flagButton.classList.remove('filled');
                     } else {
-                        state.diligenceWorkspace.keyRisks[responseId] = { id: responseId, title: responseData.title || responseData.category, impact: responseData.impact || responseData.text, source: 'Aria Assistant (Exp)' };
+                        state.diligenceWorkspace.keyRisks[responseId] = { 
+                            id: responseId, 
+                            title: responseData.title || responseData.text, 
+                            impact: responseData.impact, 
+                            severity: responseData.severity,
+                            source: 'Aria Assistant (Exp)' 
+                        };
                         flagButton.classList.add('filled');
                     }
                     saveState(state);
