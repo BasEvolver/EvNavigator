@@ -22,8 +22,36 @@ const todayDate = new Date();
 const PROJECT_START_DATE = calculateStartDate(todayDate, PROJECT_DAY_FOR_TODAY);
 const CURRENT_PROJECT_DAY = PROJECT_DAY_FOR_TODAY;
 
-// NOTE: projectPlanUtils object has been moved to portco-data.js to resolve dependency issues.
 
+
+// Helper function to dynamically check if a prompt is modeled
+function isPromptModeled(promptText) {
+    if (!promptText) return false;
+
+    // Combine all possible response maps into one place for checking.
+    // This makes the function aware of every possible response in the app.
+    const allResponses = {
+        ...(typeof techflow_ariaResponses !== 'undefined' ? techflow_ariaResponses : {}),
+        ...(typeof cloudvantage_ariaResponses !== 'undefined' ? cloudvantage_ariaResponses : {}),
+        ...(typeof commandCenterAriaResponses !== 'undefined' ? commandCenterAriaResponses : {}),
+        ...(typeof diligenceHubAriaResponses !== 'undefined' ? diligenceHubAriaResponses : {}),
+        ...(typeof portco_ariaResponses !== 'undefined' ? portco_ariaResponses : {}),
+        ...(typeof portfolio_ariaResponses !== 'undefined' ? portfolio_ariaResponses : {})
+    };
+
+    // Check if a direct key exists in any of the response maps.
+    if (allResponses[promptText]) {
+        return true;
+    }
+
+    // Check for dynamic prompts that are handled by logic, not just a key.
+    if (promptText.startsWith("Provide me with a current overview and understanding of the")) {
+        return true;
+    }
+    
+    // If no match is found, it's unmodeled.
+    return false;
+}
 
 // =================================================================
 // GENERATIVE UTILITIES
@@ -429,8 +457,9 @@ const Navigation = {
 // =================================================================
 function getAdvancedPromptBoxHTML(questions = [], contextualPills = null) {
     const state = loadState();
-    const promptsHTML = (Array.isArray(questions) ? questions : []).map(q => `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${q}">${q}</button>`).join('');
-    
+   const promptsHTML = (Array.isArray(questions) ? questions : [])
+    .map(q => `<button class="suggestion-pill ${!isPromptModeled(q) ? 'unmodeled' : ''}" data-action="run-suggested-prompt" data-question="${q}">${q}</button>`)
+    .join('');
     let contextualPillsHTML = '';
     if (contextualPills) {
         const pillButtons = contextualPills.pills.map(p => 

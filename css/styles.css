@@ -7514,3 +7514,48 @@ body.page-aria main#main-content {
     max-width: calc(100% + 2rem);
     border-radius: 0.75rem;
 }
+
+/* =================================================================
+   STYLE FOR UNMODELED PROMPTS & ACTIONS
+   ================================================================= */
+
+/* Applies to any button or pill that has no pre-defined response */
+.unmodeled {
+    opacity: 0.6;
+    font-style: italic;
+    transition: all 0.2s ease-in-out;
+}
+
+/* On hover, it looks like a normal button so it doesn't feel broken */
+.unmodeled:hover {
+    opacity: 1;
+    font-style: normal;
+}
+
+/* =================================================================
+   ARIA RECOMMENDED ACTION CARD STYLES
+   ================================================================= */
+
+/* Container for the list of action cards */
+.aria-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* 12px space between cards */
+}
+
+/* Individual clickable action card */
+.aria-action-card {
+    background-color: var(--bg-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent; /* For the hover effect */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.aria-action-card:hover {
+    border-color: var(--accent-blue);
+    background-color: var(--bg-hover);
+}

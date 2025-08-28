@@ -47,14 +47,16 @@ function getContextualPillsForCompany(companyId) {
                         { label: "Review Comp Plan", prompt: "Analyze the current sales compensation plan for the Enterprise team.", color: "var(--purple)" }
                     ]
                 };
-            case 'evelyn': // CEO
+case 'evelyn': // CEO
             case 'adrian': // Operating Partner
             default:
-                const disciplineColorMap = { 'D1': 'var(--accent-blue)', 'D2': 'var(--accent-teal)', 'D3': 'var(--purple)', 'D4': 'var(--status-warning)', 'D5': 'var(--status-success)', 'D6': 'var(--text-secondary)' };
-                const coreDisciplineIds = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6'];
+                // FIX: Added Finance (D7) and reordered the disciplines
+                const disciplineColorMap = { 'D1': 'var(--accent-blue)', 'D2': 'var(--accent-teal)', 'D4': 'var(--status-warning)', 'D5': 'var(--status-success)', 'D7': 'var(--status-success)', 'D6': 'var(--text-secondary)' };
+                const coreDisciplineIds = ['D1', 'D2', 'D4', 'D5', 'D7', 'D6']; // Sales, Marketing, Build, Run, Finance, Context
                 const disciplinePills = coreDisciplineIds.map(id => {
-                    const discipline = maturityModel.disciplines[id];
-                    return { label: discipline.name, prompt: `Tell me about the ${discipline.name} discipline for CloudVantage.`, color: disciplineColorMap[id] || 'var(--text-secondary)' };
+                    // Handle the new Finance discipline which isn't in the MaturityModel.js file
+                    const disciplineName = id === 'D7' ? 'Finance' : maturityModel.disciplines[id].name;
+                    return { label: disciplineName, prompt: `Tell me about the ${disciplineName} discipline for CloudVantage.`, color: disciplineColorMap[id] || 'var(--text-secondary)' };
                 });
                 return { title: "Explore Disciplines:", pills: disciplinePills };
         }
@@ -432,7 +434,7 @@ async function runAriaSequence(promptText) {
         } else if (staticResponseData) {
             runAriaBuildingSequence(staticResponseData, targetElement, promptWrapper);
         }
-    } else {
+} else {
         // Fallback for unknown prompts
         const responseId = `aria-content-target-${Date.now()}`;
         const typingIndicatorHTML = `<div class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><div id="${responseId}" class="response-text"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div></div>`;
@@ -442,7 +444,26 @@ async function runAriaSequence(promptText) {
         await new Promise(r => setTimeout(r, 1000)); // Simulate thinking
         targetElement.innerHTML = `<p>Sorry, I don't have a pre-defined response for that query. My capabilities are still expanding.</p>`;
         
-        const fallbackPrompts = [ "Show me the TechFlow diligence plan.", "How is the NewCo integration going for CloudVantage?" ];
+        // --- FIX START: Make fallback prompts company-aware ---
+        let fallbackPrompts = [];
+        if (companyId === 'techflow-solutions') {
+            fallbackPrompts = [
+                "Show me the TechFlow diligence plan.",
+                "Provide an overview of the current registered anomalies."
+            ];
+        } else if (companyId === 'cloudvantage') {
+            fallbackPrompts = [
+                "How is the NewCo integration going for CloudVantage?",
+                "Analyze the key drivers of our Net Revenue Retention."
+            ];
+        } else {
+            fallbackPrompts = [
+                "How did the portfolio perform over the past 12 months?",
+                "Forecast portfolio ARR for the next 6 months."
+            ];
+        }
+        // --- FIX END ---
+        
         promptWrapper.innerHTML = getAdvancedPromptBoxHTML(fallbackPrompts, contextualPillsForPromptBox);
     }
     
@@ -464,6 +485,23 @@ function initializeAriaEventListeners() {
         const action = target.dataset.action;
 
         switch (action) {
+                        case 'navigate-to-modeling':
+                const capabilityId = target.dataset.capabilityId;
+                const companyId = state.selectedCompanyId;
+                if (capabilityId && companyId) {
+                    // Create a context object to explain the navigation source
+                    const contextData = {
+                        title: target.dataset.contextTitle || "Modeling Initiative",
+                        description: target.dataset.contextDesc || "Continuing analysis from ARIA's suggestion."
+                    };
+                    // Encode the context to pass in the URL
+                    const encodedContext = btoa(JSON.stringify(contextData));
+                    window.location.href = `modeling.html?company=${companyId}&capability=${capabilityId}&contextSource=${encodedContext}`;
+                }
+                break;
+            // --- FIX END ---
+
+            
             case 'run-suggested-prompt':
                 const question = target.dataset.question;
                 if (question) {
