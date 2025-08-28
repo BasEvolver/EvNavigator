@@ -1,4 +1,4 @@
-// js/aria.js - Central Conversational Engine for the Navigator Application (CORRECTED & ROBUST)
+// js/aria.js - Central Conversational Engine for the Navigator Application (CORRECTED & REBUILT)
 
 const generativeComponentMap = {
     "Show me the TechFlow diligence plan.": {
@@ -12,26 +12,56 @@ const generativeComponentMap = {
     }
 };
 
-const companyDataMap = {
-    'techflow-solutions': {
-        ariaResponses: { 
-            ...(typeof techflow_ariaResponses !== 'undefined' ? techflow_ariaResponses : {}), 
-            ...(typeof diligenceHubAriaResponses !== 'undefined' ? diligenceHubAriaResponses : {}), 
-            ...(typeof portco_ariaResponses !== 'undefined' ? portco_ariaResponses : {}) 
-        }
-    },
-    'cloudvantage': {
-        ariaResponses: { 
-            ...(typeof cloudvantage_ariaResponses !== 'undefined' ? cloudvantage_ariaResponses : {}) 
-        }
-    },
-    'all': {
-        ariaResponses: { 
-            ...(typeof portfolio_ariaResponses !== 'undefined' ? portfolio_ariaResponses : {}), 
-            ...(typeof commandCenterAriaResponses !== 'undefined' ? commandCenterAriaResponses : {}) 
+function getContextualPillsForCompany(companyId) {
+    const state = loadState();
+    const persona = state.activePersona;
+
+    if (!companyId || companyId === 'all') {
+        return null;
+    }
+
+    const companyInfo = workspaceHeaders[companyId];
+    const isDiligence = companyInfo && companyInfo.stage === 'Due Diligence';
+
+    if (isDiligence) {
+        return {
+            title: "Explore Workstreams:",
+            pills: [
+                { label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" },
+                { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
+                { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
+                { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
+                { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
+            ]
+        };
+    } 
+    else {
+        // Persona-specific pills for non-diligence companies like CloudVantage
+        switch (persona) {
+            case 'connor': // CRO
+                return {
+                    title: "CRO Hub:",
+                    pills: [
+                        { label: "Process Renewals", prompt: "Process the renewals for the NewCo acquisition customers.", color: "var(--accent-blue)" },
+                        { label: "Analyze Pipeline", prompt: "What are the biggest risks in the current sales pipeline?", color: "var(--accent-teal)" },
+                        { label: "Review Comp Plan", prompt: "Analyze the current sales compensation plan for the Enterprise team.", color: "var(--purple)" }
+                    ]
+                };
+            case 'evelyn': // CEO
+            case 'adrian': // Operating Partner
+            default:
+                const disciplineColorMap = { 'D1': 'var(--accent-blue)', 'D2': 'var(--accent-teal)', 'D3': 'var(--purple)', 'D4': 'var(--status-warning)', 'D5': 'var(--status-success)', 'D6': 'var(--text-secondary)' };
+                const coreDisciplineIds = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6'];
+                const disciplinePills = coreDisciplineIds.map(id => {
+                    const discipline = maturityModel.disciplines[id];
+                    return { label: discipline.name, prompt: `Tell me about the ${discipline.name} discipline for CloudVantage.`, color: disciplineColorMap[id] || 'var(--text-secondary)' };
+                });
+                return { title: "Explore Disciplines:", pills: disciplinePills };
         }
     }
-};
+}
+
+// REMOVED the global companyDataMap. It will now be created inside runAriaSequence.
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (Navigation.getCurrentPage() === 'aria') {
@@ -123,56 +153,33 @@ function renderContextualHeader(contextData) {
 }
 
 function renderAriaCleanSlate(companyId) {
-    const conversationContainer = document.getElementById('aria-conversation-container');
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
-    if (!promptWrapper || !conversationContainer) return;
+    if (!promptWrapper) return;
 
-    let welcomeMessage = "";
     let suggestedPrompts = [];
-    let contextualPills = null;
-
+    // Determine suggested prompts based on the company
     if (companyId === 'techflow-solutions') {
-        welcomeMessage = "Hello. I'm ready to assist with the TechFlow diligence. You can start with an overview of the plan or select a specific workstream below to begin your analysis.";
-        const workstreamPillsList = [
-            { label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" },
-            { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
-            { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
-            { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
-            { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
-        ];
-        contextualPills = { title: "Explore Diligence:", pills: workstreamPillsList };
         suggestedPrompts = [
             "What are the key risks for TechFlow Solutions?",
             "Summarize the latest board meeting for TechFlow Solutions."
         ];
     } else if (companyId === 'cloudvantage') {
-        welcomeMessage = "Hello. I'm ready to assist with CloudVantage. Please select a starting point below.";
         suggestedPrompts = [
             "How is the NewCo integration going for CloudVantage?",
             "Analyze the key drivers of our Net Revenue Retention.",
             "Generate a board-level summary of Q2 financial performance."
         ];
     } else {
-        welcomeMessage = "Hello. I'm ready to assist with your portfolio analysis. Please select a starting point below.";
         suggestedPrompts = [
             "How did the portfolio perform over the past 12 months?",
-            "Forecast portfolio ARR for the next 6 months.",
-            "Model the next 12 months assuming we acquire TechFlow."
+            "Forecast portfolio ARR for the next 6 months."
         ];
     }
 
-    if (conversationContainer.innerHTML.trim() === '') {
-        conversationContainer.innerHTML = `
-            <div class="aria-response-wrapper">
-                <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
-                <div class="aria-response-bubble">
-                    <p class="font-semibold">Aria:</p>
-                    <p class="response-text">${welcomeMessage}</p>
-                </div>
-            </div>
-        `;
-    }
+    // Use the new helper function to get the correct pills
+    const contextualPills = getContextualPillsForCompany(companyId);
     
+    // Pass BOTH the suggested prompts AND the contextual pills to the renderer
     promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts, contextualPills);
 }
 
@@ -249,21 +256,48 @@ async function typeWords(element, text, callback) {
         if (i < words.length) {
             element.innerHTML += words[i] + ' ';
             i++;
+            // FIX: Scroll continuously as new words are added
+            scrollToConversationBottom(); 
         } else {
             clearInterval(timer);
             if (callback) callback();
         }
-    }, 30);
+    }, 30); // Adjust speed if desired
 }
 
-async function runAriaBuildingSequence(responseElement) {
-    const buildItems = responseElement.querySelectorAll('.build-item');
+async function runAriaBuildingSequence(responseData, targetElement, promptWrapper) {
+    let state = loadState();
+    
+    // 1. Get the full HTML of the response but keep it off-screen for now.
+    const fullHTML = responseData.renderFunc(state);
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = fullHTML;
+
+    // 2. Find all the individual sections (.build-item) that need to be animated.
+    const buildItems = Array.from(tempContainer.querySelectorAll('.build-item'));
+    
+    // 3. Get the parent container that has the "gap" styling.
+    const responseContentWrapper = tempContainer.querySelector('.aria-response-content');
+    if (responseContentWrapper) {
+        responseContentWrapper.innerHTML = ''; // Clear it, we will add items back one by one.
+        targetElement.appendChild(responseContentWrapper); // Add the empty, styled container to the page.
+    }
+
+    // 4. Loop through each section and render it sequentially.
     for (const item of buildItems) {
+        // Add the section's container to the page. The flexbox gap will now apply.
+        responseContentWrapper.appendChild(item);
+        
+        // Make the current section visible, triggering the CSS animation.
+        await new Promise(r => setTimeout(r, 50)); // Short delay to allow CSS to catch up
         item.classList.add('visible');
+        
+        // Animate the content INSIDE the section we just added.
         const typingElements = item.querySelectorAll('[data-typing-text]');
         for (const el of typingElements) {
             await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
         }
+
         const listElements = item.querySelectorAll('[data-animate-list]');
         for (const list of listElements) {
             const listItems = Array.from(list.children);
@@ -273,8 +307,21 @@ async function runAriaBuildingSequence(responseElement) {
                 await new Promise(r => setTimeout(r, 150));
             }
         }
-        await new Promise(r => setTimeout(r, 200));
+        // No extra wait needed here, the gap provides the visual separation.
     }
+
+    // 5. After all content is built, fade in the footer.
+    const responseBubble = targetElement.closest('.aria-response-bubble');
+    const footer = responseBubble.querySelector('.response-actions-footer');
+    if (footer) {
+        await new Promise(r => setTimeout(r, 300));
+        footer.classList.add('visible');
+    }
+
+    // 6. Finally, show the follow-up prompts.
+    const contextualPills = getContextualPillsForCompany(state.selectedCompanyId);
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(responseData.followUpQuestions, contextualPills);
+    setTimeout(() => scrollToConversationBottom(), 50);
 }
 
 async function runAriaSequence(promptText) {
@@ -282,6 +329,26 @@ async function runAriaSequence(promptText) {
     let state = loadState();
     const companyId = state.selectedCompanyId;
     
+    const companyDataMap = {
+        'techflow-solutions': {
+            ariaResponses: { 
+                ...(typeof techflow_ariaResponses !== 'undefined' ? techflow_ariaResponses : {}), 
+                ...(typeof diligenceHubAriaResponses !== 'undefined' ? diligenceHubAriaResponses : {}), 
+                ...(typeof portco_ariaResponses !== 'undefined' ? portco_ariaResponses : {}) 
+            }
+        },
+        'cloudvantage': {
+            ariaResponses: { 
+                ...(typeof cloudvantage_ariaResponses !== 'undefined' ? cloudvantage_ariaResponses : {}) 
+            }
+        },
+        'all': {
+            ariaResponses: { 
+                ...(typeof portfolio_ariaResponses !== 'undefined' ? portfolio_ariaResponses : {}), 
+                ...(typeof commandCenterAriaResponses !== 'undefined' ? commandCenterAriaResponses : {}) 
+            }
+        }
+    };
     const allStaticResponses = companyDataMap[companyId]?.ariaResponses || {};
 
     const conversationContainer = document.getElementById('aria-conversation-container');
@@ -305,6 +372,7 @@ async function runAriaSequence(promptText) {
     conversationContainer.insertAdjacentHTML('beforeend', userPromptHTML);
     scrollToConversationBottom();
     
+    const contextualPillsForPromptBox = getContextualPillsForCompany(companyId);
     const componentInfo = generativeComponentMap[promptText];
     let staticResponseData = allStaticResponses[promptText];
 
@@ -312,21 +380,36 @@ async function runAriaSequence(promptText) {
         const isFlagged = state.diligenceWorkspace.keyRisks[responseId];
         return `
             <div class="response-actions-footer">
-                <div class="feedback-controls">
-                    <button class="feedback-icon" data-action="thumb-up" title="Good response">👍</button>
-                    <button class="feedback-icon" data-action="thumb-down" title="Bad response">👎</button>
-                    <button class="feedback-icon" data-action="feedback" title="Provide Feedback">💬</button>
-                </div>
                 <div class="workspace-controls">
-                    <button class="feedback-icon ${isFlagged ? 'filled' : ''}" data-action="flag-response" data-response-id="${responseId}" title="Flag for Workspace">🚩</button>
+                    <button class="feedback-icon ${isFlagged ? 'filled' : ''}" data-action="flag-response" data-response-id="${responseId}">
+                        <span class="tooltip-text tooltip-bottom">Add to Workspace</span>
+                        <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001M14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21 21 0 0 0 3 1.845v6.433c.22-.078.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01C9.32 8.29 9.86 8.5 10.5 8.5c.668 0 1.606-.229 2.415-.478A21 21 0 0 0 14 7.655V1.222z"/></svg></span>
+                        <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001z"/></svg></span>
+                    </button>
                 </div>
-            </div>
-        `;
+                <div class="feedback-controls">
+                    <button class="feedback-icon" data-action="feedback">
+                        <span class="tooltip-text tooltip-bottom">Provide Feedback</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H1a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM1 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/></svg>
+                    </button>
+                    <button class="feedback-icon" data-action="thumb-down">
+                        <span class="tooltip-text tooltip-bottom">Bad response</span>
+                        <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041-.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1"/></svg></span>
+                        <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.956 14.534c.065.936.952 1.659 1.908 1.42l.261-.065a1.38 1.38 0 0 0 1.012-.965c.22-.816.533-2.512.062-4.51q.205.03.443.051c.713.065 1.669.071 2.516-.211.518-.173.994-.68 1.2-1.272a1.9 1.9 0 0 0-.234-1.734c.058-.118.103-.242.138-.362.077-.27.113-.568.113-.856 0-.29-.036-.586-.113-.857a2 2 0 0 0-.16-.403c.169-.387.107-.82-.003-1.149a3.2 3.2 0 0 0-.488-.9c.054-.153.076-.313.076-.465a1.86 1.86 0 0 0-.253-.912C13.1 .757 12.437.28 11.5.28H8c-.605 0-1.07.08-1.466.217a4.8 4.8 0 0 0-.97.485l-.048.029c-.504.308-.999.61-2.068-.723C2.682 1.815 2 2.434 2 3.279v4c0 .851.685 1.433 1.357 1.616.849.232 1.574.787 2.132 1.41.56.626.914 1.28 1.039 1.638.199.575.356 1.54.428 2.591"/></svg></span>
+                    </button>
+                    <button class="feedback-icon" data-action="thumb-up">
+                        <span class="tooltip-text tooltip-bottom">Good response</span>
+                        <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111-.273-.154-.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/></svg></span>
+                            <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.638.199-.575.356-1.539.428-2.59z"/></svg></span>
+                        </button>
+                    </div>
+                </div>
+            `;
     };
 
     if (componentInfo || staticResponseData) {
         const reasoningId = `reasoning-${Date.now()}`;
-        const reasoningHTML = `<div id="${reasoningId}" class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><p>Aria is thinking...</p></div></div>`;
+        const reasoningHTML = `<div id="${reasoningId}" class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
         conversationContainer.insertAdjacentHTML('beforeend', reasoningHTML);
         scrollToConversationBottom();
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -341,7 +424,7 @@ async function runAriaSequence(promptText) {
                 <div class="aria-response-bubble">
                     <div class="response-main-content">
                         <p class="font-semibold">Aria:</p>
-                        <div id="${responseId}"></div>
+                        <div id="${responseId}" class="pt-4"></div>
                     </div>
                     ${getResponseFooterHTML(responseDataId)}
                 </div>
@@ -352,61 +435,28 @@ async function runAriaSequence(promptText) {
         if (componentInfo) {
             await loadScript(componentInfo.script);
             window[componentInfo.renderer].render(targetElement, companyId);
-            promptWrapper.innerHTML = getAdvancedPromptBoxHTML(componentInfo.followUpQuestions);
+            promptWrapper.innerHTML = getAdvancedPromptBoxHTML(componentInfo.followUpQuestions, contextualPillsForPromptBox);
+
         } else if (staticResponseData) {
-            targetElement.innerHTML = staticResponseData.renderFunc(state);
-            scrollToConversationBottom();
-            setTimeout(async () => {
-                await runAriaBuildingSequence(targetElement);
-                promptWrapper.innerHTML = getAdvancedPromptBoxHTML(staticResponseData.followUpQuestions);
-                scrollToConversationBottom();
-            }, 50);
+            runAriaBuildingSequence(staticResponseData, targetElement, promptWrapper);
         }
     } else {
+        // Fallback for unknown prompts
         const responseId = `aria-content-target-${Date.now()}`;
-        const typingIndicatorHTML = `
-            <div class="aria-response-wrapper">
-                <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
-                <div class="aria-response-bubble">
-                    <div class="response-main-content">
-                        <p class="font-semibold">Aria:</p>
-                        <div id="${responseId}" class="response-text">
-                            <div class="typing-indicator"><span></span><span></span><span></span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+        const typingIndicatorHTML = `<div class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><div id="${responseId}" class="response-text"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div></div>`;
         conversationContainer.insertAdjacentHTML('beforeend', typingIndicatorHTML);
         const targetElement = document.getElementById(responseId);
-        const responseBubble = targetElement.closest('.aria-response-bubble');
-        scrollToConversationBottom();
         
-        try {
-            const apiResponse = await fetch('/api/ask-gemini', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptText })
-            });
-
-            if (!apiResponse.ok) throw new Error(`API error: ${apiResponse.statusText}`);
-
-            const data = await apiResponse.json();
-            await typeWords(targetElement, data.response);
-            responseBubble.insertAdjacentHTML('beforeend', getResponseFooterHTML('gemini-response'));
-
-        } catch (error) {
-            console.error("Error calling Gemini API:", error);
-            targetElement.innerHTML = `<p class="text-error">Sorry, I encountered an error trying to respond.</p>`;
-        }
+        await new Promise(r => setTimeout(r, 1000)); // Simulate thinking
+        targetElement.innerHTML = `<p>Sorry, I don't have a pre-defined response for that query. My capabilities are still expanding.</p>`;
         
-        promptWrapper.innerHTML = getAdvancedPromptBoxHTML([
-            "Show me the TechFlow diligence plan.",
-            "How is the NewCo integration going for CloudVantage?"
-        ]);
+        const fallbackPrompts = [ "Show me the TechFlow diligence plan.", "How is the NewCo integration going for CloudVantage?" ];
+        promptWrapper.innerHTML = getAdvancedPromptBoxHTML(fallbackPrompts, contextualPillsForPromptBox);
     }
     
-    scrollToConversationBottom();
+    setTimeout(() => scrollToConversationBottom(), 100);
 }
+
 
 function initializeAriaEventListeners() {
     if (document.body.dataset.ariaListenerAttached) return;
@@ -445,23 +495,31 @@ function initializeAriaEventListeners() {
                 window.history.pushState({}, '', url);
                 initializeAriaPage();
                 break;
-            case 'toggle-settings-modal':
-                state.ariaSettings.isModalOpen = !state.ariaSettings.isModalOpen;
-                saveState(state);
-                updatePromptContainer(state);
-                break;
-            case 'toggle-category':
-                const categoryKey = target.dataset.category;
-                if (!state.ariaSettings.expandedCategories) state.ariaSettings.expandedCategories = {};
-                state.ariaSettings.expandedCategories[categoryKey] = !state.ariaSettings.expandedCategories[categoryKey];
-                saveState(state);
-                updatePromptContainer(state);
-                break;
+case 'toggle-settings-modal':
+    document.getElementById('settings-modal')?.classList.toggle('visible');
+    break;
+case 'toggle-category':
+    // 1. Update and save the state correctly (this part is fine)
+    const categoryKey = target.dataset.category;
+    if (!state.ariaSettings.expandedCategories) state.ariaSettings.expandedCategories = {};
+    state.ariaSettings.expandedCategories[categoryKey] = !state.ariaSettings.expandedCategories[categoryKey];
+    saveState(state);
+
+    // 2. Instead of re-rendering, just toggle the classes on the elements
+    const contentDiv = target.nextElementSibling;
+    const chevronIcon = target.querySelector('svg');
+
+    if (contentDiv && chevronIcon) {
+        contentDiv.classList.toggle('expanded');
+        // The CSS uses rotate-90 for the expanded state
+        chevronIcon.classList.toggle('rotate-90'); 
+    }
+    break;
             case 'flag-response':
                 const responseId = target.dataset.responseId;
                 if (!responseId) break;
                 
-                const allSources = [...techflow_anomalies, ...otherObservations_v2];
+const allSources = [...techflow_anomalies, ...otherObservations_v2, ...techflow_minorObservations, ...Object.values(techflow_ariaResponses), ...Object.values(cloudvantage_ariaResponses), ...Object.values(portfolio_ariaResponses), ...Object.values(commandCenterAriaResponses), ...Object.values(diligenceHubAriaResponses), ...Object.values(portco_ariaResponses)];
                 const responseData = allSources.find(item => item.id === responseId);
 
                 if (responseData) {

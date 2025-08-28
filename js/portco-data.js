@@ -209,3 +209,4 @@ const portcoPageData = {
         prompts: ["Prepare QBR materials for the NewCo acquisition.", "Who is the lead engineer on the AI feature?", "Draft a board update on the NRR outperformance.", "What is the budget impact of the AI feature delay?"]
     }
 };
+

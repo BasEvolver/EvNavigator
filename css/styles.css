@@ -878,14 +878,16 @@ header {
     gap: 1.5rem;
 }
 .aria-response-content .build-item {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    opacity: 0; /* Start completely invisible */
+    transform: translateY(20px); /* Start slightly lower */
+    transition: opacity 0.4s ease, transform 0.4s ease; /* Animate these properties */
 }
+
 .aria-response-content .build-item.visible {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 1; /* Fade to fully visible */
+    transform: translateY(0); /* Slide up to its final position */
 }
+
 .response-title {
     font-size: 1.25rem;
     font-weight: 600;
@@ -991,14 +993,17 @@ header {
 }
 .alert-callout.error .alert-callout-title { color: var(--status-error); }
 
-/* Minor Observations */
+/* =================================================================
+   MINOR OBSERVATIONS
+   ================================================================= */
 .card-base { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; }
 .minor-observations-header { display: flex; justify-content: space-between; align-items: center; width: 100%; background: none; border: none; cursor: pointer; padding: 0; }
 .minor-observations-header .chevron-icon { color: var(--text-muted); transition: transform 0.3s; }
 .minor-observations-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding-top: 1rem; }
 .minor-observation-item { background-color: var(--bg-secondary); padding: 0.75rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary); }
 .minor-observations-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-.minor-observations-content.expanded { max-height: 500px; transition: max-height 0.3s ease-in; }
+/* FIX: Increased max-height to allow all 12 items to be visible */
+.minor-observations-content.expanded { max-height: 100vh; transition: max-height 0.3s ease-in; }
 
 /* List Container */
 .list-container { display: flex; flex-direction: column; gap: 1rem; }
@@ -6780,7 +6785,8 @@ html, body {
     padding: 1rem 1.5rem;
     border-radius: 0.75rem;
     border: 1px solid var(--border-color);
-    width: 100%; 
+    width: 100%;
+    transition: padding 0.3s ease-in-out; /* <-- ADD THIS LINE */
 }
 
 /* --- FIX: New styles for the Prompt Box Layout --- */
@@ -6813,62 +6819,52 @@ html, body {
    PROMPT & SCROLLBARS (FINAL - MATCHING SCREENSHOT)
    ================================================================= */
 
-/* 1. Modern, subtle scrollbar styles for the main conversation AND the Gantt chart. */
-#aria-conversation-container::-webkit-scrollbar,
-.gantt-scroll-wrapper::-webkit-scrollbar {
-    width: 10px;  /* For vertical scrollbars */
-    height: 10px; /* For horizontal scrollbars */
+/* 1. Modern, subtle scrollbar styles for the main conversation. */
+#aria-conversation-container::-webkit-scrollbar {
+    width: 10px;
 }
-#aria-conversation-container::-webkit-scrollbar-track,
-.gantt-scroll-wrapper::-webkit-scrollbar-track {
+#aria-conversation-container::-webkit-scrollbar-track {
     background: transparent;
 }
-#aria-conversation-container::-webkit-scrollbar-thumb,
-.gantt-scroll-wrapper::-webkit-scrollbar-thumb {
+#aria-conversation-container::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
     border-radius: 10px;
-    /* The border color should match the main background to create the padded effect */
     border: 2px solid var(--bg-primary); 
 }
-#aria-conversation-container::-webkit-scrollbar-thumb:hover,
-.gantt-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+#aria-conversation-container::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-blue);
 }
-/* Dark mode specific border for the scrollbar thumb */
-[data-theme="dark"] #aria-conversation-container::-webkit-scrollbar-thumb,
-[data-theme="dark"] .gantt-scroll-wrapper::-webkit-scrollbar-thumb {
+[data-theme="dark"] #aria-conversation-container::-webkit-scrollbar-thumb {
     border-color: var(--bg-secondary);
 }
-
 
 /* 2. The main view becomes the positioning anchor. */
 #aria-main-view.has-floating-prompt {
     position: relative;
 }
 
-/* 3. The prompt wrapper is floated at the bottom, aligned to the edges of the main view. */
+/* 3. The prompt wrapper is floated at the bottom. */
 #aria-prompt-wrapper.floating-prompt-container {
     position: absolute;
-    bottom: 1.5rem; /* 24px from the bottom */
-    left: 2rem;     /* 32px from the left edge */
-    right: 2rem;    /* 32px from the right edge */
-    
-    /* FIX #1: This z-index ensures it is ALWAYS on top of everything, including the Gantt modal. */
+    bottom: 1.5rem; 
+    left: 0rem;     
+    right: 0rem;    
     z-index: 1001; 
 }
 
-/* 4. The inner prompt box gets the card styling from your screenshot. */
+/* 4. The inner prompt box gets the card styling and light-mode shadow. */
 .floating-prompt-container .prompt-area-large-v4 {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 0.75rem; /* Rounded corners */
-    box-shadow: 0 4px 30px 5px rgba(0,0,0,0.2); /* The floating shadow */
-    padding: 1rem 1.5rem; /* Controls the vertical size */
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 30px 5px rgba(0,0,0,0.2); /* Shadow for light mode */
+    padding: 1rem 1.5rem;
 }
 
-/* 5. FIX #2: Add padding to the conversation so the last message (and the Gantt chart) isn't hidden. */
+/* 5. THE SCROLLING FIX: Add generous padding to the bottom of the conversation container. */
+/* This creates the extra space needed to scroll the last message above the prompt box. */
 #aria-conversation-container {
-    padding-bottom: 16rem; /* Generous space to see the last message */
+    padding-bottom: 20rem; /* 256px of extra scrollable space */
 }
 
 /* 6. The gradient fade-out effect for a seamless transition. */
@@ -6878,96 +6874,26 @@ html, body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 12rem; /* A tall gradient for a smooth fade */
+    height: 12rem;
     background: linear-gradient(to top, var(--bg-primary) 25%, transparent);
-    pointer-events: none; /* Allows clicking/scrolling through the gradient */
-    z-index: 5; /* Sits below the prompt box but above the content */
+    pointer-events: none;
+    z-index: 5;
 }
 
-/* 7. Remove the default padding from the main content area on THIS page (ARIA) */
+/* 7. Remove default padding on the ARIA page's main content area. */
 body.page-aria main#main-content {
     padding: 0 !important;
 }
 
-/* =================================================================
-   PROMPT & SCROLLBARS (FINAL - MATCHING SCREENSHOT)
-   ================================================================= */
-
-/* 1. Modern, subtle scrollbar styles for the main conversation AND the Gantt chart. */
-#aria-conversation-container::-webkit-scrollbar,
-.gantt-scroll-wrapper::-webkit-scrollbar {
-    width: 10px;  /* For vertical scrollbars */
-    height: 10px; /* For horizontal scrollbars */
-}
-#aria-conversation-container::-webkit-scrollbar-track,
-.gantt-scroll-wrapper::-webkit-scrollbar-track {
-    background: transparent;
-}
-#aria-conversation-container::-webkit-scrollbar-thumb,
-.gantt-scroll-wrapper::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 10px;
-    /* The border color should match the main background to create the padded effect */
-    border: 2px solid var(--bg-primary); 
-}
-#aria-conversation-container::-webkit-scrollbar-thumb:hover,
-.gantt-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent-blue);
-}
-/* Dark mode specific border for the scrollbar thumb */
-[data-theme="dark"] #aria-conversation-container::-webkit-scrollbar-thumb,
-[data-theme="dark"] .gantt-scroll-wrapper::-webkit-scrollbar-thumb {
-    border-color: var(--bg-secondary);
-}
-
-
-/* 2. The main view becomes the positioning anchor. */
-#aria-main-view.has-floating-prompt {
-    position: relative;
-}
-
-/* 3. The prompt wrapper is floated at the bottom, aligned to the edges of the main view. */
-#aria-prompt-wrapper.floating-prompt-container {
-    position: absolute;
-    bottom: 1.5rem; /* 24px from the bottom */
-    left: 0rem;     /* 32px from the left edge */
-    right: 0rem;    /* 32px from the right edge */
+/* 8. THE DARK MODE FIX: Add a subtle top border to the prompt box in dark mode. */
+[data-theme="dark"] .floating-prompt-container .prompt-area-large-v4 {
+    /* Make the shadow slightly more pronounced on a dark background */
+    box-shadow: 0 4px 30px 5px rgba(0, 0, 0, 0.5);
     
-    /* FIX #1: This z-index ensures it is ALWAYS on top of everything, including the Gantt modal. */
-    z-index: 1001; 
+    /* Add a light top border to create the "floating" separation effect */
+    border-top: 1px solid var(--border-color);
 }
 
-/* 4. The inner prompt box gets the card styling from your screenshot. */
-.floating-prompt-container .prompt-area-large-v4 {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem; /* Rounded corners */
-    box-shadow: 0 4px 30px 5px rgba(0,0,0,0.2); /* The floating shadow */
-    padding: 1rem 1.5rem; /* Controls the vertical size */
-}
-
-/* 5. FIX #2: Add padding to the conversation so the last message (and the Gantt chart) isn't hidden. */
-#aria-conversation-container {
-    padding-bottom: 16rem; /* Generous space to see the last message */
-}
-
-/* 6. The gradient fade-out effect for a seamless transition. */
-#aria-main-view.has-floating-prompt::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12rem; /* A tall gradient for a smooth fade */
-    background: linear-gradient(to top, var(--bg-primary) 25%, transparent);
-    pointer-events: none; /* Allows clicking/scrolling through the gradient */
-    z-index: 5; /* Sits below the prompt box but above the content */
-}
-
-/* 7. THIS IS THE FIX: Remove padding ONLY on the ARIA page. */
-body.page-aria main#main-content {
-    padding: 0 !important;
-}
 
 /* =================================================================
    ARIA WORKSTREAM RESPONSE STYLES
@@ -7007,85 +6933,7 @@ body.page-aria main#main-content {
     color: var(--status-warning);
 }
 
-/* =================================================================
-   PROMPT & SCROLLBARS (FINAL - MATCHING SCREENSHOT)
-   ================================================================= */
 
-/* 1. Modern, subtle scrollbar styles for the main conversation AND the Gantt chart. */
-#aria-conversation-container::-webkit-scrollbar,
-.gantt-scroll-wrapper::-webkit-scrollbar {
-    width: 10px;  /* For vertical scrollbars */
-    height: 10px; /* For horizontal scrollbars */
-}
-#aria-conversation-container::-webkit-scrollbar-track,
-.gantt-scroll-wrapper::-webkit-scrollbar-track {
-    background: transparent;
-}
-#aria-conversation-container::-webkit-scrollbar-thumb,
-.gantt-scroll-wrapper::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 10px;
-    /* The border color should match the main background to create the padded effect */
-    border: 2px solid var(--bg-primary); 
-}
-#aria-conversation-container::-webkit-scrollbar-thumb:hover,
-.gantt-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent-blue);
-}
-/* Dark mode specific border for the scrollbar thumb */
-[data-theme="dark"] #aria-conversation-container::-webkit-scrollbar-thumb,
-[data-theme="dark"] .gantt-scroll-wrapper::-webkit-scrollbar-thumb {
-    border-color: var(--bg-secondary);
-}
-
-
-/* 2. The main view becomes the positioning anchor. */
-#aria-main-view.has-floating-prompt {
-    position: relative;
-}
-
-/* 3. The prompt wrapper is floated at the bottom, aligned to the edges of the main view. */
-#aria-prompt-wrapper.floating-prompt-container {
-    position: absolute;
-    bottom: 1.5rem; /* 24px from the bottom */
-    left: 0rem;     /* 32px from the left edge */
-    right: 0rem;    /* 32px from the right edge */
-    
-    /* FIX #1: This z-index ensures it is ALWAYS on top of everything, including the Gantt modal. */
-    z-index: 1001; 
-}
-
-/* 4. The inner prompt box gets the card styling from your screenshot. */
-.floating-prompt-container .prompt-area-large-v4 {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem; /* Rounded corners */
-    box-shadow: 0 4px 30px 5px rgba(0,0,0,0.2); /* The floating shadow */
-    padding: 1rem 1.5rem; /* Controls the vertical size */
-}
-
-/* 5. FIX #2: Add padding to the conversation so the last message (and the Gantt chart) isn't hidden. */
-#aria-conversation-container {
-    padding-bottom: 16rem; /* Generous space to see the last message */
-}
-
-/* 6. The gradient fade-out effect for a seamless transition. */
-#aria-main-view.has-floating-prompt::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12rem; /* A tall gradient for a smooth fade */
-    background: linear-gradient(to top, var(--bg-primary) 25%, transparent);
-    pointer-events: none; /* Allows clicking/scrolling through the gradient */
-    z-index: 5; /* Sits below the prompt box but above the content */
-}
-
-/* 7. Remove the default padding from the main content area on THIS page (ARIA) */
-body.page-aria main#main-content {
-    padding: 0 !important;
-}
 
 /* =================================================================
    STYLES FOR THEMED & UNMODELED PROMPTS
@@ -7233,3 +7081,397 @@ body.page-aria main#main-content {
     transform: scale(1.0);
   }
 }
+
+/* =================================================================
+   ARIA RESPONSE FOOTER (FLAG, FEEDBACK, THUMBS)
+   ================================================================= */
+
+/* =================================================================
+   ARIA RESPONSE FOOTER (FLAG, FEEDBACK, THUMBS) - CORRECTED
+   ================================================================= */
+
+.response-actions-footer {
+    display: flex;
+    justify-content: space-between; /* THIS IS THE KEY FIX for alignment */
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.feedback-controls, .workspace-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feedback-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    position: relative; /* For tooltip positioning */
+}
+
+.feedback-icon:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+}
+
+.feedback-icon .icon-filled {
+    display: none;
+}
+
+.feedback-icon.filled .icon-unfilled {
+    display: none;
+}
+
+.feedback-icon.filled .icon-filled {
+    display: block;
+}
+
+/* Specific filled colors */
+.feedback-icon[data-action="thumb-up"].filled,
+.feedback-icon[data-action="thumb-down"].filled,
+.feedback-icon[data-action="flag-response"].filled {
+    color: var(--accent-blue);
+}
+
+.feedback-icon[data-action="thumb-up"].filled,
+.feedback-icon[data-action="thumb-down"].filled,
+.feedback-icon[data-action="flag-response"].filled {
+    color: var(--accent-blue);
+}
+
+.tooltip-text {
+    position: absolute;
+    bottom: 150%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+}
+
+.feedback-icon:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* =================================================================
+   NEW: FEEDBACK MODAL STYLES
+   ================================================================= */
+
+.feedback-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(9, 26, 45, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.feedback-modal-content {
+    background-color: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+}
+
+.feedback-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.feedback-modal-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.feedback-textarea {
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    color: var(--text-primary);
+    resize: vertical;
+}
+
+.feedback-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* =================================================================
+   ARIA RESPONSE FOOTER & FEEDBACK MODAL (CORRECTED)
+   ================================================================= */
+
+.response-actions-footer {
+    display: flex;
+    justify-content: space-between; /* Pushes flag left, feedback right */
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.feedback-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(9, 26, 45, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.feedback-modal-content {
+    background-color: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+}
+
+.feedback-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.feedback-modal-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.feedback-textarea {
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    color: var(--text-primary);
+    resize: vertical;
+}
+
+.feedback-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.aria-response-bubble.is-building {
+    padding: 0 !important;
+}
+
+/* =================================================================
+   WORKSTREAM-COLORED CATEGORY PILLS
+   ================================================================= */
+.status-badge.business-strategy {
+    background-color: var(--accent-blue-translucent);
+    color: var(--accent-blue);
+}
+.status-badge.commercial-customer {
+    background-color: rgba(76, 198, 196, 0.2); /* Translucent accent-teal */
+    color: var(--accent-teal);
+}
+.status-badge.technology-operations {
+    background-color: rgba(108, 101, 205, 0.2); /* Translucent purple */
+    color: var(--purple);
+}
+.status-badge.financial-risk {
+    background-color: rgba(217, 119, 6, 0.2); /* Translucent status-warning */
+    color: var(--status-warning);
+}
+
+/* =================================================================
+   ARIA RESPONSE FOOTER ANIMATION
+   ================================================================= */
+.response-actions-footer {
+    opacity: 0; /* Start hidden */
+    transition: opacity 0.4s ease-in-out;
+}
+
+.response-actions-footer.visible {
+    opacity: 1; /* Fade to visible */
+}
+
+/* =================================================================
+   ARIA WORKSTREAM RESPONSE STYLES (TO MATCH SCREENSHOT)
+   ================================================================= */
+
+/* Ensures the footer icons are vertically centered */
+.response-actions-footer {
+    align-items: center;
+}
+
+/* Grid container for the Key Metrics */
+.aria-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Individual KPI cards (e.g., Gross Margin) */
+.aria-kpi-card {
+    background-color: var(--bg-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.aria-kpi-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.aria-kpi-value {
+    font-size: 2.25rem; /* 36px */
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Container for the list of suggested actions */
+.aria-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Small gap between action cards */
+    margin-top: 1.5rem;
+}
+
+/* Individual clickable action cards */
+.aria-action-card {
+    background-color: var(--bg-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent; /* For the hover effect */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.aria-action-card:hover {
+    border-color: var(--accent-blue);
+    background-color: var(--bg-hover);
+}
+
+/* =================================================================
+   ARIA RESPONSE VERTICAL SPACING FIX
+   ================================================================= */
+
+/* Adds vertical space between a section title and its content grid/list */
+.aria-kpi-grid,
+.aria-action-list {
+    margin-top: 1rem; /* 16px */
+}
+
+/* =================================================================
+   ARIA GANTT CHART "FULL BLEED" LAYOUT FIX
+   ================================================================= */
+
+/* 
+   This is the key rule. It targets the Gantt chart container ONLY 
+   when it appears inside an ARIA response bubble.
+*/
+.aria-response-bubble .gantt-container-v7 {
+    /* 
+       The bubble has 1.5rem of horizontal padding. We use negative
+       margins to pull the chart outwards, canceling out the padding.
+    */
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+
+    /* 
+       This calculates the new width: 100% of the bubble's content area
+       PLUS the 3rem of padding we just reclaimed with the negative margins.
+    */
+    width: calc(100% + 3rem);
+    max-width: calc(100% + 3rem); /* Prevents overflow issues */
+
+    /* 
+       This ensures the corners of the now-wider chart match the rounded
+       corners of the bubble it sits in, creating a seamless look.
+    */
+    border-radius: 0.75rem;
+}
+
+/* =================================================================
+   ARIA RESPONSE CARD FONT SIZE INCREASE
+   ================================================================= */
+
+/* Target the small, secondary text within all cards in an ARIA response */
+.aria-response-content .card-base .text-xs,
+.aria-response-content .aria-action-card .text-xs {
+    font-size: 0.875rem; /* Equivalent to Tailwind's text-sm */
+    line-height: 1.25rem; /* Line height for text-sm */
+}
+
+/* =================================================================
+   CRO RENEWAL HUB STYLES
+   ================================================================= */
+.renewal-opportunities-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.renewal-opportunities-table th, .renewal-opportunities-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.875rem;
+}
+.renewal-opportunities-table th {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.renewal-opportunities-table td {
+    color: var(--text-secondary);
+}
+.renewal-opportunities-table .font-semibold {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.segment-badge {
+    display: inline-block;
+    padding: 0.125rem 0.625rem;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+.segment-badge.gold { background-color: #FEF3C7; color: #92400E; }
+.segment-badge.silver { background-color: #E5E7EB; color: #374151; }
+.segment-badge.bronze { background-color: #FEE2E2; color: #991B1B; }
+[data-theme="dark"] .segment-badge.gold { background-color: #78350F; color: #FDE68A; }
+[data-theme="dark"] .segment-badge.silver { background-color: #4B5563; color: #D1D5DB; }
+[data-theme="dark"] .segment-badge.bronze { background-color: #7f1d1d; color: #fecaca; }

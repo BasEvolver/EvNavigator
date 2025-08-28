@@ -79,6 +79,21 @@ const diligencePlan_v3 = [
     { id: "DD-70", name: "Data Room Archive", duration: 0.2, dependencies: [], startDay: 16, workstream: "Final Deliverables", category: "Final Deliverables", critical: false, description: "Create a final archive of the data room for legal and compliance purposes.", output: "Zipped archive of the data room." }
 ];
 
+const categoryToWorkstreamMap = {
+    'Documentation': 'Technology & Operations',
+    'Technical': 'Technology & Operations',
+    'Commercial': 'Commercial & Customer',
+    'HR': 'Business & Strategy',
+    'Finance': 'Financial & Risk',
+    'Legal': 'Financial & Risk',
+    'Security': 'Technology & Operations',
+    'Sales': 'Commercial & Customer',
+    'Marketing': 'Commercial & Customer',
+    'Product': 'Technology & Operations',
+    'BI': 'Financial & Risk',
+    'Operations': 'Technology & Operations'
+};
+
 const menuItems = [
     { id: 'home', label: 'Home', icon: `<svg>...</svg>`},
     { id: 'portco', label: 'PortCo', icon: `<svg>...</svg>`},
@@ -88,9 +103,9 @@ const menuItems = [
 ];
 
 const techflow_anomalies = [
-    { id: 'arr-comp', workstream: 'Financial & Risk', title: 'Anomaly #1: Non-Standard ARR Composition', issue: 'ARR includes projected perpetual revenue spread over 18 months', severity: 'CRITICAL', sourceDocuments: ['Financial_Statements_2024.pdf', 'Revenue_Recognition_Policy.pdf'], impact: 'Overstated recurring revenue metrics', analysis: 'The reported $12M ARR is composed of multiple revenue streams that do not align with generally accepted ARR definitions. Our analysis found that approximately 23% ($2.76M) of the reported ARR consists of projected perpetual license revenue spread over 18 months post-contract signing. Additionally, maintenance fees on legacy perpetual contracts comprise another 18% ($2.16M). Only 59% ($7.08M) represents true committed subscription revenue. This composition significantly overstates the company\'s recurring revenue quality and predictability, which is a key metric for SaaS valuations.' },
-    { id: 'maint-fee', workstream: 'Financial & Risk', title: 'Anomaly #2: Inconsistent Maintenance Fee Structure', issue: 'Maintenance fees vary from 12% to 28% of contract value', severity: 'HIGH', sourceDocuments: ['Contract_Analysis_2023-2024.xlsx', 'Customer_Agreements_Sample.pdf'], impact: 'Revenue predictability and pricing strategy concerns', analysis: 'Our contract analysis revealed significant inconsistencies in maintenance fee structures across the customer base. Of the 247 perpetual license contracts reviewed, 34% charge maintenance fees below the industry minimum of 17%, with some as low as 12%. This suggests either aggressive pricing to win deals or lack of pricing discipline. The wide variance (12%-28%) indicates inconsistent value delivery or negotiation practices. Industry benchmarks typically see maintenance fees between 18-22% for mature software companies, making TechFlow\'s structure both below market and highly variable.' },
-    { id: 'product-launch', workstream: 'Technology & Operations', title: 'Anomaly #3: Failed Recent Product Launches', issue: 'Zero sales recorded for 3 most recent product launches', severity: 'CRITICAL', sourceDocuments: ['Product_Launch_Reports_2024-2025.pdf', 'Sales_Pipeline_Analysis.xlsx'], impact: 'Innovation capacity and market fit concerns', analysis: "Three recent product launches have generated zero revenue to date: 'TechFlow Analytics Pro' (launched March 2024), 'TechFlow Mobile Suite' (launched September 2024), and 'TechFlow AI Assistant' (launched February 2025). Combined R&D investment for these products totaled $3.2M over 18 months. This pattern suggests potential issues with product-market fit, go-to-market execution, or competitive positioning. The lack of any sales traction, even pilot programs or trials, raises questions about the company's innovation pipeline and ability to expand beyond its core offerings. This could significantly impact future growth projections and the sustainability of R&D investments." }
+    { id: 'arr-comp', workstream: 'Financial & Risk', title: 'Anomaly #1: Non-Standard ARR Composition', issue: 'ARR includes projected perpetual revenue spread over 18 months', severity: 'CRITICAL', sourceDocuments: ['DDI-039 - Revenue_Recognition_Policy.pdf', 'DDI-026 - Audited_Financial_Statements.pdf'], impact: 'Overstated recurring revenue metrics', analysis: 'The reported $12M ARR is composed of multiple revenue streams that do not align with generally accepted ARR definitions. Our analysis found that approximately 23% ($2.76M) of the reported ARR consists of projected perpetual license revenue spread over 18 months post-contract signing. Additionally, maintenance fees on legacy perpetual contracts comprise another 18% ($2.16M). Only 59% ($7.08M) represents true committed subscription revenue. This composition significantly overstates the company\'s recurring revenue quality and predictability, which is a key metric for SaaS valuations.' },
+    { id: 'maint-fee', workstream: 'Financial & Risk', title: 'Anomaly #2: Inconsistent Maintenance Fee Structure', issue: 'Maintenance fees vary from 12% to 28% of contract value', severity: 'HIGH', sourceDocuments: ['DDI-010 - Customer_Contracts_Top_50.zip', 'DDI-061 - Customer_Contracts_and_Terms.zip'], impact: 'Revenue predictability and pricing strategy concerns', analysis: 'Our contract analysis revealed significant inconsistencies in maintenance fee structures across the customer base. Of the 247 perpetual license contracts reviewed, 34% charge maintenance fees below the industry minimum of 17%, with some as low as 12%. This suggests either aggressive pricing to win deals or lack of pricing discipline. The wide variance (12%-28%) indicates inconsistent value delivery or negotiation practices. Industry benchmarks typically see maintenance fees between 18-22% for mature software companies, making TechFlow\'s structure both below market and highly variable.' },
+    { id: 'product-launch', workstream: 'Technology & Operations', title: 'Anomaly #3: Failed Recent Product Launches', issue: 'Zero sales recorded for 3 most recent product launches', severity: 'CRITICAL', sourceDocuments: ['DDI-073 - Product_Roadmaps.pptx', 'DDI-050 - CRM_Pipeline_Reports.csv', 'DDI-031 - Financial_Models.xlsx'], impact: 'Innovation capacity and market fit concerns', analysis: "Three recent product launches have generated zero revenue to date: 'TechFlow Analytics Pro' (launched March 2024), 'TechFlow Mobile Suite' (launched September 2024), and 'TechFlow AI Assistant' (launched February 2025). Combined R&D investment for these products totaled $3.2M over 18 months. This pattern suggests potential issues with product-market fit, go-to-market execution, or competitive positioning. The lack of any sales traction, even pilot programs or trials, raises questions about the company's innovation pipeline and ability to expand beyond its core offerings. This could significantly impact future growth projections and the sustainability of R&D investments." }
 ];
 
 const otherObservations_v2 = [
@@ -100,25 +115,85 @@ const otherObservations_v2 = [
 ];
 
 const techflow_minorObservations = [
-    { id: 'obs1', category: 'Documentation', text: 'Inconsistent naming conventions found across multiple technical documents.', impact: 'Minor risk of confusion during technical hand-off.' },
-    { id: 'obs2', category: 'Technical', text: 'Code repository shows multiple active coding standards (Python PEP8, Google Style Guide).', impact: 'Increases code complexity and onboarding time for new developers.' },
-    { id: 'obs3', category: 'Commercial', text: 'Sample SOWs reviewed lack specific, measurable deliverables in 40% of cases.', impact: 'Risk of scope creep and customer disputes.' },
-    { id: 'obs4', category: 'HR', text: 'High employee turnover (35% YoY) noted in the junior engineering department.', impact: 'Indicates potential management or compensation issues; loss of institutional knowledge.' },
-    { id: 'obs5', category: 'Finance', text: 'Expense reporting process is entirely manual and requires physical signatures.', impact: 'Inefficient process, delays financial closing.' },
-    { id: 'obs6', category: 'Legal', text: 'Several enterprise contracts are missing signatures from the customer side.', impact: 'Potential enforceability issues.' },
-    { id: 'obs7', category: 'Security', text: 'Multi-factor authentication is not enforced on key internal systems.', impact: 'Increased risk of unauthorized access.' },
-    { id: 'obs8', category: 'Sales', text: 'Salesforce data shows low adoption of contact logging by AEs.', impact: 'Incomplete customer interaction history hinders forecasting.' },
-    { id: 'obs9', category: 'Marketing', text: 'Website has a low Lighthouse performance score (65/100).', impact: 'Poor user experience and negative impact on SEO.' },
-    { id: 'obs10', category: 'Product', text: 'No formal process for collecting and prioritizing customer feature requests.', impact: 'Risk of building features that lack market demand.' },
-    { id: 'obs11', category: 'BI', text: 'Key business dashboards are manually updated in spreadsheets.', impact: 'High risk of data errors and significant time sink for analysts.' },
-    { id: 'obs12', category: 'Operations', text: 'Vendor contract review process is ad-hoc and lacks a central repository.', impact: 'Potential for auto-renewals of unused or unfavorable services.' }
+    { id: 'obs1', category: 'Documentation', title: 'Inconsistent naming conventions in technical documents.', severity: 'Minor', analysis: 'Analysis of technical documents revealed multiple, conflicting naming conventions for key modules. This poses a minor risk of confusion during technical hand-offs and could slightly increase onboarding time for new engineers.' },
+    { id: 'obs2', category: 'Technical', title: 'Multiple active coding standards in repository.', severity: 'Minor', analysis: 'The primary code repository contains modules adhering to different standards (PEP8, Google Style Guide). This increases code complexity and maintenance overhead, impacting long-term developer velocity.' },
+    { id: 'obs3', category: 'Commercial', title: 'Sample SOWs lack specific, measurable deliverables.', severity: 'Minor', analysis: 'A review of 20 sample Statements of Work found that 40% lack specific, measurable deliverables. This creates a risk of scope creep and potential customer disputes over project completion.' },
+    { id: 'obs4', category: 'HR', title: 'High turnover in junior engineering department.', severity: 'Minor', analysis: 'HR records show a 35% annualized turnover rate for engineers with less than two years of tenure. This indicates potential issues with management, compensation, or career pathing that could impact team stability.' },
+    { id: 'obs5', category: 'Finance', title: 'Expense reporting process is entirely manual.', severity: 'Minor', analysis: 'The expense reporting process requires physical signatures and manual data entry into the accounting system. This is an inefficient process that creates delays in the monthly financial close.' },
+    { id: 'obs6', category: 'Legal', title: 'Several enterprise contracts are missing customer signatures.', severity: 'Minor', analysis: 'A review of the contract database found five enterprise contracts that are missing the final customer signature. This poses a potential, though unlikely, risk regarding the enforceability of these agreements.' },
+    { id: 'obs7', category: 'Security', title: 'Multi-factor authentication is not enforced on key internal systems.', severity: 'Minor', analysis: 'Key internal systems, including the primary CRM, do not have mandatory multi-factor authentication. This increases the risk of unauthorized access from compromised credentials.' },
+    { id: 'obs8', category: 'Sales', title: 'Low adoption of contact logging in Salesforce.', severity: 'Minor', analysis: 'Salesforce data shows that Account Executives log less than 50% of their customer interactions. This results in an incomplete customer history, hindering accurate forecasting and account hand-offs.' },
+    { id: 'obs9', category: 'Marketing', title: 'Website has a low Lighthouse performance score.', severity: 'Minor', analysis: 'The company website scores 65/100 on Google Lighthouse for performance. This provides a poor user experience for prospects and has a negative impact on search engine optimization (SEO) rankings.' },
+    { id: 'obs10', category: 'Product', title: 'No formal process for prioritizing customer feature requests.', severity: 'Minor', analysis: 'Feature requests are collected in an ad-hoc manner via email and support tickets. The lack of a formal prioritization process creates a risk of building features that lack broad market demand.' },
+    { id: 'obs11', category: 'BI', title: 'Key business dashboards are manually updated.', severity: 'Minor', analysis: 'Critical business dashboards for sales and marketing are manually updated in spreadsheets. This is a significant time sink for analysts and carries a high risk of data entry errors.' },
+    { id: 'obs12', category: 'Operations', title: 'Vendor contract review process is ad-hoc.', severity: 'Minor', analysis: 'There is no central repository or formal review cadence for vendor contracts. This creates a risk of auto-renewals for unused or unfavorable services, leading to unnecessary operational expense.' }
 ];
 
 const techflow_workstreamData = [
-    { id: 'business', title: 'Business & Strategy', color: 'var(--accent-blue)', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-blue-600"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>`, cards: [{label: "Market Size (TAM)", value: "$5.2B"}, {label: "Market CAGR", value: "18%"}, {label: "Competitive Moat", value: "Medium"}], suggestedQuestions: ["Summarize the competitive landscape and TechFlow's position.", "What are the key market trends impacting the company?", "Analyze the credibility of the 5-year strategic plan."], suggestedActions: [{ text: "Draft a 'Go-to-Market' slide for the IC memo.", description: "Generate a pre-formatted slide summarizing the GTM strategy for your Investment Committee memo." }, { text: "Prioritize 'Platform Consolidation' risk in the 100-day plan.", description: "Add this key risk to the 100-day plan to ensure it is addressed post-close." }, { text: "Generate key questions for the CEO regarding the strategic plan.", description: "Create a list of targeted questions to challenge the assumptions in the management's plan." }] },
-    { id: 'commercial', title: 'Commercial & Customer', color: 'var(--accent-teal)', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-teal-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, cards: [{label: "LTV:CAC Ratio", value: "3.1x"}, {label: "Net Revenue Retention", value: "105%"}, {label: "Logo Churn", value: "18%"}], suggestedQuestions: ["Show the Quality of Revenue report.", "Analyze the efficiency of the sales and marketing funnel.", "Identify the top 10 customers by revenue and any concentration risks."], suggestedActions: [{ text: "Generate a pricing model with 'Good-Better-Best' tiers.", description: "Create a draft pricing model to improve monetization and expansion revenue." }, { text: "Draft an email to the Head of Sales about the MQL-to-SQL drop-off.", description: "Generate a pre-written email to kick off a conversation about funnel efficiency." }, { text: "Add 'Customer Concentration' as a key risk to the workspace.", description: "Flag this critical issue in your workspace to track it as part of the diligence process." }] },
-    { id: 'tech', title: 'Technology & Operations', color: 'var(--purple)', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-indigo-600"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="12" x2="12" y1="2" y2="22"/></svg>`, cards: [{label: "Technical Debt Score", value: "High"}, {label: "Core App Uptime", value: "99.8%"}, {label: "Dev Velocity", value: "Low"}], suggestedQuestions: ["Summarize the key architectural risks and their potential cost to remediate.", "How does the R&D team's velocity compare to industry benchmarks?", "What is the plan for migrating off the legacy monolithic architecture?"], suggestedActions: [{ text: "Estimate the cost and timeline for a monolith-to-microservices migration.", description: "Generate a high-level estimate for the cost and timeline of this critical project." }, { text: "Generate a job description for a 'Lead DevOps Engineer'.", description: "Create a job description to hire the talent needed to improve developer velocity." }, { text: "Draft an IC memo slide on technical debt.", description: "Summarize the technical debt issue and mitigation plan for the Investment Committee." }] },
-    { id: 'financial', title: 'Financial & Risk', color: 'var(--status-warning)', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-red-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`, cards: [{label: "Gross Margin", value: "72%"}, {label: "Monthly Burn Rate", value: "$450K"}, {label: "Cash Runway", value: "11 mos"}], suggestedQuestions: ["Provide an overview of the current registered anomalies.", "What are the key risks to achieving the 2025 forecast?", "Analyze the quality of earnings and identify any one-time adjustments."], suggestedActions: [{ text: "Draft an email to the CFO requesting clarification on revenue recognition policies.", description: "Generate a pre-written email to the CFO to get clarity on a key accounting policy." }, { text: "Request all contracts with non-standard terms be uploaded to the data room.", description: "Log a formal request to the deal team to gather critical legal documents." }, { text: "Build the 'Base Case' financial model.", description: "Create a more realistic financial model based on diligence findings, not just management's view." }] }
+    { 
+        id: 'business', 
+        title: 'Business & Strategy', 
+        color: 'var(--accent-blue)', 
+        icon: `<svg>...</svg>`, // Icon SVG remains the same
+        cards: [
+            {label: "Market Size (TAM)", value: "$5.2B", context: "Based on third-party analyst reports (DDI-068), but management's internal model (DDI-069) uses aggressive assumptions.", next_step: "Next step is to validate management's assumptions in task DD-7."},
+            {label: "Competitive Moat", value: "Medium", context: "The company has a loyal customer base but faces pressure from a modern competitor (InnovateCorp) and a slow-moving incumbent (Legacy Inc.).", next_step: "Deep dive on competitive dynamics (DD-10) is scheduled for Day 2."},
+            {label: "Management Strength", value: "7.5/10", context: "The team is technically strong and deeply knowledgeable about the product. However, there is a notable lack of experience in scaling a GTM organization.", next_step: "Formal management assessments (DD-3) are underway to create a development plan."}
+        ],
+        suggestedActions: [
+            { text: "Analyze the credibility of the 5-year strategic plan.", description: "Compare management's forecast against historical performance and market data." },
+            { text: "Generate key questions for the CEO regarding the strategic plan.", description: "Create a list of targeted questions to challenge the plan's assumptions." },
+            { text: "Add 'Lack of GTM Experience' as a key risk to the workspace.", description: "Flag this organizational gap to track it as part of the diligence process." }
+        ] 
+    },
+    { 
+        id: 'commercial', 
+        title: 'Commercial & Customer', 
+        color: 'var(--accent-teal)', 
+        icon: `<svg>...</svg>`,
+        cards: [
+            {label: "LTV:CAC Ratio", value: "3.1x", context: "This is a healthy ratio, but analysis of CRM data (DDI-050) shows it's driven by a few large accounts, not broad market efficiency.", next_step: "A full analysis of the sales and marketing yield (DD-29) is planned for Day 4."},
+            {label: "Net Revenue Retention", value: "105%", context: "NRR is positive but lower than top-quartile SaaS benchmarks. Cohort analysis (DDI-063) suggests limited expansion revenue.", next_step: "A detailed churn analysis (DD-33) is needed to understand the drivers."},
+            {label: "Customer Concentration", value: "High", context: "The top 2 customers account for 28% of ARR (DDI-062). One of these key contracts (DDI-010) has non-standard terms.", next_step: "Interviews with top customers (DD-39) are scheduled for Day 5 to assess relationship health."}
+        ],
+        suggestedActions: [
+            { text: "Identify the top 10 customers by revenue and any concentration risks.", description: "Generate a chart showing the revenue distribution across the customer base." },
+            { text: "Analyze the efficiency of the sales and marketing funnel.", description: "Create a funnel visualization to identify key leakage points from MQL to close." },
+            { text: "Generate a pricing model with 'Good-Better-Best' tiers.", description: "Create a draft pricing model to improve monetization and expansion revenue." }
+        ] 
+    },
+    { 
+        id: 'tech', 
+        title: 'Technology & Operations', 
+        color: 'var(--purple)', 
+        icon: `<svg>...</svg>`,
+        cards: [
+            {label: "Technical Debt Score", value: "High", context: "Architectural diagrams (DDI-078) and initial code reviews indicate a legacy monolithic architecture that hinders scalability.", next_step: "A full code scan (DD-16) is scheduled for Day 4 to quantify the risks."},
+            {label: "Dev Velocity", value: "Low", context: "Analysis of Jira data (DDI-076) shows a 95-day cycle time, well below the industry benchmark of 45-60 days for this sector.", next_step: "A detailed review of the development process (DD-12) is currently in progress."},
+            {label: "Product Launch Success", value: "Poor", context: "Financial models (DDI-031) and CRM data (DDI-050) confirm zero revenue from the last three major product launches.", next_step: "A review of the product roadmap (DD-14) is scheduled for Day 3 to assess market alignment."}
+        ],
+        suggestedActions: [
+            { text: "Summarize the key architectural risks and their potential cost to remediate.", description: "Provide an analysis of the legacy monolith and its impact on future growth." },
+            { text: "How does the R&D team's velocity compare to industry benchmarks?", description: "Generate a comparison of TechFlow's key R&D metrics against similar SaaS companies." },
+            { text: "What is the plan for migrating off the legacy monolithic architecture?", description: "Assess the credibility and completeness of the current migration plan." }
+        ] 
+    },
+    { 
+        id: 'financial', 
+        title: 'Financial & Risk', 
+        color: 'var(--status-warning)', 
+        icon: `<svg>...</svg>`,
+        cards: [
+            {label: "Gross Margin", value: "72%", context: "This is a strong margin, but a deeper COGS analysis (DDI-048) is needed to confirm its stability across product lines.", next_step: "A full Gross Margin Analysis (DD-44) is scheduled for Day 8."},
+            {label: "Quality of Earnings", value: "Medium", context: "Initial review of financials (DDI-026) and the revenue recognition policy (DDI-039) has surfaced two critical anomalies.", next_step: "A full Quality of Earnings analysis (DD-52) is planned for Day 11 to produce an adjusted EBITDA."},
+            {label: "Cash Runway", value: "11 mos", context: "Based on the management's financial model (DDI-031), which contains aggressive and unvalidated growth assumptions.", next_step: "A 'Base Case' financial model (DD-43) will be built on Day 8 to provide a more realistic runway."}
+        ],
+        suggestedActions: [
+            { text: "Provide an overview of the current registered anomalies.", description: "Detail the critical and high-severity issues found in the financial and operational data." },
+            { text: "Analyze the quality of earnings and identify any one-time adjustments.", description: "Generate a QoE bridge from reported EBITDA to a normalized, adjusted EBITDA." },
+            { text: "What are the key risks to achieving the 2025 forecast?", description: "Assess the credibility of management's financial projections against diligence findings." }
+        ] 
+    }
 ];
 
 const cloudvantage_workstreamData = [
@@ -127,6 +202,115 @@ const cloudvantage_workstreamData = [
     { id: 'product', title: 'Product & Engineering', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-indigo-600"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="12" x2="12" y1="2" y2="22"/></svg>`, cards: [{label: "Roadmap Progress", value: "75%"}, {label: "NPS", value: "52"}, {label: "Ticket Volume", value: "-15% WoW"}], suggestedQuestions: ["What are the key drivers behind our current NPS score?", "Analyze the recent trends in customer support ticket volume.", "What is the status of the NewCo product integration?"], suggestedActions: [{ text: "Draft a product roadmap update for the board.", description: "Create a summary slide of recent progress and upcoming feature releases." }, { text: "Analyze the root cause of recent support tickets.", description: "Identify common themes in customer issues to inform product improvements." }, { text: "Generate a list of questions for the Head of Engineering about the NewCo integration.", description: "Prepare for a technical review of the product integration status." }] },
     { id: 'finance', title: 'Financial Performance', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-green-600"><path d="M12 2.02c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4h-6"/><path d="M12 18V6"/></svg>`, cards: [{label: "ARR Growth (YoY)", value: "28%"}, {label: "EBITDA Margin", value: "31%"}, {label: "NRR", value: "128%"}], suggestedQuestions: ["Generate a board-level summary of Q2 financial performance.", "Analyze the key drivers of our Net Revenue Retention.", "Model the financial impact of a 5% price increase on the legacy NewCo customer base."], suggestedActions: [{ text: "Model the financial impact of a 5% price increase on the legacy NewCo customer base.", description: "Create a scenario model to understand the potential impact of a price change." }, { text: "Draft an email to the CFO about the EBITDA margin dip.", description: "Prepare a data-driven inquiry to understand the variance against the target." }, { text: "Generate a cohort analysis of NRR.", description: "Break down Net Revenue Retention by customer start date to identify trends." }] }
 ];
+
+function renderAriaWorkstreamResponse(workstreamName, state) {
+    const wsData = techflow_workstreamData.find(ws => ws.title === workstreamName);
+    if (!wsData) return '<p>Workstream data not found.</p>';
+
+    // --- DYNAMIC CONTENT GENERATION ---
+    const synthesisText = `Here is the current state of the ${workstreamName} workstream. My initial analysis is focused on synthesizing foundational documents and identifying key areas for deeper investigation. The primary metrics are still being validated, and several upcoming diligence activities will provide further clarity.`;
+
+    // Find relevant documents from the knowledge graph
+    const foundationalDocs = knowledgeGraphData.nodes.filter(node => 
+        node.group === 'input_document' && node.workstream === workstreamName
+    ).slice(0, 2);
+
+    // Find upcoming tasks from the project plan
+    const upcomingTasks = diligencePlan_v3.filter(task => 
+        task.workstream === workstreamName && task.startDay > CURRENT_PROJECT_DAY
+    ).slice(0, 2);
+
+    // --- HTML RENDERERS ---
+    const kpiCardsHTML = wsData.cards.map(kpi => `
+        <div class="card-base p-4">
+            <p class="aria-kpi-label">${kpi.label}</p>
+            <p class="aria-kpi-value">${kpi.value}</p>
+            <p class="text-xs text-secondary mt-2"><strong class="text-text-primary">Context:</strong> ${kpi.context}</p>
+            <p class="text-xs text-secondary mt-1"><strong class="text-text-primary">Next Step:</strong> ${kpi.next_step}</p>
+        </div>
+    `).join('');
+
+    const suggestedActionsHTML = wsData.suggestedActions.map(action => `
+        <button class="aria-action-card text-left w-full" data-action="run-suggested-prompt" data-question="${action.text}">
+            <p class="font-semibold text-sm text-primary">${action.text}</p>
+            <p class="text-xs text-secondary">${action.description}</p>
+        </button>
+    `).join('');
+
+    return `
+        <div class="aria-response-content">
+            <div class="build-item themed-synthesis-box" style="--theme-color: ${wsData.color};">
+                <div class="synthesis-content-wrapper">
+                    <h3 class="response-title">${wsData.title} Workstream Briefing</h3>
+                    <p class="response-text" data-typing-text="${synthesisText}"></p>
+                </div>
+            </div>
+
+            <div class="build-item">
+                <h4 class="response-section-title">Key Intelligence & Inputs</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card-base">
+                        <h5 class="font-bold text-sm">Foundational Documents</h5>
+                        <ul class="text-xs text-secondary mt-2 space-y-1">${foundationalDocs.map(doc => `<li>${doc.label} (Quality: ${doc.qualityAssessment.rating}, Rev: ${doc.revisions})</li>`).join('')}</ul>
+                    </div>
+                    <div class="card-base">
+                        <h5 class="font-bold text-sm">Recent Insights (Refinery)</h5>
+                        <ul class="text-xs text-secondary mt-2 space-y-1"><li>Updated Pricing Model Analysis.docx</li><li>Competitor GTM Strategy Deck.pptx</li></ul>
+                    </div>
+                    <div class="card-base">
+                        <h5 class="font-bold text-sm">Upcoming Activities</h5>
+                        <ul class="text-xs text-secondary mt-2 space-y-1">${upcomingTasks.map(task => `<li>${task.id}: ${task.name}</li>`).join('')}</ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="build-item">
+                <h4 class="response-section-title">Current Assessment</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">${kpiCardsHTML}</div>
+            </div>
+
+            <div class="build-item">
+                <h4 class="response-section-title">Recommended Next Steps</h4>
+                <div class="aria-action-list">${suggestedActionsHTML}</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderAriaDisciplineResponse(disciplineId, state) {
+    const discipline = maturityModel.disciplines[disciplineId];
+    if (!discipline) return '<p>Discipline data not found.</p>';
+
+    const disciplineColorMap = {
+        'D1': 'var(--accent-blue)', 'D2': 'var(--accent-teal)', 'D3': 'var(--purple)',
+        'D4': 'var(--status-warning)', 'D5': 'var(--status-success)', 'D6': 'var(--text-secondary)'
+    };
+    const themeColor = disciplineColorMap[disciplineId] || 'var(--accent-blue)';
+
+    const kpiCardsHTML = Object.values(discipline.capabilities).slice(0, 3).map(cap => `
+        <div class="kpi-card">
+            <p class="kpi-label">${cap.name.toUpperCase()}</p>
+            <p class="kpi-value">${(Math.random() * (4.5 - 2.5) + 2.5).toFixed(1)}</p>
+        </div>
+    `).join('');
+
+    const synthesisText = `This is a summary for the ${discipline.name} discipline. ${discipline.levels[2]}`;
+
+    return `
+        <div class="aria-response-content">
+            <div class="build-item themed-synthesis-box" style="--theme-color: ${themeColor};">
+                <div class="synthesis-content-wrapper">
+                    <h3 class="response-title">${discipline.name} Discipline Synthesis</h3>
+                    <p class="response-text" data-typing-text="${synthesisText}"></p>
+                </div>
+            </div>
+            <div class="build-item">
+                <h4 class="response-section-title">Key Capabilities</h4>
+                <div class="kpi-grid">${kpiCardsHTML}</div>
+            </div>
+        </div>
+    `;
+}
 
 const techflow_ariaResponses = {
     "Show me the Business & Strategy workstream.": {
@@ -172,50 +356,71 @@ const techflow_ariaResponses = {
     "Provide an overview of the current registered anomalies.": {
         id: 'anomaly-overview',
         title: "Anomaly Overview",
-        renderFunc: (state) => {
-            const criticalAnomalies = techflow_anomalies.filter(a => a.severity === 'CRITICAL');
-            const otherAnomalies = techflow_anomalies.filter(a => a.severity !== 'CRITICAL');
-            const isExpanded = state.techflowAria.minorObservationsExpanded;
+renderFunc: (state) => {
+    const criticalAnomalies = techflow_anomalies.filter(a => a.severity === 'CRITICAL');
+    const otherAnomalies = techflow_anomalies.filter(a => a.severity === 'HIGH');
+    const isExpanded = state.techflowAria.minorObservationsExpanded;
 
-            const renderAnomalyCard = (anomaly) => {
-                const severityClass = anomaly.severity.toLowerCase();
-                const isFlagged = state.diligenceWorkspace.keyRisks[anomaly.id];
-                return `<div class="card-base p-4 space-y-3">
-                    <div class="response-title-area">
-                        <h3 class="font-bold text-lg">${anomaly.title}</h3>
-                        <div class="flex items-center gap-2">
-                            <button class="feedback-icon ${isFlagged ? 'filled' : ''}" data-action="flag-response" data-response-id="${anomaly.id}" title="Flag for Workspace">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="icon-unfilled" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464A.5.5 0 0 1 14.5 9v5.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 .278-.415zM1.49 4.002H8.5a.5.5 0 0 1 0 1H1.49a.5.5 0 0 1 0-1z"/></svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="icon-filled" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464A.5.5 0 0 1 14.5 9v5.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 .278-.415zM1.49 4.002H8.5a.5.5 0 0 1 0 1H1.49a.5.5 0 0 1 0-1z"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <p class="text-sm text-secondary">${anomaly.issue}</p>
-                    <div class="data-table-container"><table class="data-table"><thead><tr><th>Severity</th><th>Impact</th></tr></thead><tbody><tr><td><span class="status-badge ${severityClass}">${anomaly.severity}</span></td><td>${anomaly.impact}</td></tr></tbody></table></div>
-                    <div class="analysis-box"><p class="response-text"><span class="font-bold">Analysis:</span> <span data-typing-text="${anomaly.analysis}"></span></p></div>
-                </div>`;
-            };
+    // Helper to render MAJOR anomalies (Critical & High)
+    const renderAnomalyCard = (anomaly) => {
+        const severityClass = anomaly.severity.toLowerCase();
+        const isFlagged = !!state.diligenceWorkspace.keyRisks[anomaly.id];
+        return `<div class="card-base p-4 space-y-3">
+            <div class="response-title-area">
+                <h3 class="font-bold text-lg">${anomaly.title}</h3>
+                <button class="feedback-icon ${isFlagged ? 'filled' : ''}" data-action="flag-response" data-response-id="${anomaly.id}" title="Add to Workspace">
+                    <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001M14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21 21 0 0 0 3 1.845v6.433c.22-.078.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01C9.32 8.29 9.86 8.5 10.5 8.5c.668 0 1.606-.229 2.415-.478A21 21 0 0 0 14 7.655V1.222z"/></svg></span>
+                    <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001z"/></svg></span>
+                </button>
+            </div>
+            <p class="text-sm text-secondary">${anomaly.issue}</p>
+            <div class="data-table-container"><table class="data-table"><thead><tr><th>Severity</th><th>Impact</th><th>Source Documents</th></tr></thead><tbody><tr><td><span class="status-badge ${severityClass}">${anomaly.severity}</span></td><td>${anomaly.impact}</td><td>${anomaly.sourceDocuments.join(', ')}</td></tr></tbody></table></div>
+            <div class="analysis-box"><p class="response-text"><span class="font-bold">Analysis:</span> <span data-typing-text="${anomaly.analysis}"></span></p></div>
+        </div>`;
+    };
 
-            return `<div class="aria-response-content" id="anomaly-discovery-content">
-                <div class="build-item"><h3 class="response-title">Anomaly Discovery Report</h3><p class="response-subtitle">Source Documents: Multiple financial and operational files</p></div>
-                <div class="build-item alert-callout error">
-                    <h4 class="alert-callout-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Critical Findings</h4>
-                    <p class="response-text" data-typing-text="My analysis has surfaced **${criticalAnomalies.length} critical anomalies** that materially impact the investment thesis and valuation. These require immediate attention and should be discussed with the target's management."></p>
-                </div>
-                ${criticalAnomalies.map(a => `<div class="build-item">${renderAnomalyCard(a)}</div>`).join('')}
-                <div class="build-item card-base">
-                    <button class="minor-observations-header" data-action="toggle-observations">
-                        <h4 class="response-section-title !mb-0">Other Observations (${techflow_minorObservations.length})</h4>
-                        <svg class="chevron-icon ${isExpanded ? 'rotate-180' : ''}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div class="minor-observations-content ${isExpanded ? 'expanded' : ''}">
-                        <div class="minor-observations-grid">
-                            ${techflow_minorObservations.map(a => `<div class="minor-observation-item"><span>${a.text}</span><span class="status-badge high">${a.category}</span></div>`).join('')}
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        },
+    // Helper to render MINOR observations
+const renderMinorObservation = (obs) => {
+    const isFlagged = !!state.diligenceWorkspace.keyRisks[obs.id];
+    
+    // Use the map to find the workstream and create a dynamic color class
+    const workstream = categoryToWorkstreamMap[obs.category] || 'Business & Strategy';
+    const colorClass = workstream.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+
+    return `<div class="minor-observation-item">
+        <div class="flex-grow">
+            <p class="font-semibold">${obs.title}</p>
+            <p class="text-secondary mt-1">${obs.analysis}</p>
+        </div>
+        <div class="flex-shrink-0 ml-4 flex flex-col items-end gap-2">
+            <span class="status-badge ${colorClass}">${obs.category}</span>
+            <button data-action="flag-response" data-response-id="${obs.id}" class="feedback-icon ${isFlagged ? 'filled' : ''}" title="Add to Workspace">
+                <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001M14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21 21 0 0 0 3 1.845v6.433c.22-.079.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01C9.32 8.29 9.86 8.5 10.5 8.5c.668 0 1.606-.229 2.415-.478A21 21 0 0 0 14 7.655V1.222z"/></svg></span>
+                <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001z"/></svg></span>
+            </button>
+        </div>
+    </div>`;
+};
+
+    return `<div class="aria-response-content" id="anomaly-discovery-content">
+        <div class="build-item alert-callout error">
+            <h2 class="alert-callout-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Significant Anomalies Detected</h2>
+            <p class="response-text" data-typing-text="Our Auto Due Diligence Agent has completed its analysis and identified ${techflow_anomalies.length} significant anomalies that require immediate attention. These findings could materially impact the investment decision and valuation model."></p>
+        </div>
+        ${criticalAnomalies.map(a => `<div class="build-item">${renderAnomalyCard(a)}</div>`).join('')}
+        ${otherAnomalies.length > 0 ? `<div class="build-item"><h4 class="response-section-title">Other Significant Findings</h4></div>` : ''}
+        ${otherAnomalies.map(a => `<div class="build-item">${renderAnomalyCard(a)}</div>`).join('')}
+        <div class="build-item card-base">
+            <button class="minor-observations-header" data-action="toggle-observations">
+                <h3 class="response-title">Minor Observations (${techflow_minorObservations.length})</h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon ${isExpanded ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="minor-observations-content ${isExpanded ? 'expanded' : ''}">
+                <div class="minor-observations-grid">${techflow_minorObservations.map(renderMinorObservation).join('')}</div>
+            </div>
+        </div>
+    </div>`;
+},
         followUpQuestions: ["Which anomaly has the biggest impact on valuation?", "Draft an email to the CFO about the ARR composition.", "What's the plan to fix the failed product launches?"]
     },
     "What are the key risks to achieving the 2025 forecast?": {
@@ -337,9 +542,125 @@ const techflow_ariaResponses = {
 };
 
 const cloudvantage_ariaResponses = {
+    // --- DISCIPLINE OVERVIEWS (Primarily for Evelyn/Adrian) ---
+    "Tell me about the Sales discipline for CloudVantage.": {
+        id: 'discipline-sales',
+        renderFunc: (state) => renderAriaDisciplineResponse('D1', state),
+        followUpQuestions: ["How does our Sales Strategy compare to competitors?", "What's the plan to improve Account Management?"]
+    },
+    "Tell me about the Marketing discipline for CloudVantage.": {
+        id: 'discipline-marketing',
+        renderFunc: (state) => renderAriaDisciplineResponse('D2', state),
+        followUpQuestions: ["Analyze our Brand Awareness.", "What is the ROI on our current digital marketing spend?"]
+    },
+    "Tell me about the Partner discipline for CloudVantage.": {
+        id: 'discipline-partner',
+        renderFunc: (state) => renderAriaDisciplineResponse('D3', state),
+        followUpQuestions: ["Summarize our Sell Through strategy.", "How can we better leverage Hyperscalers?"]
+    },
+    "Tell me about the Build discipline for CloudVantage.": {
+        id: 'discipline-build',
+        renderFunc: (state) => renderAriaDisciplineResponse('D4', state),
+        followUpQuestions: ["What are the key risks in our Technical Architecture?", "How mature is our DevOps practice?"]
+    },
+    "Tell me about the Run discipline for CloudVantage.": {
+        id: 'discipline-run',
+        renderFunc: (state) => renderAriaDisciplineResponse('D5', state),
+        followUpQuestions: ["Analyze our Customer Success metrics.", "What is our current process for Functional Support?"]
+    },
+    "Tell me about the Context discipline for CloudVantage.": {
+        id: 'discipline-context',
+        renderFunc: (state) => renderAriaDisciplineResponse('D6', state),
+        followUpQuestions: ["How does our organizational structure support our strategy?", "What are the skill gaps in the team?"]
+    },
+
+    // --- EVELYN (CEO) FOCUSED RESPONSES ---
+    "Generate a board-level summary of Q2 financial performance.": {
+        id: 'q2-summary',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Q2 2025 Financial Summary for the Board</h3></div>
+            <div class="build-item aria-kpi-grid">${[
+                { label: 'ARR', value: '$78M', change: '+4% QoQ' },
+                { label: 'NRR', value: '128%', change: '+3% vs Target' },
+                { label: 'EBITDA Margin', value: '31%', change: '-1% vs Target' }
+            ].map(kpi => `<div class="aria-kpi-card"><p class="aria-kpi-label">${kpi.label}</p><p class="aria-kpi-value">${kpi.value}</p><p class="text-sm text-secondary">${kpi.change}</p></div>`).join('')}</div>
+            <div class="build-item"><p class="response-section-title">Executive Narrative:</p><p class="response-text" data-typing-text="CloudVantage delivered a strong Q2, exceeding ARR targets driven by robust Net Revenue Retention of 128%. This indicates strong product stickiness and successful expansion within the existing customer base, largely fueled by the NewCo integration. EBITDA margin was slightly below target due to planned investments in integration and R&D for the upcoming AI feature. Overall, the business remains healthy and is tracking well against the annual plan."></p></div>
+        </div>`,
+        followUpQuestions: ["Analyze the key drivers of our Net Revenue Retention.", "What caused the dip in EBITDA margin?", "What is the forecast for Q3?"]
+    },
+    "Analyze the key drivers of our Net Revenue Retention.": {
+        id: 'nrr-drivers',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">NRR Driver Analysis (128%)</h3></div>
+            <div class="build-item"><div class="response-section-title">Contribution to Expansion ARR:</div><div class="bar-chart-container"><div class="bar-chart-item"><div class="bar-label">NewCo Cross-Sell</div><div class="bar-wrapper"><div class="bar" style="width: 55%; background-color: var(--accent-blue);">55%</div></div></div><div class="bar-chart-item"><div class="bar-label">Enterprise Upgrades</div><div class="bar-wrapper"><div class="bar" style="width: 30%; background-color: var(--accent-teal);">30%</div></div></div><div class="bar-chart-item"><div class="bar-label">Standard Upsell</div><div class="bar-wrapper"><div class="bar" style="width: 15%; background-color: var(--purple);">15%</div></div></div></div></div>
+            <div class="build-item"><p class="response-section-title">Analysis:</p><p class="response-text" data-typing-text="The 128% NRR is exceptionally strong. The NewCo acquisition is already proving highly accretive, with cross-selling of the 'Analytics Suite' into the NewCo base accounting for over half of all expansion revenue. This validates the core synergy thesis of the deal."></p></div>
+        </div>`,
+        followUpQuestions: ["Which customers are the best candidates for the next upsell campaign?", "Draft a board update on the NRR outperformance."]
+    },
+    "Generate a risk mitigation plan for the AI feature delay.": {
+        id: 'risk-mitigation-ai',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Risk Mitigation Plan: AI Feature Delay</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="The AI-Powered Feature is 'At Risk' due to complexities integrating NewCo's legacy data models. Here is a proposed mitigation plan to get back on track:"></p></div>
+            <div class="build-item list-container mt-4">
+                <div class="list-item"><span class="list-number text-warning">1</span><div><h4 class="list-title">De-scope MVP:</h4><p class="list-text">Reduce the initial launch scope to focus only on the core predictive analytics feature. Defer the NLP and reporting components to a Phase 2 release. This accelerates time-to-market for the core value proposition.</p></div></div>
+                <div class="list-item"><span class="list-number text-warning">2</span><div><h4 class="list-title">Form Dedicated Squad:</h4><p class="list-text">Assign a 'Tiger Team' of 2 senior CloudVantage engineers and 1 NewCo data architect to focus solely on resolving the integration blockers for the next 4 weeks.</p></div></div>
+            </div>
+        </div>`,
+        followUpQuestions: ["What is the budget impact of this new plan?", "Who is the lead engineer on the AI feature?"]
+    },
+
+    // --- CONNOR (CRO) FOCUSED RESPONSES ---
+    "Process the renewals for the NewCo acquisition customers.": {
+        id: 'newco-renewals',
+        renderFunc: () => {
+            const opportunities = croRenewalData.opportunities;
+            const segmentColors = { Gold: 'var(--status-warning)', Silver: 'var(--text-muted)', Bronze: '#cd7f32' };
+            return `<div class="aria-response-content">
+                <div class="build-item"><h3 class="response-title">NewCo Renewal & Uplift Playbook</h3></div>
+                <div class="build-item"><p class="response-text" data-typing-text="Of course, Connor. I've analyzed the upcoming renewals from the NewCo acquisition against our pricing and customer success playbooks. I've identified ${opportunities.length} opportunities. The recommended playbook action is a strategic price uplift based on customer segment and success circumstance. Here is the list:"></p></div>
+                <div class="build-item data-table-container mt-4">
+                    <table class="renewal-opportunities-table">
+                        <thead><tr><th>Account</th><th>Segment</th><th>Contract Value</th><th>Renewal Date</th><th>Circumstance</th></tr></thead>
+                        <tbody>${opportunities.map(c => `<tr><td>${c.account}</td><td><span class="segment-badge" style="background-color:${segmentColors[c.segment]}20; color:${segmentColors[c.segment]}">${c.segment}</span></td><td>$${c.value.toLocaleString()}</td><td>${c.date}</td><td>${c.circumstance}</td></tr>`).join('')}</tbody>
+                    </table>
+                </div>
+            </div>`;
+        },
+        followUpQuestions: ["Apply the recommended uplifts and show the financial impact.", "Yes, please generate conversation guides for each segment action.", "Which customers are at the highest risk of churning with this increase?"]
+    },
+    "Apply the recommended uplifts and show the financial impact.": {
+        id: 'uplift-impact',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Financial Impact of NewCo Price Uplift</h3></div>
+            <div class="build-item"><p class="response-text" data-typing-text="Applying the standard playbook uplift percentages to the identified renewal cohort results in a significant ARR increase."></p></div>
+            <div class="build-item data-table-container mt-4">
+                <table class="data-table">
+                    <thead><tr><th>Segment</th><th>Current ARR</th><th>Uplift %</th><th>New ARR</th><th>ARR Increase</th></tr></thead>
+                    <tbody>
+                        <tr><td>Gold (Success)</td><td>$3,245,000</td><td>20%</td><td>$3,894,000</td><td class="text-success">$649,000</td></tr>
+                        <tr><td>Silver (Success)</td><td>$925,000</td><td>10%</td><td>$1,017,500</td><td class="text-success">$92,500</td></tr>
+                        <tr><td>Bronze</td><td>$220,000</td><td>25%</td><td>$275,000</td><td class="text-success">$55,000</td></tr>
+                        <tr class="font-bold"><td>Total</td><td>$4,390,000</td><td></td><td>$5,186,500</td><td class="text-success">$796,500</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="build-item judgement-box success"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="Executing this pricing playbook on these segments would result in an additional **$796,500** in ARR, an 18% increase on this cohort, directly impacting your team's quota attainment."></p></div>
+        </div>`,
+        followUpQuestions: ["Generate conversation guides for the sales team.", "Which customers are at the highest risk of churning with this increase?"]
+    },
+    "Yes, please generate conversation guides for each segment action.": {
+        id: 'generate-guides',
+        renderFunc: () => `<div class="aria-response-content build-item card-base">
+            <h4 class="response-title">Conversation Guides Generated</h4>
+            <p class="response-text" data-typing-text="Excellent. I am generating personalized conversation guides for the Account Managers for each segment. They will include specific talking points on the value delivered, justification for the price increase, and negotiation guardrails. I have sent them directly to Maya Singh and the other AMs, along with a notification in their Action Center."></p>
+        </div>`,
+        followUpQuestions: ["Assign these renewal targets to the account owners.", "What is the total expected ARR uplift from this plan?"]
+    },
+
+    // --- EXISTING GENERIC RESPONSES (PRESERVED) ---
     "Generate a 100-day integration plan for the NewCo acquisition.": {
         id: '100-day-plan',
-        title: "100-Day Integration Plan: NewCo Acquisition",
         renderFunc: () => `<div class="aria-response-content">
             <div class="build-item"><h3 class="response-title">100-Day Integration Plan: NewCo</h3><p class="response-subtitle">Generated by Aria based on the PE Integration Playbook.</p></div>
             <div class="build-item"><div class="timeline-container">
@@ -351,29 +672,8 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Identify key integration risks.", "Create a synergy tracking dashboard.", "Draft a communication plan to NewCo customers about the acquisition."]
     },
-    "Analyze the cross-sell opportunities between CloudVantage and NewCo products.": {
-        id: 'cross-sell-opps',
-        title: "Cross-Sell Opportunity Analysis",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Cross-Sell Opportunity Analysis</h3><p class="response-subtitle">Source Documents: CloudVantage_Customer_List.csv, NewCo_Customer_List.csv</p></div>
-            <div class="build-item"><p class="response-section-title">Analysis:</p><p class="response-text" data-typing-text="There is a significant cross-sell opportunity. **72%** of NewCo's enterprise customers do not use an existing CloudVantage product, representing a total whitespace ARR of **$18.5M**. The most immediate opportunity is to sell CloudVantage's 'Analytics Suite' into the NewCo customer base, as it directly complements NewCo's core data management offering."></p></div>
-            <div class="build-item judgement-box success"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="Launch a targeted sales campaign in the next 30 days focused on the top 20 NewCo accounts. A pilot program offering a 15% discount on the 'Analytics Suite' could accelerate adoption."></p></div>
-        </div>`,
-        followUpQuestions: ["Draft a revised sales comp plan.", "Generate talking points for the sales team about top pipeline risks."]
-    },
-    "Process the renewals for the NewCo acquisition customers.": {
-        id: 'newco-renewals',
-        title: "NewCo Customer Renewal Process",
-        renderFunc: () => `<div class="aria-response-content build-item card-base">
-            <h4 class="response-title">Renewal Process Initiated</h4>
-            <p class="response-text" data-typing-text="I have processed the renewal data for the 52 customers acquired from NewCo. 48 have been successfully renewed automatically. 4 require manual intervention due to non-standard terms. I have flagged these in the workspace and assigned them to the legal team for review."></p>
-        </div>`,
-        followUpQuestions: ["Show me the 4 customers that need manual review.", "What is the total ARR of the renewed customers?"],
-        suggestedActions: []
-    },
     "Analyze the current sales compensation plan for the Enterprise team.": {
         id: 'sales-comp-analysis',
-        title: "Sales Comp Plan Analysis",
         renderFunc: () => `<div class="aria-response-content">
             <div class="build-item"><h3 class="response-title">Sales Compensation Plan Analysis</h3><p class="response-subtitle">Source Documents: Sales_Comp_Plan_FY25.pdf, ...</p></div>
             <div class="build-item"><p class="response-section-title">Key Findings:</p><ul class="list-disc pl-5 text-sm" data-animate-list><li>The current plan is 100% focused on New Business ARR, with no incentive for renewals or expansion.</li><li>Accelerators for over-performance are below market benchmarks, potentially capping motivation.</li><li>The plan does not include a component for selling newly acquired 'NewCo' products.</li></ul></div>
@@ -381,37 +681,8 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Draft a revised sales comp plan.", "Model the financial impact of the new plan.", "What are the benchmarks for sales accelerators?"]
     },
-    "What are the key drivers behind our current NPS score?": {
-        id: 'nps-drivers',
-        title: "NPS Driver Analysis",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">NPS Driver Analysis (Score: 52)</h3><p class="response-subtitle">Source Documents: NPS_Survey_Results_Q2.csv, ...</p></div>
-            <div class="build-item grid md:grid-cols-2 gap-4">
-                <div><h4 class="response-section-title text-success">Top Promoters (Score 9-10)</h4><ul class="list-disc pl-5 text-sm" data-animate-list><li>"Excellent customer support"</li><li>"Platform is reliable and always available"</li><li>"Deep domain expertise of the team"</li></ul></div>
-                <div><h4 class="response-section-title text-error">Top Detractors (Score 0-6)</h4><ul class="list-disc pl-5 text-sm" data-animate-list><li>"Lack of key features compared to competitors"</li><li>"The user interface feels outdated"</li><li>"Integration with our other tools is difficult"</li></ul></div>
-            </div>
-            <div class="build-item judgement-box success"><p class="judgement-title">Judgement (High Confidence - 92%):</p><p class="judgement-text" data-typing-text="The high NPS score is primarily driven by strong customer service and reliability, not product superiority. While this is a strength, it's a fragile position. The feedback from detractors clearly indicates a growing product gap that needs to be addressed to maintain customer loyalty long-term."></p></div>
-        </div>`,
-        followUpQuestions: ["Which features are detractors asking for most?", "What is the status of the UI refresh project?", "How can we improve the integration experience?"]
-    },
-    "Generate a board-level summary of Q2 financial performance.": {
-        id: 'q2-summary',
-        title: "Q2 Financial Performance Summary",
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Q2 2025 Financial Summary</h3><p class="response-subtitle">Source Documents: Q2_Financial_Package.xlsx, ...</p></div>
-            <div class="build-item kpi-grid">${[
-                { label: 'ARR', value: '$78M', change: '+4% QoQ', changeColor: 'var(--status-success)' },
-                { label: 'NRR', value: '128%', change: '+3% vs Target', changeColor: 'var(--status-success)' },
-                { label: 'EBITDA Margin', value: '31%', change: '-1% vs Target', changeColor: 'var(--status-error)' },
-                { label: 'Rule of 40', value: '58%', change: 'Healthy', changeColor: 'var(--text-muted)' }
-            ].map(kpi => `<div class="kpi-card"><p class="kpi-label">${kpi.label}</p><p class="kpi-value">${kpi.value}</p><p class="kpi-detail" style="color: ${kpi.changeColor};">${kpi.change}</p></div>`).join('')}</div>
-            <div class="build-item"><p class="response-section-title">Executive Summary:</p><p class="response-text" data-typing-text="CloudVantage delivered a strong Q2, exceeding ARR targets driven by robust Net Revenue Retention of 128%. This indicates strong product stickiness and successful expansion within the existing customer base. EBITDA margin was slightly below target due to planned investments in the 'NewCo' integration and R&D for the upcoming AI feature. Overall, the business remains healthy and is tracking well against the annual plan."></p></div>
-        </div>`,
-        followUpQuestions: ["Analyze the key drivers of our Net Revenue Retention.", "What caused the dip in EBITDA margin?", "What is the forecast for Q3?"]
-    },
     "Draft a revised sales comp plan.": {
         id: 'draft-sales-comp',
-        title: "Draft Sales Comp Plan",
         renderFunc: () => `<div class="aria-response-content build-item card-base">
             <h4 class="response-title">Draft: Revised Sales Comp Plan</h4>
             <ul class="list-disc pl-5 space-y-2 text-sm" data-animate-list>
@@ -425,7 +696,6 @@ const cloudvantage_ariaResponses = {
     },
     "Model the financial impact of a 5% price increase on the legacy NewCo customer base.": {
         id: 'model-price-increase',
-        title: "Price Increase Impact Model",
         renderFunc: () => `<div class="aria-response-content build-item card-base">
             <h4 class="response-title">Scenario: 5% Price Increase on NewCo Base</h4>
             <div class="data-table-container"><table class="data-table">
@@ -442,7 +712,6 @@ const cloudvantage_ariaResponses = {
     },
     "Draft a communication plan to NewCo customers about the acquisition.": {
         id: 'draft-comm-plan',
-        title: "Draft Customer Communication",
         renderFunc: () => `<div class="aria-response-content build-item card-base">
             <p><span class="font-semibold">To:</span> Valued NewCo Customer</p>
             <p><span class="font-semibold">Subject:</span> Exciting News: NewCo is Joining CloudVantage!</p>
