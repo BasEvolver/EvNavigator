@@ -50,9 +50,10 @@ window.DiligenceHubComponent = {
             }
         }
         
-        const ganttHTML = this._generateGanttHTML(modifiedPlan, this.state);
+const ganttHTML = this._generateGanttHTML(modifiedPlan, this.state);
         this.targetElement.innerHTML = ganttHTML;
         this._initializeGanttHoverAndScroll(this.targetElement);
+        this._initializeListeners(); // <-- ADD THIS LINE
     },
     
     _initializeGanttHoverAndScroll: function(container) {
@@ -288,7 +289,7 @@ window.DiligenceHubComponent = {
         });
     },
 
-    _generateGanttHTML: function(planData, state, statusOverrides = {}) {
+_generateGanttHTML: function(planData, state, statusOverrides = {}) {
         const planWithDates = projectPlanUtils.calculateTaskDates(planData);
         const phaseDefinitions = [{ name: "Phase 1: Foundation", dayRange: [1, 2] }, { name: "Phase 2: Deep Dive", dayRange: [3, 5] }, { name: "Phase 3: Analysis", dayRange: [6, 11] }, { name: "Phase 4: Synthesis & Finalization", dayRange: [12, 17] }];
         const hierarchy = {};
@@ -317,7 +318,9 @@ window.DiligenceHubComponent = {
             Object.values(phase.categories).forEach(category => {
                 category.tasks = category.tasks.filter(task => {
                     const commentary = projectPlanUtils.generateAriaCommentary(task, statusOverrides);
+                    // --- FIX START: Corrected the typo from "diligilenceFilters" to "diligenceFilters" ---
                     return state.diligenceFilters.workstreams.includes(task.workstream) && state.diligenceFilters.statuses.includes(commentary.status);
+                    // --- FIX END ---
                 });
             });
             phase.categories = Object.values(phase.categories).filter(cat => cat.tasks.length > 0);
@@ -351,9 +354,18 @@ window.DiligenceHubComponent = {
                 });
             });
         });
-        const todayBandLeft = (CURRENT_PROJECT_DAY - 1) * 42;
+        
+        const todayBandLeftPercent = ((CURRENT_PROJECT_DAY - 1) / 17) * 100;
+        const todayBandWidthPercent = (1 / 17) * 100;
         
         return `
+            <style>
+                .gantt-right-header, .gantt-timeline-grid {
+                    display: grid;
+                    grid-template-columns: repeat(17, 1fr);
+                    gap: 2px;
+                }
+            </style>
             <div class="gantt-container-v7">
                 <div class="gantt-controls">
                     <h3 class="gantt-main-title">Project Diligence Plan</h3>
@@ -371,7 +383,7 @@ window.DiligenceHubComponent = {
                         <div class="gantt-right-pane">
                             <div class="gantt-right-header">${timelineDates.map(date => `<div class="gantt-day-header ${date.getDay() === 0 || date.getDay() === 6 ? 'weekend' : ''} ${date.toDateString() === today.toDateString() ? 'today' : ''}"><span>${date.toLocaleDateString('en-US', { weekday: 'short' })[0]}</span><span>${date.getDate()}</span></div>`).join('')}</div>
                             <div class="gantt-right-body">
-                                <div class="gantt-today-band" style="left: ${todayBandLeft}px; width: 40px;"></div>
+                                <div class="gantt-today-band" style="left: ${todayBandLeftPercent}%; width: ${todayBandWidthPercent}%;"></div>
                                 ${rightPaneHTML}
                             </div>
                         </div>

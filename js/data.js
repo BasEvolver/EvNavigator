@@ -871,16 +871,27 @@ const diligenceHubAriaResponses = {
             type: 'GANTT_REPLAN', 
             params: { startDayOffset: -2, phaseToShift: 'Phase 3: Analysis' } 
         },
-        renderFunc: () => `<div class="aria-response-content">
+renderFunc: () => `<div class="aria-response-content">
             <div class="build-item"><h3 class="response-title">Scenario: Accelerate Analysis Phase by 2 Days</h3></div>
-            <div class="build-item" id="gantt-replan-target-${Date.now()}">
-                 <div class="flex items-center justify-center h-64"><div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div></div>
+            
+            <!-- FIX: Replaced spinner with a simple, empty placeholder div -->
+            <div class="build-item" id="gantt-replan-target-${Date.now()}" style="min-height: 300px;">
+                <!-- The re-planned Gantt chart will be rendered here by JS -->
             </div>
+            
             <div class="build-item"><p class="response-text" data-typing-text="I have simulated a 2-day acceleration of the Analysis phase, which you can see reflected in the updated plan above. This is possible, but it creates significant resource contention:"></p></div>
-            <div class="build-item list-container mt-4">
-                <div class="list-item"><span class="list-number text-success">1</span><div><h4 class="list-title">Positive Impact:</h4><p class="list-text" data-typing-text="The final IC Memo (DD-65) would be ready on Day 10 instead of Day 12, providing the deal team with an earlier read on the key findings."></p></div></div>
-                <div class="list-item"><span class="list-number text-error">2</span><div><h4 class="list-title">Negative Impact (Resource Overload):</h4><p class="list-text" data-typing-text="This would require **Alex (Analyst)** and **Sarah (Associate)** to work an estimated 65 hours each during that week, which is a high risk for burnout and errors. The external partner **EY** would also need to approve an expedited timeline."></p></div></div>
+            
+            <div class="build-item card-base p-4 space-y-4">
+                <div>
+                    <h4 class="font-bold text-primary">Positive Impact</h4>
+                    <p class="text-secondary text-sm" data-typing-text="The final IC Memo (DD-65) would be ready on Day 10 instead of Day 12, providing the deal team with an earlier read on the key findings."></p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-primary">Consideration (Resource Overload)</h4>
+                    <p class="text-secondary text-sm" data-typing-text="This scenario would require **Alex (Analyst)** and **Sarah (Associate)** to work an estimated 65 hours each during that week, a high risk for burnout and errors. The external partner **EY** would also need to approve an expedited timeline."></p>
+                </div>
             </div>
+
         </div>`,
         followUpQuestions: ["Show me the resource allocation for that week.", "Draft an email to EY requesting the expedited timeline."]
     },

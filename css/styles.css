@@ -1015,7 +1015,8 @@ header {
 /* Timeline Container */
 .timeline-container { display: flex; flex-direction: column; gap: 1.5rem; }
 .timeline-phase-title { font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent-blue); }
-.timeline-items { list-style-type: disc; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem; space-y: 0.5rem; }
+.timeline-items { list-style-type: disc; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem  }
+    /* space-y: 0.5rem; }
 
 /* New Prompt Input Area styles are handled by .prompt-area-large-v4 */
 .prompt-input {
@@ -7475,3 +7476,41 @@ body.page-aria main#main-content {
 [data-theme="dark"] .segment-badge.gold { background-color: #78350F; color: #FDE68A; }
 [data-theme="dark"] .segment-badge.silver { background-color: #4B5563; color: #D1D5DB; }
 [data-theme="dark"] .segment-badge.bronze { background-color: #7f1d1d; color: #fecaca; }
+
+/* =================================================================
+   ARIA GANTT CHART "FULL BLEED" LAYOUT FIX (WITH PADDING)
+   ================================================================= */
+
+/* 
+   This rule remains the same. It overrides the component's default
+   centering behavior when it's inside an ARIA response.
+*/
+.aria-response-bubble .diligence-hub-container {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+   This rule is updated. The negative margins are now smaller,
+   which leaves a 0.5rem (8px) padding around the chart.
+   The width calculation is also adjusted to match.
+*/
+.aria-response-bubble .gantt-container-v7 {
+    /* The bubble has 1rem/1.5rem padding. These smaller negative margins leave 0.5rem of space. */
+   margin: -0.5rem -1rem; 
+    
+    /* Recalculate width to fill the new space (100% + 1rem left + 1rem right) */
+    width: calc(100% + 2rem); 
+    max-width: calc(100% + 2rem);
+
+    /* The chart keeps its own border, which looks better with padding. */
+    border-radius: 0.75rem;
+}
+
+.aria-response-bubble [id^="gantt-replan-target-"] .gantt-container-v7 {
+    margin: -0.5rem -1rem; 
+    width: calc(100% + 2rem); 
+    max-width: calc(100% + 2rem);
+    border-radius: 0.75rem;
+}

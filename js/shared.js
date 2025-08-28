@@ -3,7 +3,7 @@
 // =================================================================
 // CRITICAL UTILITIES AND CONSTANTS
 // =================================================================
-const PROJECT_DAY_FOR_TODAY = 9;
+const PROJECT_DAY_FOR_TODAY = 6;
 
 function calculateStartDate(today, projectDayForToday) {
     let startDate = new Date(today);

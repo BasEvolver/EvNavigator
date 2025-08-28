@@ -268,49 +268,42 @@ async function typeWords(element, text, callback) {
 async function runAriaBuildingSequence(responseData, targetElement, promptWrapper) {
     let state = loadState();
     
-    // 1. Get the full HTML of the response but keep it off-screen for now.
     const fullHTML = responseData.renderFunc(state);
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = fullHTML;
 
-    // 2. Find all the individual sections (.build-item) that need to be animated.
     const buildItems = Array.from(tempContainer.querySelectorAll('.build-item'));
-    
-    // 3. Get the parent container that has the "gap" styling.
     const responseContentWrapper = tempContainer.querySelector('.aria-response-content');
     if (responseContentWrapper) {
-        responseContentWrapper.innerHTML = ''; // Clear it, we will add items back one by one.
-        targetElement.appendChild(responseContentWrapper); // Add the empty, styled container to the page.
+        responseContentWrapper.innerHTML = ''; 
+        targetElement.appendChild(responseContentWrapper); 
     }
 
-    // 4. Loop through each section and render it sequentially.
     for (const item of buildItems) {
-        // Add the section's container to the page. The flexbox gap will now apply.
         responseContentWrapper.appendChild(item);
-        
-        // Make the current section visible, triggering the CSS animation.
-        await new Promise(r => setTimeout(r, 50)); // Short delay to allow CSS to catch up
+        await new Promise(r => setTimeout(r, 50)); 
         item.classList.add('visible');
         
-        // Animate the content INSIDE the section we just added.
-        const typingElements = item.querySelectorAll('[data-typing-text]');
-        for (const el of typingElements) {
-            await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
-        }
-
-        const listElements = item.querySelectorAll('[data-animate-list]');
-        for (const list of listElements) {
-            const listItems = Array.from(list.children);
-            list.innerHTML = '';
-            for (const li of listItems) {
-                list.appendChild(li);
-                await new Promise(r => setTimeout(r, 150));
+        // --- FIX START: Correctly identify the placeholder div by its own ID ---
+        // The issue was using querySelector. The 'item' IS the target.
+        if (item.id && item.id.startsWith('gantt-replan-target-') && responseData.simulation?.type === 'GANTT_REPLAN') {
+            // Render the chart directly into the 'item' element.
+            if (window.DiligenceHubComponent) {
+                const companyId = loadState().selectedCompanyId;
+                // We pass 'item' itself as the target element.
+                window.DiligenceHubComponent.renderModifiedPlan(item, companyId, responseData.simulation.params);
+            }
+        } else {
+            // This is a normal text item, so animate the text inside it.
+            const typingElements = item.querySelectorAll('[data-typing-text]');
+            for (const el of typingElements) {
+                await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
             }
         }
-        // No extra wait needed here, the gap provides the visual separation.
+        // --- FIX END ---
     }
 
-    // 5. After all content is built, fade in the footer.
+    // After all animations are done, show the footer and prompts
     const responseBubble = targetElement.closest('.aria-response-bubble');
     const footer = responseBubble.querySelector('.response-actions-footer');
     if (footer) {
@@ -318,7 +311,6 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
         footer.classList.add('visible');
     }
 
-    // 6. Finally, show the follow-up prompts.
     const contextualPills = getContextualPillsForCompany(state.selectedCompanyId);
     promptWrapper.innerHTML = getAdvancedPromptBoxHTML(responseData.followUpQuestions, contextualPills);
     setTimeout(() => scrollToConversationBottom(), 50);
