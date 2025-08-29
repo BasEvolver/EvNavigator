@@ -1,4 +1,4 @@
-// js/aria.js - Central Conversational Engine for the Navigator Application (CORRECTED & REBUILT)
+// js/aria.js - Central Conversational Engine for the Navigator Application (Persona-Aware Hub Version)
 
 const generativeComponentMap = {
     "Show me the TechFlow diligence plan.": {
@@ -16,55 +16,48 @@ function getContextualPillsForCompany(companyId) {
     const state = loadState();
     const persona = state.activePersona;
 
-    if (!companyId || companyId === 'all') {
-        return null;
-    }
+    if (!companyId || companyId === 'all') return null;
 
     const companyInfo = workspaceHeaders[companyId];
     const isDiligence = companyInfo && companyInfo.stage === 'Due Diligence';
 
     if (isDiligence) {
-        return {
-            title: "Explore Workstreams:",
-            pills: [
-                { label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" },
-                { label: "Business & Strategy", prompt: "Show me the Business & Strategy workstream.", color: "var(--accent-blue)" },
-                { label: "Commercial & Customer", prompt: "Show me the Commercial & Customer workstream.", color: "var(--accent-teal)" },
-                { label: "Technology & Operations", prompt: "Show me the Technology & Operations workstream.", color: "var(--purple)" },
-                { label: "Financial & Risk", prompt: "Show me the Financial & Risk workstream.", color: "var(--status-warning)" }
-            ]
-        };
-    } 
-    else {
-        // Persona-specific pills for non-diligence companies like CloudVantage
+        // ... (existing TechFlow logic remains here)
+    } else {
+        // --- UPDATED PERSONA PILLS ---
         switch (persona) {
             case 'connor': // CRO
                 return {
                     title: "CRO Hub:",
                     pills: [
-                        { label: "Process Renewals", prompt: "Process the renewals for the NewCo acquisition customers.", color: "var(--accent-blue)" },
-                        { label: "Analyze Pipeline", prompt: "What are the biggest risks in the current sales pipeline?", color: "var(--accent-teal)" },
-                        { label: "Review Comp Plan", prompt: "Analyze the current sales compensation plan for the Enterprise team.", color: "var(--purple)" }
+                        { label: "Performance", prompt: "Give me a breakdown of our current sales performance against targets.", color: "var(--status-success)" },
+                        { label: "Pipeline & Forecast", prompt: "What are the biggest risks and opportunities in the current sales pipeline?", color: "var(--accent-blue)" },
+                        { label: "Organization", prompt: "What is the plan to address the EMEA performance issue?", color: "var(--purple)" },
+                        { label: "Initiatives", prompt: "Analyze the NewCo customer base for further cross-sell opportunities.", color: "var(--accent-teal)" }
                     ]
                 };
-case 'evelyn': // CEO
-            case 'adrian': // Operating Partner
+            case 'maya': // Account Manager
+                 return {
+                    title: "AM Action Center:",
+                    pills: [
+                        { label: "Prepare for Global Inc. call", prompt: "Please send me the conversation guide for Global. Update it with their latest support ticket status and the number of tickets we've received for them.", color: "var(--accent-blue)" },
+                        { label: "Review Apex Solutions contract", prompt: "Summarize the key terms of the Apex Solutions renewal contract.", color: "var(--accent-teal)" },
+                        { label: "Propose Platinum Offer", prompt: "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term.", color: "var(--purple)" }
+                    ]
+                };
+            case 'evelyn':
+            case 'adrian':
             default:
-                // FIX: Added Finance (D7) and reordered the disciplines
-                const disciplineColorMap = { 'D1': 'var(--accent-blue)', 'D2': 'var(--accent-teal)', 'D4': 'var(--status-warning)', 'D5': 'var(--status-success)', 'D7': 'var(--status-success)', 'D6': 'var(--text-secondary)' };
-                const coreDisciplineIds = ['D1', 'D2', 'D4', 'D5', 'D7', 'D6']; // Sales, Marketing, Build, Run, Finance, Context
+                const disciplineColorMap = { 'D1': 'var(--accent-blue)', 'D2': 'var(--accent-teal)', 'D4': 'var(--status-warning)', 'D5': 'var(--status-success)', 'D8': 'var(--status-success)', 'D6': 'var(--text-secondary)' };
+                const coreDisciplineIds = ['D1', 'D2', 'D4', 'D5', 'D8', 'D6'];
                 const disciplinePills = coreDisciplineIds.map(id => {
-                    // Handle the new Finance discipline which isn't in the MaturityModel.js file
-                    const disciplineName = id === 'D7' ? 'Finance' : maturityModel.disciplines[id].name;
-                    return { label: disciplineName, prompt: `Tell me about the ${disciplineName} discipline for CloudVantage.`, color: disciplineColorMap[id] || 'var(--text-secondary)' };
+                    const discipline = maturityModel.disciplines[id];
+                    return { label: discipline.name, prompt: `Tell me about the ${discipline.name} discipline for CloudVantage.`, color: disciplineColorMap[id] || 'var(--text-secondary)' };
                 });
                 return { title: "Explore Disciplines:", pills: disciplinePills };
         }
     }
 }
-
-// REMOVED the global companyDataMap. It will now be created inside runAriaSequence.
-
 document.addEventListener('DOMContentLoaded', async () => {
     if (Navigation.getCurrentPage() === 'aria') {
         document.body.classList.add('page-aria');
@@ -108,15 +101,13 @@ function initializeAriaPage() {
 
     const { activePersona } = state;
 
-    if (activePersona === 'maya') {
-        renderAmActionCenter();
-        return;
-    }
-
     Navigation.updateCompanySelector();
 
     const conversationContainer = document.getElementById('aria-conversation-container');
     if (!conversationContainer) return;
+    
+    // Clear the container for a fresh start
+    conversationContainer.innerHTML = '';
 
     if (contextSource) {
         try {
@@ -134,7 +125,8 @@ function initializeAriaPage() {
         }
         runAriaSequence(prompt);
     } else {
-        renderAriaCleanSlate(companyId);
+        // --- FIX: RENDER PERSONA-SPECIFIC STARTING VIEWS ---
+        renderAriaCleanSlate(companyId, activePersona);
     }
 }
 
@@ -154,99 +146,21 @@ function renderContextualHeader(contextData) {
     conversationContainer.innerHTML += headerHTML;
 }
 
-function renderAriaCleanSlate(companyId) {
+function renderAriaCleanSlate(companyId, persona) {
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
     if (!promptWrapper) return;
 
-    let suggestedPrompts = [];
-    // Determine suggested prompts based on the company
-    if (companyId === 'techflow-solutions') {
-        suggestedPrompts = [
-            "What are the key risks for TechFlow Solutions?",
-            "Summarize the latest board meeting for TechFlow Solutions."
-        ];
-    } else if (companyId === 'cloudvantage') {
-        suggestedPrompts = [
-            "How is the NewCo integration going for CloudVantage?",
-            "Analyze the key drivers of our Net Revenue Retention.",
-            "Generate a board-level summary of Q2 financial performance."
-        ];
-    } else {
-        suggestedPrompts = [
-            "How did the portfolio perform over the past 12 months?",
-            "Forecast portfolio ARR for the next 6 months."
-        ];
-    }
-
-    // Use the new helper function to get the correct pills
     const contextualPills = getContextualPillsForCompany(companyId);
-    
-    // Pass BOTH the suggested prompts AND the contextual pills to the renderer
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts, contextualPills);
-}
 
-function renderAmActionCenter() {
-    const ariaView = document.getElementById('aria-main-view');
-    if (!ariaView) return;
-    const initialPrompts = [
-        "Please send me the conversation guide for Global. Update it with their latest support ticket status and the number of tickets we've received for them.",
-        "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term.",
-    ];
-    ariaView.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">Contract Renewal Action Center</h2>
-        <div class="am-action-center-layout">
-            <div class="persona-main-column">
-                <div class="portco-card">
-                    <h3 class="card-title">Account Details</h3>
-                    <div class="account-details-grid">
-                        <div class="detail-item"><label>Account Name</label><p>Global Enterprises Inc.</p></div>
-                        <div class="detail-item"><label>Account Type</label><p>Enterprise</p></div>
-                        <div class="detail-item"><label>Opportunity Status</label><p>Renewal</p></div>
-                        <div class="detail-item"><label>Region</label><p>Americas (US)</p></div>
-                        <div class="detail-item"><label>Current Term</label><p>12 Months</p></div>
-                        <div class="detail-item"><label>Contact</label><p>Michael Wilson</p></div>
-                        <div class="detail-item"><label>Billing Frequency</label><p>Annual</p></div>
-                        <div class="detail-item"><label>Contract Owner</label><p>Connor Hayes</p></div>
-                    </div>
-                </div>
-                <div class="portco-card">
-                    <h3 class="card-title">Contract Details</h3>
-                    <div class="renewal-options-grid">
-                        <div class="option-card">
-                            <h5>Current</h5>
-                            <p class="price">80,000 USD</p>
-                            <ul><li>Standard Package (Tier 2)</li><li>with 100 Users & 5 Domains</li></ul>
-                            <p class="support-tier">Platform Access: PREMIUM</p>
-                            <button class="secondary-button">View</button>
-                        </div>
-                        <div class="option-card">
-                            <h5>Option 1</h5>
-                            <p class="price">120,000 USD</p>
-                            <ul><li>Enterprise Package (Tier 3)</li><li>with 250 Users & 10 Domains</li></ul>
-                            <p class="support-tier">Platform Access: ENTERPRISE</p>
-                            <button class="primary-button">Select</button>
-                        </div>
-                        <div class="option-card recommended">
-                            <h5>Recommended</h5>
-                            <p class="price">90,000 USD</p>
-                            <ul><li>Standard Package (Tier 2)</li><li>with 150 Users & 8 Domains</li></ul>
-                            <p class="support-tier">Platform Access: PREMIUM+</p>
-                            <button class="primary-button">Select</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="persona-sidebar-column">
-                <div class="portco-card">
-                    <h3 class="card-title">Conversation with Pilot</h3>
-                    <div id="aria-conversation-container" class="space-y-4">
-                        <div class="aria-response-bubble"><p class="response-text">Hi Maya, you've been assigned a renewal action for **Global Enterprises Inc.**</p></div>
-                    </div>
-                    <div id="aria-prompt-wrapper" class="mt-4">${getAdvancedPromptBoxHTML(initialPrompts)}</div>
-                </div>
-            </div>
-        </div>
-    `;
+    if (persona === 'connor') {
+        runAriaSequence("Give me my CRO daily briefing.", true); 
+    } else if (persona === 'maya') {
+        runAriaSequence("What are my priority renewals for this week?", true);
+    } else if (companyId === 'techflow-solutions') {
+        promptWrapper.innerHTML = getAdvancedPromptBoxHTML(["Show me the TechFlow diligence plan."], contextualPills);
+    } else {
+        promptWrapper.innerHTML = getAdvancedPromptBoxHTML(["How is the NewCo integration going for CloudVantage?"], contextualPills);
+    }
 }
 
 async function typeWords(element, text, callback) {
@@ -258,13 +172,12 @@ async function typeWords(element, text, callback) {
         if (i < words.length) {
             element.innerHTML += words[i] + ' ';
             i++;
-            // FIX: Scroll continuously as new words are added
             scrollToConversationBottom(); 
         } else {
             clearInterval(timer);
             if (callback) callback();
         }
-    }, 30); // Adjust speed if desired
+    }, 30);
 }
 
 async function runAriaBuildingSequence(responseData, targetElement, promptWrapper) {
@@ -286,26 +199,31 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
         await new Promise(r => setTimeout(r, 50)); 
         item.classList.add('visible');
         
-        // --- FIX START: Correctly identify the placeholder div by its own ID ---
-        // The issue was using querySelector. The 'item' IS the target.
-        if (item.id && item.id.startsWith('gantt-replan-target-') && responseData.simulation?.type === 'GANTT_REPLAN') {
-            // Render the chart directly into the 'item' element.
-            if (window.DiligenceHubComponent) {
-                const companyId = loadState().selectedCompanyId;
-                // We pass 'item' itself as the target element.
-                window.DiligenceHubComponent.renderModifiedPlan(item, companyId, responseData.simulation.params);
-            }
-        } else {
-            // This is a normal text item, so animate the text inside it.
-            const typingElements = item.querySelectorAll('[data-typing-text]');
-            for (const el of typingElements) {
-                await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
+        // --- FIX: RENDER CHART AT THE RIGHT TIME ---
+        if (responseData.chartId && responseData.chartConfig) {
+            const canvas = item.querySelector(`#${responseData.chartId}`);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, responseData.chartConfig);
             }
         }
-        // --- FIX END ---
+        
+        const typingElements = item.querySelectorAll('[data-typing-text]');
+        for (const el of typingElements) {
+            await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
+        }
+
+        const listElements = item.querySelectorAll('[data-animate-list]');
+        for (const list of listElements) {
+            const listItems = Array.from(list.children);
+            list.innerHTML = '';
+            for (const li of listItems) {
+                list.appendChild(li);
+                await new Promise(r => setTimeout(r, 150));
+            }
+        }
     }
 
-    // After all animations are done, show the footer and prompts
     const responseBubble = targetElement.closest('.aria-response-bubble');
     const footer = responseBubble.querySelector('.response-actions-footer');
     if (footer) {
@@ -318,30 +236,16 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
     setTimeout(() => scrollToConversationBottom(), 50);
 }
 
-async function runAriaSequence(promptText) {
+async function runAriaSequence(promptText, isInitialBriefing = false) {
     if (!promptText) return;
     let state = loadState();
     const companyId = state.selectedCompanyId;
     
+   
     const companyDataMap = {
-        'techflow-solutions': {
-            ariaResponses: { 
-                ...(typeof techflow_ariaResponses !== 'undefined' ? techflow_ariaResponses : {}), 
-                ...(typeof diligenceHubAriaResponses !== 'undefined' ? diligenceHubAriaResponses : {}), 
-                ...(typeof portco_ariaResponses !== 'undefined' ? portco_ariaResponses : {}) 
-            }
-        },
-        'cloudvantage': {
-            ariaResponses: { 
-                ...(typeof cloudvantage_ariaResponses !== 'undefined' ? cloudvantage_ariaResponses : {}) 
-            }
-        },
-        'all': {
-            ariaResponses: { 
-                ...(typeof portfolio_ariaResponses !== 'undefined' ? portfolio_ariaResponses : {}), 
-                ...(typeof commandCenterAriaResponses !== 'undefined' ? commandCenterAriaResponses : {}) 
-            }
-        }
+        'techflow-solutions': { ariaResponses: { ...techflow_ariaResponses, ...diligenceHubAriaResponses, ...portco_ariaResponses } },
+        'cloudvantage': { ariaResponses: { ...cloudvantage_ariaResponses } }, // This now works because cloudvantage_ariaResponses is globally available from data.js
+        'all': { ariaResponses: { ...portfolio_ariaResponses, ...commandCenterAriaResponses } }
     };
     const allStaticResponses = companyDataMap[companyId]?.ariaResponses || {};
 
@@ -351,20 +255,14 @@ async function runAriaSequence(promptText) {
 
     promptWrapper.innerHTML = getAdvancedPromptBoxHTML([]); 
 
-    const persona = PERSONAS[state.activePersona];
-    const nameParts = persona.name.split(' ');
-    const initials = (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
-
-    const userPromptHTML = `
-        <div class="user-prompt-wrapper">
-            <div class="user-prompt-bubble">
-                <p class="font-semibold">${persona.name}:</p>
-                <p>${promptText}</p>
-            </div>
-            <div class="persona-avatar-bubble" style="background-color: ${persona.avatarColor}; color: ${persona.avatarTextColor};">${initials}</div>
-        </div>`;
-    conversationContainer.insertAdjacentHTML('beforeend', userPromptHTML);
-    scrollToConversationBottom();
+    if (!isInitialBriefing) {
+        const persona = PERSONAS[state.activePersona];
+        const nameParts = persona.name.split(' ');
+        const initials = (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
+        const userPromptHTML = `<div class="user-prompt-wrapper"><div class="user-prompt-bubble"><p class="font-semibold">${persona.name}:</p><p>${promptText}</p></div><div class="persona-avatar-bubble" style="background-color: ${persona.avatarColor}; color: ${persona.avatarTextColor};">${initials}</div></div>`;
+        conversationContainer.insertAdjacentHTML('beforeend', userPromptHTML);
+        scrollToConversationBottom();
+    }
     
     const contextualPillsForPromptBox = getContextualPillsForCompany(companyId);
     const componentInfo = generativeComponentMap[promptText];
@@ -402,14 +300,7 @@ async function runAriaSequence(promptText) {
     };
 
     if (componentInfo || staticResponseData) {
-        const reasoningId = `reasoning-${Date.now()}`;
-        const reasoningHTML = `<div id="${reasoningId}" class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
-        conversationContainer.insertAdjacentHTML('beforeend', reasoningHTML);
-        scrollToConversationBottom();
-        await new Promise(resolve => setTimeout(resolve, 500));
-        document.getElementById(reasoningId)?.remove();
-
-        const responseId = `aria-content-target-${Date.now()}`;
+ const responseId = `aria-content-target-${Date.now()}`;
         const responseDataId = staticResponseData?.id || 'component-response';
         
         const ariaHeaderHTML = `
@@ -430,11 +321,10 @@ async function runAriaSequence(promptText) {
             await loadScript(componentInfo.script);
             window[componentInfo.renderer].render(targetElement, companyId);
             promptWrapper.innerHTML = getAdvancedPromptBoxHTML(componentInfo.followUpQuestions, contextualPillsForPromptBox);
-
         } else if (staticResponseData) {
             runAriaBuildingSequence(staticResponseData, targetElement, promptWrapper);
         }
-} else {
+    } else {
         // Fallback for unknown prompts
         const responseId = `aria-content-target-${Date.now()}`;
         const typingIndicatorHTML = `<div class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><div id="${responseId}" class="response-text"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div></div>`;

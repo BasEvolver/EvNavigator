@@ -1,6 +1,6 @@
-// js/portco-data.js - Contains data and utilities for the PortCo & Diligence pages.
+// js/portco-data.js - CORRECTED AND FINAL VERSION
 
-// --- CRITICAL UTILITIES AND CONSTANTS (MOVED FROM SHARED.JS) ---
+// --- CRITICAL UTILITIES AND CONSTANTS ---
 const projectPlanUtils = {
     PROJECT_START_DATE: PROJECT_START_DATE,
     CURRENT_PROJECT_DAY: CURRENT_PROJECT_DAY,
@@ -90,14 +90,6 @@ const FILTER_DATA = {
     statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
 };
 
-const projectResources = [
-    { name: 'Alex (Analyst)', role: 'Internal', hours: 45 },
-    { name: 'Brenda (VP)', role: 'Internal', hours: 35 },
-    { name: 'EY', role: 'Partner', hours: 50 },
-    { name: 'PwC', role: 'Partner', hours: 25 },
-    { name: 'Sarah (Associate)', role: 'Internal', hours: 48 },
-];
-
 const ceoDashboardData = {
     kpis: {
         playStatus: { value: '78%', change: '+2% from last quarter' },
@@ -128,18 +120,35 @@ const ceoDashboardData = {
     ]
 };
 
-const croRenewalData = {
-    opportunities: [
-        { account: 'Global Enterprises Inc.', segment: 'Gold', value: 3245000, date: 'July 15, 2025', circumstance: 'Business Success' },
-        { account: 'Apex Solutions', segment: 'Gold', value: 2780000, date: 'August 3, 2025', circumstance: 'Technical Success' },
-        { account: 'Titan Industries', segment: 'Gold', value: 4120000, date: 'August 17, 2025', circumstance: 'Business Success' },
-        { account: 'NeoGen Systems', segment: 'Silver', value: 785000, date: 'July 8, 2025', circumstance: 'Technical Success' },
-        { account: 'Velocity Partners', segment: 'Silver', value: 640000, date: 'September 5, 2025', circumstance: 'Struggler' },
-        { account: 'Stellar Technologies', segment: 'Silver', value: 925000, date: 'July 28, 2025', circumstance: 'Business Success' },
-        { account: 'Fusion Micro', segment: 'Bronze', value: 125000, date: 'September 14, 2025', circumstance: 'Technical Success' },
-        { account: 'Horizon Solutions', segment: 'Bronze', value: 95000, date: 'July 5, 2025', circumstance: 'Struggler' },
-        { account: 'Nimbus Data', segment: 'Bronze', value: 72000, date: 'August 11, 2025', circumstance: 'Technical Success' },
-        { account: 'Pulse Innovations', segment: 'Bronze', value: 135000, date: 'September 29, 2025', circumstance: 'Business Success' },
+// CORRECTED: This is now the single source of truth for CRO-related data.
+// The old, conflicting `croRenewalData` object has been removed.
+const croData = {
+    // PLAY 1: RENEWAL & RE-SEGMENTATION (12 Customers)
+renewalOpportunities: [
+        { account: 'Global Enterprises Inc.', legacySegment: 'Tier 1', proposedSegment: 'Gold', rationale: 'High usage, strategic account', currentARR: 80000, health: 'At Risk', renewalDate: '2025-10-28', owner: 'Maya Singh' },
+        { account: 'Apex Solutions', legacySegment: 'Key Account', proposedSegment: 'Gold', rationale: 'High ARR, multi-product', currentARR: 150000, health: 'Healthy', renewalDate: '2025-11-05', owner: 'Maya Singh' },
+        { account: 'Stellar Technologies', legacySegment: 'Tier 1', proposedSegment: 'Silver', rationale: 'Consistent usage, mid-market', currentARR: 75000, health: 'Healthy', renewalDate: '2025-11-12', owner: 'John Chen' },
+        { account: 'Fusion Micro', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Low usage, basic needs', currentARR: 25000, health: 'Healthy', renewalDate: '2025-11-18', owner: 'Anna Wong' },
+        { account: 'Horizon Solutions', legacySegment: 'Key Account', proposedSegment: 'Silver', rationale: 'Growth potential', currentARR: 95000, health: 'Healthy', renewalDate: '2025-11-22', owner: 'Maya Singh' },
+        { account: 'Nimbus Data', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Low usage, stable', currentARR: 30000, health: 'At Risk', renewalDate: '2025-12-01', owner: 'Anna Wong' },
+        { account: 'Velocity Partners', legacySegment: 'Tier 2', proposedSegment: 'Silver', rationale: 'Mid-market, steady usage', currentARR: 65000, health: 'Healthy', renewalDate: '2025-12-05', owner: 'John Chen' },
+        { account: 'Quantum Systems', legacySegment: 'Tier 1', proposedSegment: 'Silver', rationale: 'High usage, but lower ARR', currentARR: 85000, health: 'Healthy', renewalDate: '2025-12-11', owner: 'Maya Singh' },
+        { account: 'Echo Analytics', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Basic feature set user', currentARR: 45000, health: 'Healthy', renewalDate: '2025-12-19', owner: 'Anna Wong' },
+        { account: 'Pioneer Labs', legacySegment: 'Key Account', proposedSegment: 'Gold', rationale: 'High ARR, strategic partner', currentARR: 210000, health: 'Healthy', renewalDate: '2025-12-28', owner: 'John Chen' },
+        { account: 'Catalyst Corp', legacySegment: 'Tier 2', proposedSegment: 'Silver', rationale: 'Growth potential, mid-market', currentARR: 70000, health: 'At Risk', renewalDate: '2026-01-05', owner: 'Maya Singh' },
+        { account: 'Momentum Inc.', legacySegment: 'Tier 1', proposedSegment: 'Gold', rationale: 'High usage, recent expansion', currentARR: 180000, health: 'Healthy', renewalDate: '2026-01-15', owner: 'Maya Singh' }
+    ],
+    // PLAY 2: PROACTIVE UPSELL (Mid-Contract)
+    upsellOpportunities: [
+        { account: 'Digital Wave', currentPlan: 'Professional', usageMetric: '98% of API Calls', metricValue: '9.8M / 10M', contractEnd: '18 months', potentialARR: 45000 },
+        { account: 'Summit Financial', currentPlan: 'Professional', usageMetric: '95% of User Licenses', metricValue: '95 / 100', contractEnd: '24 months', potentialARR: 50000 },
+        { account: 'Meridian Health', currentPlan: 'Enterprise', usageMetric: '99% of Data Storage', metricValue: '9.9TB / 10TB', contractEnd: '14 months', potentialARR: 75000 }
+    ],
+    // PLAY 3: CROSS-SELL (NewCo Offering)
+    crossSellOpportunities: [
+        { account: 'Innovate Labs', pastRequest: 'Advanced Data Governance', newcoProduct: 'NewCo Govern', potentialARR: 60000 },
+        { account: 'NextGen Pharma', pastRequest: 'Real-time Compliance Reporting', newcoProduct: 'NewCo Comply', potentialARR: 85000 },
+        { account: 'Anchor Bank', pastRequest: 'Data Lineage Tracking', newcoProduct: 'NewCo Govern', potentialARR: 70000 }
     ]
 };
 

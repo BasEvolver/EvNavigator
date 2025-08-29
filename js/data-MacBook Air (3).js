@@ -619,287 +619,7 @@ const techflow_ariaResponses = {
 };
 
 const cloudvantage_ariaResponses = {
-   // --- CONNOR (CRO) WORKFLOWS ---
-    // --- CONNOR (CRO) WORKFLOWS ---
-
-    // FIX #1: This is the NEW initial briefing for Connor. It runs automatically when he lands on the ARIA page.
-    "Give me my CRO daily briefing.": {
-        id: 'cro-daily-briefing',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
-                <h3 class="response-title">CRO Daily Briefing</h3>
-                <p class="response-text" data-typing-text="Good morning, Connor. Here is the current state of the business. Overall performance is strong, led by North America's successful cross-selling of NewCo products. However, two key areas require your attention: the underperformance of the EMEA region and increasing competitive pressure from AgileCloud in the mid-market."></p>
-            </div>
-            <div class="build-item aria-kpi-grid">
-                <div class="aria-kpi-card"><p class="aria-kpi-label">Global Quota Attainment</p><p class="aria-kpi-value text-success">103%</p></div>
-                <div class="aria-kpi-card"><p class="aria-kpi-label">Net Revenue Retention</p><p class="aria-kpi-value text-success">128%</p></div>
-                <div class="aria-kpi-card"><p class="aria-kpi-label">Win Rate vs. AgileCloud</p><p class="aria-kpi-value text-error">35%</p></div>
-            </div>
-            <div class="build-item">
-                <h4 class="response-section-title">Priority Focus Areas</h4>
-                <div class="aria-list">
-                    <div class="aria-list-item"><span>1.</span><div><h4>EMEA Region Turnaround:</h4><p>The region is at 75% of quota due to a 9% drop in logo retention. A new VP is needed to stabilize the team.</p></div></div>
-                    <div class="aria-list-item"><span>2.</span><div><h4>Upcoming NewCo Renewals:</h4><p>There is a cohort of 12 NewCo customers up for renewal, representing a significant opportunity to standardize contracts and capture price uplift.</p></div></div>
-                </div>
-            </div>
-        </div>`,
-        followUpQuestions: ["What is the plan to address the EMEA performance issue?", "Let's process the upcoming renewals.", "What are the biggest risks in the current sales pipeline?"]
-    },
-
-    // FIX #1: ADDED THE MISSING RESPONSE FOR THE "PERFORMANCE" PILL
-    "Give me a breakdown of our current sales performance against targets.": {
-        id: 'sales-performance-breakdown',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Sales Performance Breakdown</h3></div>
-            <div class="build-item">
-                <h4 class="response-section-title">Regional Quota Attainment (YTD)</h4>
-                <div class="histogram-container">
-                    <div class="histogram-bar-wrapper"><div class="histogram-bar over-target" style="height: 100%;"></div><p class="histogram-label">NA (115%)</p></div>
-                    <div class="histogram-bar-wrapper"><div class="histogram-bar over-target" style="height: 85%;"></div><p class="histogram-label">APAC (105%)</p></div>
-                    <div class="histogram-bar-wrapper"><div class="histogram-bar under-target" style="height: 60%;"></div><p class="histogram-label">EMEA (75%)</p></div>
-                </div>
-            </div>
-            <div class="build-item judgement-box"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The immediate priority is to stabilize the EMEA region by addressing the leadership gap. The successful NA cross-sell motion provides a ready-made playbook that can be deployed in EMEA once new leadership is in place."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Salesforce CRM Pipeline, refreshed today; Workday HR Records, refreshed weekly).</p></div>
-        </div>`,
-        followUpQuestions: ["What is the plan to address the EMEA performance issue?", "Generate a list of at-risk renewal accounts in EMEA."]
-    },
-
-    // FIX #1: ADDED THE MISSING RESPONSE FOR THE "PIPELINE & FORECAST" PILL
-    "What are the biggest risks and opportunities in the current sales pipeline?": {
-        id: 'pipeline-risks-opps',
-        renderFunc: function() { 
-            return `<div class="aria-response-content">
-                <div class="build-item"><h3 class="response-title">Pipeline Analysis</h3></div>
-                <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>ARR</th><th>Stage</th><th>Risk/Opportunity</th></tr></thead><tbody>
-                    <tr><td>Apex Solutions</td><td>$2.8M</td><td>Negotiation</td><td class="text-error">Stalled (14 months in cycle)</td></tr>
-                    <tr><td>Stellar Technologies</td><td>$925k</td><td>Proposal</td><td class="text-warning">Competing with AgileCloud</td></tr>
-                    <tr><td>Global Enterprises Inc.</td><td>$3.2M</td><td>Verbal Commit</td><td class="text-success">Opportunity to upsell Security Module</td></tr>
-                </tbody></table></div>
-                <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The pipeline is heavily concentrated on the Apex Solutions deal, which shows signs of being stalled. The competitive threat from AgileCloud is the most systemic risk. However, the most immediate revenue opportunity lies in systematically processing the upcoming NewCo renewals."></p></div>
-                ${renderRecommendedActionsHTML(this.recommendedActions)}
-            </div>`
-        },
-        recommendedActions: [
-            { text: "Process the 12 upcoming renewals.", description: "Begin the renewal and re-segmentation play for the NewCo cohort.", prompt: "Let's process the upcoming renewals." },
-            { text: "Identify mid-contract upsell opportunities.", description: "Find customers exceeding their plan limits who are not yet up for renewal.", prompt: "Identify mid-contract upsell opportunities." },
-            { text: "Generate a battle card for the sales team to compete against AgileCloud.", description: "Equip the sales team with competitive intelligence to improve win rates.", prompt: "Generate a battle card for the sales team to compete against AgileCloud." }
-        ],
-        followUpQuestions: ["What is the status of the stalled Apex Solutions deal?"]
-    },
-    
-    // REMAINDER OF THE CONVERSATIONAL FLOWS
-    "What is the plan to address the EMEA performance issue?": {
-        id: 'emea-plan',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">EMEA Turnaround Plan</h3></div>
-            <div class="build-item"><p class="response-text" data-typing-text="The root cause of the EMEA underperformance is the leadership vacuum created by the VP's departure 3 months ago. The immediate plan is to hire a new VP of Sales for the region."></p></div>
-            <div class="build-item judgement-box"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="I can assist by drafting a job description based on the profiles of our most successful sales leaders and identifying potential candidates within our network."></p></div>
-        </div>`,
-        followUpQuestions: ["Draft a job description for the new EMEA VP of Sales.", "Identify potential candidates in our network."]
-    },
-    "Analyze the NewCo customer base for further cross-sell opportunities.": {
-        id: 'initiatives-overview',
-        renderFunc: function() {
-            return `<div class="aria-response-content">
-                <div class="build-item"><h3 class="response-title">Strategic Initiatives Overview</h3></div>
-                <div class="build-item"><p class="response-text" data-typing-text="The primary initiative is the successful integration of NewCo. A key part of realizing the deal's value is cross-selling our existing modules into the acquired customer base. My analysis of their historical data indicates a strong latent demand for data governance and compliance solutions."></p></div>
-                ${renderRecommendedActionsHTML(this.recommendedActions)}
-            </div>`
-        },
-        recommendedActions: [
-            { text: "Generate a target list for NewCo cross-sell.", description: "Analyze past feature requests to find high-propensity cross-sell targets.", prompt: "Target customers for NewCo cross-sell." }
-        ],
-        followUpQuestions: ["What is the total synergy target for the NewCo acquisition?", "Show me the 100-day integration plan."]
-    },
-
-  "Let's process the upcoming renewals.": {
-    id: 'renewal-initial-list',
-    // REPLACE the renderFunc with this:
-    renderFunc: () => {
-        const tableRows = croData.renewalOpportunities.map(c => `<tr><td>${c.account}</td><td>${c.legacySegment}</td><td>$${c.currentARR.toLocaleString()}</td><td>${c.renewalDate}</td></tr>`).join('');
-        return `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Upcoming Renewals (Next 90 Days)</h3></div>
-            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Legacy Segment</th><th>Current ARR</th><th>Renewal Date</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-            <div class="build-item judgement-box"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="There are 12 upcoming renewals totaling $1,240,000 in ARR. The current customer segmentation ('Tier 1', 'Key Account') is inconsistent and doesn't align with our value-based playbook. I recommend re-segmenting this cohort into our standard Gold/Silver/Bronze tiers to standardize the renewal and upsell motion."></p></div>
-        </div>`;
-    },
-    followUpQuestions: ["Okay, re-segment these customers based on our playbook criteria.", "Which of these accounts are at risk?"]
-},
-    "Okay, re-segment these customers based on our playbook criteria.": {
-    id: 'renewal-resegment',
-    // REPLACE the renderFunc with this:
-    renderFunc: () => {
-        const tableRows = croData.renewalOpportunities.map(c => `<tr><td>${c.account}</td><td>${c.legacySegment}</td><td><span class="segment-badge ${c.proposedSegment.toLowerCase()}">${c.proposedSegment}</span></td><td>${c.rationale}</td></tr>`).join('');
-        return `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Proposed Customer Re-segmentation</h3></div>
-            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Legacy Segment</th><th>Proposed Segment</th><th>Rationale</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-            <div class="build-item judgement-box"><p class="judgement-title">Next Step:</p><p class="judgement-text" data-typing-text="Segmentation is complete for all 12 accounts. Now, let's define the renewal strategy. We can apply the standard playbook price uplifts, but we should consider a more cautious approach for the accounts flagged as 'At Risk'. How would you like to proceed?"></p></div>
-        </div>`;
-    },
-    followUpQuestions: ["Apply the standard playbook uplift, but use a conservative 5% for at-risk accounts.", "What is the financial impact of this re-segmentation and uplift plan?", "Which accounts have the highest upsell potential?"]
-},
-"Apply the standard playbook uplift, but use a conservative 5% for at-risk accounts.": {
-    id: 'renewal-uplift-model',
-    // REPLACE the renderFunc with this:
-    renderFunc: () => {
-        const playbookUplifts = { 'Gold': 0.20, 'Silver': 0.10, 'Bronze': 0.05 };
-        const tableRows = croData.renewalOpportunities.map(c => {
-            const isAtRisk = c.health === 'At Risk';
-            const upliftPercent = isAtRisk ? 0.05 : playbookUplifts[c.proposedSegment];
-            const upliftAmount = c.currentARR * upliftPercent;
-            const newARR = c.currentARR + upliftAmount;
-            return `<tr><td>${c.account}</td><td><span class="segment-badge ${c.proposedSegment.toLowerCase()}">${c.proposedSegment}</span></td><td>$${c.currentARR.toLocaleString()}</td><td class="${isAtRisk ? 'text-warning' : ''}">${(upliftPercent * 100).toFixed(0)}% ${isAtRisk ? '(At Risk)' : ''}</td><td class="text-success">$${upliftAmount.toLocaleString()}</td><td>$${newARR.toLocaleString()}</td></tr>`;
-        }).join('');
-        const totalIncrease = croData.renewalOpportunities.reduce((sum, c) => {
-            const isAtRisk = c.health === 'At Risk';
-            const upliftPercent = isAtRisk ? 0.05 : playbookUplifts[c.proposedSegment];
-            return sum + (c.currentARR * upliftPercent);
-        }, 0);
-        return `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Renewal Uplift Financial Impact</h3></div>
-            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Segment</th><th>Current ARR</th><th>Uplift %</th><th>ARR Increase</th><th>New ARR</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-            <div class="build-item judgement-box success"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="This renewal strategy for the 12 accounts projects a total ARR increase of **$${totalIncrease.toLocaleString()}**. This is a strong, data-driven plan. I am ready to generate the specific action items and renewal targets for the Account Managers. Shall I proceed?"></p></div>
-        </div>`;
-    },
-    followUpQuestions: ["Yes, please generate conversation guides for each segment action.", "Which customers are at the highest risk of churning with this increase?"]
-},
-    "Yes, please generate conversation guides for each segment action.": {
-        id: 'generate-guides',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Generated Conversation Guides by Segment</h3></div>
-            <div class="build-item card-base p-4">
-                <h4 class="response-section-title">Gold Segment Guide (20% Uplift)</h4>
-                <ul class="list-disc pl-5 text-sm space-y-1">
-                    <li><strong>Goal:</strong> Reinforce strategic partnership and secure renewal with value-based uplift.</li>
-                    <li><strong>Talking Points:</strong> Highlight increased usage, ROI achieved, and introduce new enterprise features unlocked by the Gold tier. Frame the uplift around enhanced value and dedicated support.</li>
-                </ul>
-            </div>
-            <div class="build-item card-base p-4">
-                <h4 class="response-section-title">Silver Segment Guide (10% Uplift)</h4>
-                <ul class="list-disc pl-5 text-sm space-y-1">
-                    <li><strong>Goal:</strong> Secure renewal and introduce expansion potential.</li>
-                    <li><strong>Talking Points:</strong> Focus on consistency and reliability. Introduce one key feature from the next tier up as a potential future upsell. Justify uplift based on product improvements over the last term.</li>
-                </ul>
-            </div>
-            <div class="build-item card-base p-4">
-                <h4 class="response-section-title">Bronze Segment Guide (5% Uplift)</h4>
-                <ul class="list-disc pl-5 text-sm space-y-1">
-                    <li><strong>Goal:</strong> Secure a simple, low-friction renewal.</li>
-                    <li><strong>Talking Points:</strong> Emphasize stability and ease of use. Position the modest uplift as a standard cost-of-living adjustment to maintain service levels.</li>
-                </ul>
-            </div>
-            <div class="build-item judgement-box"><p class="judgement-title">Next Step:</p><p class="judgement-text" data-typing-text="The guides are ready. Shall I create the renewal opportunities in Salesforce and assign them to the account owners with these guides and target ARRs attached?"></p></div>
-        </div>`,
-        followUpQuestions: ["Yes, assign these renewal targets to the account owners."]
-    },
-"Yes, assign these renewal targets to the account owners.": {
-        id: 'renewal-assign-ams',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item card-base">
-                <h4 class="response-title">Action Complete: Renewals Assigned in CRM</h4>
-                <p class="response-text" data-typing-text="Excellent. I have created renewal opportunities in Salesforce for the 12 NewCo accounts. Each opportunity has been assigned to the correct owner and includes the target ARR and a link to the appropriate conversation guide. Maya Singh, John Chen, and Anna Wong have been notified."></p>
-            </div>
-        </div>`,
-        followUpQuestions: [] // This empty array correctly signifies the end of this conversational play.
-    },
-    "Identify mid-contract upsell opportunities.": {
-        id: 'upsell-opportunities',
-        renderFunc: () => {
-            const tableRows = croData.upsellOpportunities.map(c => `<tr><td>${c.account}</td><td>${c.currentPlan}</td><td class="text-warning">${c.usageMetric} (${c.metricValue})</td><td>${c.contractEnd}</td><td class="text-success">$${c.potentialARR.toLocaleString()}</td></tr>`).join('');
-            const totalPotential = croData.upsellOpportunities.reduce((sum, c) => sum + c.potentialARR, 0);
-            return `<div class="aria-response-content">
-                <div class="build-item"><h3 class="response-title">Mid-Contract Upsell Opportunities</h3></div>
-                <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Current Plan</th><th>Usage Trigger</th><th>Contract Ends</th><th>Potential ARR Lift</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-                <div class="build-item judgement-box success"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="I've identified **${croData.upsellOpportunities.length} customers** who are exceeding their plan limits but are not yet up for renewal. There is a total of **$${totalPotential.toLocaleString()}** in potential ARR that can be captured proactively. I recommend assigning these to the AMs for immediate outreach."></p></div>
-            </div>`;
-        },
-        followUpQuestions: ["Draft an outreach email for Summit Financial highlighting the benefits of the Enterprise tier.", "Assign these to the account managers."]
-    },
-    "Target customers for NewCo cross-sell.": {
-        id: 'cross-sell-opportunities',
-        renderFunc: () => {
-            const tableRows = croData.crossSellOpportunities.map(c => `<tr><td>${c.account}</td><td>${c.pastRequest}</td><td class="text-success">${c.newcoProduct}</td><td class="text-success">$${c.potentialARR.toLocaleString()}</td></tr>`).join('');
-            const totalPotential = croData.crossSellOpportunities.reduce((sum, c) => sum + c.potentialARR, 0);
-            return `<div class="aria-response-content">
-                <div class="build-item"><h3 class="response-title">NewCo Cross-Sell Opportunities</h3></div>
-                <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Past Feature Request</th><th>Matching NewCo Product</th><th>Potential ARR</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-                <div class="build-item judgement-box success"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="My analysis of historical support tickets and feature requests has identified **${croData.crossSellOpportunities.length} high-propensity customers** for the NewCo product suite, representing a potential **$${totalPotential.toLocaleString()}** in new ARR."></p></div>
-            </div>`;
-        },
-        followUpQuestions: ["Generate a one-pager on the NewCo Govern module for Anchor Bank.", "Who is the best person to contact at Innovate Labs about this?"]
-    },
-    "What is the status of the stalled Apex Solutions deal?": { /* ... (This response remains the same as before) ... */ },
-    "Draft a job description for the new EMEA VP of Sales.": { /* ... (This response remains the same as before) ... */ },
-
-    // --- MAYA (AM) WORKFLOWS ---
-    "What are my priority renewals for this week?": {
-    id: 'maya-weekly-briefing',
-    // REPLACE the renderFunc with this:
-    renderFunc: () => {
-        const myRenewals = croData.renewalOpportunities.filter(c => c.owner === 'Maya Singh');
-        const tableRows = myRenewals.map(c => `<tr><td>${c.account}</td><td>${c.renewalDate}</td><td>$${c.currentARR.toLocaleString()}</td><td class="${c.health === 'At Risk' ? 'text-error' : 'text-success'}">${c.health}</td></tr>`).join('');
-        return `<div class="aria-response-content">
-            <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
-                <h3 class="response-title">Your Priority Renewals</h3>
-                <p class="response-text" data-typing-text="Good morning, Maya. Based on the renewal plan finalized by Connor, you have **${myRenewals.length} accounts** up for renewal in the next 90 days. Your highest priority is **Global Enterprises Inc.**, which has been flagged as 'At Risk' due to recent support activity."></p>
-            </div>
-            <div class="build-item">
-                <h4 class="response-section-title">Your Upcoming Renewals</h4>
-                <div class="data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Renewal Date</th><th>Current ARR</th><th>Health Score</th></tr></thead><tbody>${tableRows}</tbody></table></div>
-            </div>
-        </div>`;
-    },
-    followUpQuestions: ["Generate a conversation guide for my call with Global Enterprises Inc.", "What is the recommended renewal offer for Catalyst Corp?"]
-},
-    "Generate a conversation guide for my call with Global Enterprises Inc.": {
-        id: 'maya-convo-guide-global',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Conversation Guide: Global Enterprises Inc.</h3></div>
-            <div class="build-item card-base p-4">
-                <p class="response-section-title">Context & Goal</p>
-                <p class="text-sm text-secondary mb-4">This account is 'At Risk' due to 4 support tickets in the last 60 days. The goal is to renew them to the **Gold** tier with a **20% uplift** to **$96,000 ARR** by demonstrating value and addressing their support concerns with our Platinum offer.</p>
-                <p class="response-section-title">Key Talking Points:</p>
-                <ul class="list-disc pl-5 text-sm space-y-1" data-animate-list>
-                    <li><strong>Acknowledge & Solve:</strong> "I see you've had 4 support tickets recently. Our new Platinum Support, included in the Gold tier, provides a 4-hour SLA and a dedicated TAM to prevent these issues going forward."</li>
-                    <li><strong>Highlight Value:</strong> "Your usage of the Analytics Suite has increased by 35% this past quarter. The Gold tier unlocks advanced analytics features that will further accelerate your team's efficiency."</li>
-                    <li><strong>Justify Uplift:</strong> "To provide this higher level of support and the advanced features you're already leveraging, we are moving you to our Gold tier, which is reflected in the new pricing."</li>
-                </ul>
-            </div>
-        </div>`,
-        followUpQuestions: ["What were the root causes of their support tickets?", "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term."]
-    },
-    "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term.": {
-        id: 'maya-platinum-deck',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Generated Presentation: Platinum Support for Global Inc.</h3></div>
-            <div class="build-item card-base p-4">
-                <h4 class="response-section-title">Slide 1: A Partnership Focused on Your Success</h4>
-                <ul class="list-disc pl-5 text-sm space-y-1">
-                    <li>Acknowledge the 4 support tickets in the last 60 days.</li>
-                    <li>Reiterate our commitment to their success and the value they've achieved (35% increase in Analytics Suite usage).</li>
-                </ul>
-            </div>
-            <div class="build-item card-base p-4">
-                <h4 class="response-section-title">Slide 2: Introducing the Platinum Support Offer</h4>
-                <ul class="list-disc pl-5 text-sm space-y-1">
-                    <li><strong>Dedicated Technical Account Manager:</strong> A named expert who understands their environment.</li>
-                    <li><strong>4-Hour SLA:</strong> Guaranteed response times for critical issues, preventing the 48-hour delays they experienced.</li>
-                    <li><strong>Quarterly Strategy Reviews:</strong> Proactive sessions to ensure they are maximizing value from the platform.</li>
-                </ul>
-            </div>
-            <div class="build-item card-base p-4">
-                <h4 class="response-section-title">Slide 3: Your Path Forward with CloudVantage</h4>
-                <ul class="list-disc pl-5 text-sm space-y-1">
-                    <li>Clear breakdown of the Gold tier renewal, including the Platinum Support package.</li>
-                    <li>Next steps for discussion and finalizing the renewal.</li>
-                </ul>
-            </div>
-            <div class="build-item judgement-box"><p class="judgement-title">Action Complete:</p><p class="judgement-text" data-typing-text="The presentation has been generated and saved to your drafts. It is ready to be attached to an email."></p></div>
-        </div>`,
-        followUpQuestions: ["Draft an email to Michael Wilson with this deck attached.", "What other customers are good candidates for this offer?"]
-    },
-
-    // --- DISCIPLINE OVERVIEWS (ADRIAN/EVELYN) ---
+    // --- 1. SALES DISCIPLINE ---
     "Tell me about the Sales discipline for CloudVantage.": {
         id: 'discipline-sales-overview',
         renderFunc: () => `<div class="aria-response-content">
@@ -923,6 +643,44 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Analyze the key drivers of our Net Revenue Retention.", "What is the plan to address the EMEA performance issue?", "Generate a list of at-risk renewal accounts in EMEA."]
     },
+    "Analyze the key drivers of our Net Revenue Retention.": {
+        id: 'nrr-drivers',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">NRR Driver Analysis (128%)</h3></div>
+            <div class="build-item"><div class="response-section-title">Contribution to Expansion ARR:</div><div class="bar-chart-container"><div class="bar-chart-item"><div class="bar-label">NewCo Cross-Sell</div><div class="bar-wrapper"><div class="bar" style="width: 55%; background-color: var(--accent-blue);">55%</div></div></div><div class="bar-chart-item"><div class="bar-label">Enterprise Upgrades</div><div class="bar-wrapper"><div class="bar" style="width: 30%; background-color: var(--accent-teal);">30%</div></div></div><div class="bar-chart-item"><div class="bar-label">Standard Upsell</div><div class="bar-wrapper"><div class="bar" style="width: 15%; background-color: var(--purple);">15%</div></div></div></div></div>
+            <div class="build-item judgement-box success"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The 128% NRR is exceptionally strong and validates the core synergy thesis of the NewCo deal. The immediate priority is to replicate the successful cross-sell playbook from North America in the underperforming EMEA region."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (NetSuite ERP, refreshed daily).</p></div>
+        </div>`,
+        followUpQuestions: ["What is the plan to address the EMEA performance issue?", "Which customers are the best candidates for the next upsell campaign?"]
+    },
+    "What is the plan to address the EMEA performance issue?": {
+        id: 'emea-turnaround-plan',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">EMEA Turnaround Plan</h3></div>
+            <div class="build-item list-container">
+                <div class="list-item"><span class="list-number text-primary">1</span><div><h4 class="list-title">Leadership:</h4><p class="list-text" data-typing-text="Fast-track the hiring process for a new EMEA VP with a target start date within 45 days."></p></div></div>
+                <div class="list-item"><span class="list-number text-primary">2</span><div><h4 class="list-title">Retention:</h4><p class="list-text" data-typing-text="Assign a dedicated Customer Success Manager to the top 10 at-risk EMEA accounts immediately."></p></div></div>
+                <div class="list-item"><span class="list-number text-primary">3</span><div><h4 class="list-title">Morale:</h4><p class="list-text" data-typing-text="Implement a short-term sales incentive (SPIF) for the EMEA team focused on renewal contracts to regain momentum."></p></div></div>
+            </div>
+            <div class="build-item judgement-box success"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="Executing this three-point plan should stabilize the region within one quarter. The most critical action is securing new leadership to restore confidence and direction for the team."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Based on PE Sales Turnaround Playbook).</p></div>
+        </div>`,
+        followUpQuestions: ["Generate a list of at-risk renewal accounts in EMEA.", "Draft a job description for the EMEA VP of Sales."]
+    },
+    "Generate a list of at-risk renewal accounts in EMEA.": {
+        id: 'emea-at-risk-accounts',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">At-Risk Renewals - EMEA (Next 90 Days)</h3></div>
+            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Renewal Date</th><th>ARR</th><th>Risk Factor</th></tr></thead><tbody>
+                <tr><td>Innovate GmbH</td><td>2025-09-15</td><td>$450,000</td><td class="text-error">Low product usage</td></tr>
+                <tr><td>QuantumLeap PLC</td><td>2025-10-02</td><td>$320,000</td><td class="text-warning">Open support tickets</td></tr>
+                <tr><td>Nordic Solutions</td><td>2025-10-28</td><td>$280,000</td><td class="text-warning">Re-org in progress</td></tr>
+                <tr><td>EuroBank Corp</td><td>2025-11-11</td><td>$150,000</td><td class="text-error">Low product usage</td></tr>
+            </tbody></table></div>
+            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="These four accounts represent **$1.2M in at-risk ARR**. I recommend initiating an executive outreach program to the key decision-makers at 'Innovate GmbH' and 'QuantumLeap PLC' this week."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Salesforce CRM, Gainsight Health Scores, refreshed daily).</p></div>
+        </div>`,
+        followUpQuestions: ["Draft an outreach email for the executive sponsor.", "What is the support ticket status for QuantumLeap PLC?"]
+    },
+
+    // --- 2. MARKETING DISCIPLINE ---
     "Tell me about the Marketing discipline for CloudVantage.": {
         id: 'discipline-marketing-overview',
         renderFunc: () => `<div class="aria-response-content">
@@ -938,6 +696,44 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["How has our win rate against AgileCloud changed over time?", "Generate a battle card for the sales team to compete against AgileCloud.", "What is the financial impact of matching AgileCloud's discounts?"]
     },
+    "How has our win rate against AgileCloud changed over time?": {
+        id: 'win-rate-chart-agilecloud',
+        chartId: 'winRateChart',
+        chartConfig: { type: 'line', data: { labels: ['Q4 2024', 'Q1 2025', 'Q2 2025'], datasets: [{ label: 'Win Rate vs. AgileCloud', data: [62, 55, 35], borderColor: 'var(--status-error)', backgroundColor: 'rgba(220, 38, 38, 0.2)', fill: true, tension: 0.1 }] }, options: { scales: { y: { beginAtZero: true, max: 100, ticks: { callback: value => value + '%' } } } } },
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Win Rate Trend vs. AgileCloud</h3></div>
+            <div class="build-item chart-wrapper" style="height: 250px;"><canvas id="winRateChart"></canvas></div>
+            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The sharp decline in the win rate over the last six months directly correlates with AgileCloud's new pricing strategy. Our current pricing model lacks the flexibility to respond effectively to this competitive pressure."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Salesforce CRM, Win/Loss Analysis Reports, Q1 & Q2 2025).</p></div>
+        </div>`,
+        followUpQuestions: ["Generate a battle card for the sales team to compete against AgileCloud.", "What is the financial impact of matching AgileCloud's discounts?"]
+    },
+    "Generate a battle card for the sales team to compete against AgileCloud.": {
+        id: 'agilecloud-battlecard',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Competitive Battle Card: AgileCloud</h3></div>
+            <div class="build-item grid grid-cols-2 gap-4">
+                <div class="card-base p-4"><h4 class="font-bold text-error mb-2">AgileCloud's Weaknesses</h4><ul class="list-disc pl-5 text-sm space-y-1" data-animate-list><li>Lacks enterprise-grade security (No SOC 2 Type II)</li><li>Limited integration capabilities</li><li>Poor customer support ratings on G2</li></ul></div>
+                <div class="card-base p-4"><h4 class="font-bold text-success mb-2">Our Strengths (How to Win)</h4><ul class="list-disc pl-5 text-sm space-y-1" data-animate-list><li>Highlight our superior security and compliance</li><li>Showcase our robust API and partner ecosystem</li><li>Leverage our award-winning 24/7 support as a key differentiator</li></ul></div>
+            </div>
+            <div class="build-item judgement-box success"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The key to winning is to shift the conversation from price to total cost of ownership, security, and reliability, where we have a clear advantage."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (G2 Competitive Reviews, Internal Product Specs).</p></div>
+        </div>`,
+        followUpQuestions: ["Draft an email to the sales team with this battle card.", "What is the financial impact of matching AgileCloud's discounts?"]
+    },
+    "What is the financial impact of matching AgileCloud's discounts?": {
+        id: 'discount-impact-model',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Scenario: Impact of Matching Competitor Discounts</h3></div>
+            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Metric</th><th>Current</th><th>Projected w/ Matching</th><th>Impact</th></tr></thead><tbody>
+                <tr><td>Avg. Discount Rate</td><td>12%</td><td class="text-error">25%</td><td class="text-error">-13 pts</td></tr>
+                <tr><td>Gross Margin</td><td>78%</td><td class="text-error">74%</td><td class="text-error">-4 pts</td></tr>
+                <tr><td>Annual EBITDA</td><td>$24.2M</td><td class="text-error">$22.7M</td><td class="text-error">-$1.5M</td></tr>
+            </tbody></table></div>
+            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="Matching discounts is not a sustainable strategy. It would significantly harm our profitability. A better approach is to arm the sales team with value-based selling arguments and explore a new pricing model."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Internal Financial Model, Q2 2025).</p></div>
+        </div>`,
+        followUpQuestions: ["Generate a battle card for the sales team to compete against AgileCloud.", "Model the financial impact of a 15% price reduction on the Professional tier."]
+    },
+
+    // --- 3. BUILD DISCIPLINE ---
     "Tell me about the Build discipline for CloudVantage.": {
         id: 'discipline-build-overview',
         renderFunc: () => `<div class="aria-response-content">
@@ -953,6 +749,8 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Generate a risk mitigation plan for the AI feature delay.", "What is the status of the NewCo product integration?", "Who is the lead engineer on the AI feature?"]
     },
+
+    // --- 4. RUN DISCIPLINE ---
     "Tell me about the Run discipline for CloudVantage.": {
         id: 'discipline-run-overview',
         renderFunc: () => `<div class="aria-response-content">
@@ -968,6 +766,8 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["What are the key drivers behind our current NPS score?", "Analyze the recent trends in customer support ticket volume.", "What is our plan to improve the onboarding experience for NewCo customers?"]
     },
+
+    // --- 5. FINANCE DISCIPLINE ---
     "Tell me about the Finance discipline for CloudVantage.": {
         id: 'discipline-finance-overview',
         renderFunc: () => `<div class="aria-response-content">
@@ -989,6 +789,21 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Generate a board-level summary of Q2 financial performance.", "Model the financial impact of a 15% price reduction on the Professional tier.", "What are the key tax and compliance risks associated with the NewCo integration?"]
     },
+    "What are the key tax and compliance risks associated with the NewCo integration?": {
+        id: 'newco-tax-risks',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Key Tax & Compliance Risks: NewCo Integration</h3></div>
+            <div class="build-item list-container">
+                <div class="list-item"><span class="list-number text-error">1</span><div><h4 class="list-title">Sales Tax Nexus:</h4><p class="list-text" data-typing-text="NewCo has employees in three new states (Colorado, Texas, Florida), creating a sales tax nexus that needs to be immediately registered and configured in our billing system to avoid penalties."></p></div></div>
+                <div class="list-item"><span class="list-number text-warning">2</span><div><h4 class="list-title">Revenue Recognition (ASC 606):</h4><p class="list-text" data-typing-text="NewCo's legacy contracts have different performance obligations. We need a formal accounting review to ensure revenue is recognized in compliance with ASC 606."></p></div></div>
+                <div class="list-item"><span class="list-number text-warning">3</span><div><h4 class="list-title">Data Residency (GDPR):</h4><p class="list-text" data-typing-text="Some of NewCo's European customer data may be subject to GDPR data residency rules that require it to be stored within the EU. An audit of our data storage is required."></p></div></div>
+            </div>
+            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="These are standard but critical post-acquisition risks. I recommend engaging a third-party expert, like Evolver's tax and audit team, to conduct a formal review and ensure we are fully compliant to avoid future penalties."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (NewCo Employee Roster, NewCo Contract Review, Legal Diligence Report).</p></div>
+        </div>`,
+        followUpQuestions: ["Draft an engagement letter for a tax advisor.", "What is the estimated cost of a GDPR compliance audit?"]
+    },
+
+    // --- 6. CONTEXT DISCIPLINE ---
     "Tell me about the Context discipline for CloudVantage.": {
         id: 'discipline-context-overview',
         renderFunc: () => `<div class="aria-response-content">
@@ -1004,18 +819,114 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Show me the detailed 100-day integration plan.", "What are the key integration risks?", "Draft a communication plan to NewCo customers about the acquisition."]
     },
-    
-    // --- ALL OTHER FOLLOW-UP RESPONSES ---
-    "How has our win rate against AgileCloud changed over time?": {
-        id: 'win-rate-chart-agilecloud',
-        chartId: 'winRateChart',
-        chartConfig: { type: 'line', data: { labels: ['Q4 2024', 'Q1 2025', 'Q2 2025'], datasets: [{ label: 'Win Rate vs. AgileCloud', data: [62, 55, 35], borderColor: 'var(--status-error)', backgroundColor: 'rgba(220, 38, 38, 0.2)', fill: true, tension: 0.1 }] }, options: { scales: { y: { beginAtZero: true, max: 100, ticks: { callback: value => value + '%' } } } } },
+    "Show me the detailed 100-day integration plan.": {
+        id: '100-day-plan',
         renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Win Rate Trend vs. AgileCloud</h3></div>
-            <div class="build-item chart-wrapper" style="height: 250px;"><canvas id="winRateChart"></canvas></div>
-            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The sharp decline in the win rate over the last six months directly correlates with AgileCloud's new pricing strategy. Our current pricing model lacks the flexibility to respond effectively to this competitive pressure."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Salesforce CRM, Win/Loss Analysis Reports, Q1 & Q2 2025).</p></div>
+            <div class="build-item"><h3 class="response-title">100-Day Integration Plan: NewCo</h3><p class="response-subtitle">Generated by Aria based on the PE Integration Playbook.</p></div>
+            <div class="build-item"><div class="timeline-container">
+                <div class="timeline-phase"><div class="timeline-phase-title">Phase 1: Day 0-30 (Stabilize & Communicate)</div><ul class="timeline-items" data-animate-list><li>Launch internal and external communication plan.</li><li>Confirm key NewCo leadership and employee retention packages.</li><li>Establish joint steering committee and define integration workstreams.</li><li>Secure all IT systems and begin data backup and migration planning.</li></ul></div>
+                <div class="timeline-phase"><div class="timeline-phase-title">Phase 2: Day 31-60 (Assess & Plan)</div><ul class="timeline-items" data-animate-list><li>Complete detailed assessment of NewCo's technology stack and product roadmap.</li><li>Develop joint GTM strategy, including sales training on cross-selling.</li><li>Finalize synergy targets and create detailed tracking dashboards.</li><li>Conduct cultural assessment and plan team-building activities.</li></ul></div>
+                <div class="timeline-phase"><div class="timeline-phase-title">Phase 3: Day 61-100 (Execute & Integrate)</div><ul class="timeline-items" data-animate-list><li>Begin execution of priority technology integration projects.</li><li>Launch first joint marketing campaign and enable sales team with new collateral.</li><li>Consolidate financial reporting into CloudVantage's ERP system.</li><li>Report initial synergy wins and 100-day progress to the board.</li></ul></div>
+            </div></div>
         </div>`,
-        followUpQuestions: ["Generate a battle card for the sales team to compete against AgileCloud.", "What is the financial impact of matching AgileCloud's discounts?"]
+        followUpQuestions: ["Identify key integration risks.", "Create a synergy tracking dashboard.", "Draft a communication plan to NewCo customers about the acquisition."]
+    },
+
+    // --- CONNOR (CRO) BRIEFING & WORKFLOW ---
+    "Give me my CRO daily briefing.": {
+        id: 'cro-daily-briefing',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
+                <h3 class="response-title">CRO Daily Briefing</h3>
+                <p class="response-text" data-typing-text="Good morning, Connor. Here is the current state of the business. Overall performance is strong, led by North America's successful cross-selling of NewCo products. However, two key areas require your attention: the underperformance of the EMEA region and increasing competitive pressure from AgileCloud in the mid-market."></p>
+            </div>
+            <div class="build-item aria-kpi-grid">
+                <div class="aria-kpi-card"><p class="aria-kpi-label">Global Quota Attainment</p><p class="aria-kpi-value text-success">103%</p></div>
+                <div class="aria-kpi-card"><p class="aria-kpi-label">Net Revenue Retention</p><p class="aria-kpi-value text-success">128%</p></div>
+                <div class="aria-kpi-card"><p class="aria-kpi-label">Win Rate vs. AgileCloud</p><p class="aria-kpi-value text-error">35%</p></div>
+            </div>
+            <div class="build-item">
+                <h4 class="response-section-title">Priority Focus Areas</h4>
+                <div class="aria-list">
+                    <div class="aria-list-item"><span class="text-error">1.</span><div><h4>EMEA Region Turnaround:</h4><p>The region is at 75% of quota due to a 9% drop in logo retention. A new VP is needed to stabilize the team.</p></div></div>
+                    <div class="aria-list-item"><span class="text-warning">2.</span><div><h4>Competitive Pressure:</h4><p>AgileCloud's aggressive discounting is eroding our win rate in key mid-market deals.</p></div></div>
+                </div>
+            </div>
+        </div>`,
+        followUpQuestions: ["What is the plan to address the EMEA performance issue?", "Analyze the NewCo customer base for further cross-sell opportunities.", "What are the biggest risks in the current sales pipeline?"]
+    },
+    "What are the biggest risks in the current sales pipeline?": {
+        id: 'pipeline-risks',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Top Sales Pipeline Risks</h3></div>
+            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>ARR</th><th>Stage</th><th>Risk Factor</th></tr></thead><tbody>
+                <tr><td>Apex Solutions</td><td>$2.8M</td><td>Negotiation</td><td class="text-error">Stalled (14 months in cycle)</td></tr>
+                <tr><td>Stellar Technologies</td><td>$925k</td><td>Proposal</td><td class="text-warning">Competing with AgileCloud</td></tr>
+                <tr><td>Velocity Partners</td><td>$640k</td><td>Qualification</td><td class="text-warning">Economic Headwinds</td></tr>
+            </tbody></table></div>
+            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The pipeline is heavily concentrated on the Apex Solutions deal, which shows signs of being stalled. The competitive threat from AgileCloud is the most systemic risk, impacting multiple deals in the proposal stage."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Salesforce CRM, refreshed today).</p></div>
+        </div>`,
+        followUpQuestions: ["Generate a battle card for the sales team to compete against AgileCloud.", "What is the plan to address the EMEA performance issue?"]
+    },
+
+    // --- MAYA (AM) BRIEFING & WORKFLOW ---
+    "What are my priority renewals for this week?": {
+        id: 'maya-weekly-briefing',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
+                <h3 class="response-title">Weekly Renewal Action Center</h3>
+                <p class="response-text" data-typing-text="Good morning, Maya. You have 4 renewals in the next 90 days. Your highest priority is **Global Enterprises Inc.**, whose renewal is in 60 days. Their health score has dropped to 'At Risk' due to a recent spike in support tickets, so a proactive outreach is critical."></p>
+            </div>
+            <div class="build-item">
+                <h4 class="response-section-title">Upcoming Renewals (Next 90 Days)</h4>
+                <div class="data-table-container"><table class="data-table"><thead><tr><th>Account</th><th>Renewal Date</th><th>ARR</th><th>Health Score</th></tr></thead><tbody>
+                    <tr><td>Global Enterprises Inc.</td><td>2025-10-28</td><td>$80,000</td><td class="text-error">At Risk</td></tr>
+                    <tr><td>NeoGen Systems</td><td>2025-11-15</td><td>$120,000</td><td class="text-success">Healthy</td></tr>
+                    <tr><td>Horizon Solutions</td><td>2025-11-22</td><td>$95,000</td><td class="text-success">Healthy</td></tr>
+                </tbody></table></div>
+            </div>
+        </div>`,
+        followUpQuestions: ["Please send me the conversation guide for Global. Update it with their latest support ticket status and the number of tickets we've received for them.", "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term."]
+    },
+    
+    // --- ALL OTHER RESPONSES WITH LISTS, NOW REFORMATTED ---
+    "What is the plan to address the EMEA performance issue?": {
+        id: 'emea-turnaround-plan',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">EMEA Turnaround Plan</h3></div>
+            <div class="build-item aria-list">
+                <div class="aria-list-item"><span>1.</span><div><h4>Leadership:</h4><p data-typing-text="Fast-track the hiring process for a new EMEA VP with a target start date within 45 days."></p></div></div>
+                <div class="aria-list-item"><span>2.</span><div><h4>Retention:</h4><p data-typing-text="Assign a dedicated Customer Success Manager to the top 10 at-risk EMEA accounts immediately."></p></div></div>
+                <div class="aria-list-item"><span>3.</span><div><h4>Morale:</h4><p data-typing-text="Implement a short-term sales incentive (SPIF) for the EMEA team focused on renewal contracts to regain momentum."></p></div></div>
+            </div>
+            <div class="build-item judgement-box success"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="Executing this three-point plan should stabilize the region within one quarter. The most critical action is securing new leadership to restore confidence and direction for the team."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Based on PE Sales Turnaround Playbook).</p></div>
+        </div>`,
+        followUpQuestions: ["Generate a list of at-risk renewal accounts in EMEA.", "Draft a job description for the EMEA VP of Sales."]
+    },
+    "Generate a battle card for the sales team to compete against AgileCloud.": {
+        id: 'agilecloud-battlecard',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Competitive Battle Card: AgileCloud</h3></div>
+            <div class="build-item grid grid-cols-2 gap-4">
+                <div class="card-base p-4"><h4 class="font-bold text-error mb-2">AgileCloud's Weaknesses</h4><ul class="list-disc pl-5 text-sm space-y-1" data-animate-list><li>Lacks enterprise-grade security (No SOC 2 Type II)</li><li>Limited integration capabilities</li><li>Poor customer support ratings on G2</li></ul></div>
+                <div class="card-base p-4"><h4 class="font-bold text-success mb-2">Our Strengths (How to Win)</h4><ul class="list-disc pl-5 text-sm space-y-1" data-animate-list><li>Highlight our superior security and compliance</li><li>Showcase our robust API and partner ecosystem</li><li>Leverage our award-winning 24/7 support as a key differentiator</li></ul></div>
+            </div>
+            <div class="build-item judgement-box success"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The key to winning is to shift the conversation from price to total cost of ownership, security, and reliability, where we have a clear advantage."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (G2 Competitive Reviews, Internal Product Specs).</p></div>
+        </div>`,
+        followUpQuestions: ["Draft an email to the sales team with this battle card.", "What is the financial impact of matching AgileCloud's discounts?"]
+    },
+    "What are the key tax and compliance risks associated with the NewCo integration?": {
+        id: 'newco-tax-risks',
+        renderFunc: () => `<div class="aria-response-content">
+            <div class="build-item"><h3 class="response-title">Key Tax & Compliance Risks: NewCo Integration</h3></div>
+            <div class="build-item aria-list">
+                <div class="aria-list-item"><span class="text-error">1.</span><div><h4>Sales Tax Nexus:</h4><p data-typing-text="NewCo has employees in three new states (Colorado, Texas, Florida), creating a sales tax nexus that needs to be immediately registered and configured in our billing system to avoid penalties."></p></div></div>
+                <div class="aria-list-item"><span class="text-warning">2.</span><div><h4>Revenue Recognition (ASC 606):</h4><p data-typing-text="NewCo's legacy contracts have different performance obligations. We need a formal accounting review to ensure revenue is recognized in compliance with ASC 606."></p></div></div>
+                <div class="aria-list-item"><span class="text-warning">3.</span><div><h4>Data Residency (GDPR):</h4><p data-typing-text="Some of NewCo's European customer data may be subject to GDPR data residency rules that require it to be stored within the EU. An audit of our data storage is required."></p></div></div>
+            </div>
+            <div class="build-item judgement-box error"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="These are standard but critical post-acquisition risks. I recommend engaging a third-party expert, like Evolver's tax and audit team, to conduct a formal review and ensure we are fully compliant to avoid future penalties."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (NewCo Employee Roster, NewCo Contract Review, Legal Diligence Report).</p></div>
+        </div>`,
+        followUpQuestions: ["Draft an engagement letter for a tax advisor.", "What is the estimated cost of a GDPR compliance audit?"]
     },
     "Show me the detailed 100-day integration plan.": {
         id: '100-day-plan',
@@ -1029,32 +940,21 @@ const cloudvantage_ariaResponses = {
         </div>`,
         followUpQuestions: ["Identify key integration risks.", "Create a synergy tracking dashboard.", "Draft a communication plan to NewCo customers about the acquisition."]
     },
-    "Generate a board-level summary of Q2 financial performance.": {
-        id: 'q2-summary',
+    "Please send me the conversation guide for Global. Update it with their latest support ticket status and the number of tickets we've received for them.": {
+        id: 'maya-convo-guide',
         renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Q2 2025 Financial Summary for the Board</h3></div>
-            <div class="build-item aria-kpi-grid">${[
-                { label: 'ARR', value: '$78M', change: '+4% QoQ' },
-                { label: 'NRR', value: '128%', change: '+3% vs Target' },
-                { label: 'EBITDA Margin', value: '31%', change: '-1% vs Target' }
-            ].map(kpi => `<div class="aria-kpi-card"><p class="aria-kpi-label">${kpi.label}</p><p class="aria-kpi-value">${kpi.value}</p><p class="text-sm text-secondary">${kpi.change}</p></div>`).join('')}</div>
-            <div class="build-item"><p class="response-section-title">Executive Narrative:</p><p class="response-text" data-typing-text="CloudVantage delivered a strong Q2, exceeding ARR targets driven by robust Net Revenue Retention of 128%. This indicates strong product stickiness and successful expansion within the existing customer base, largely fueled by the NewCo integration. EBITDA margin was slightly below target due to planned investments in integration and R&D for the upcoming AI feature. Overall, the business remains healthy and is tracking well against the annual plan."></p></div>
+            <div class="build-item"><h3 class="response-title">Conversation Guide: Global Enterprises Inc.</h3></div>
+            <div class="build-item card-base p-4">
+                <p class="response-section-title">Key Talking Points:</p>
+                <ul class="list-disc pl-5 text-sm space-y-1" data-animate-list>
+                    <li>Acknowledge recent support issues: "I see you've had <strong>4 support tickets</strong> in the last 60 days, with an average resolution time of 48 hours. We apologize for this and are implementing our new Platinum Support offer to prevent this."</li>
+                    <li>Highlight Value: "Your usage of the Analytics Suite has increased by <strong>35%</strong> this past quarter, directly contributing to your team's efficiency gains."</li>
+                    <li>Introduce Uplift: "To ensure we can continue providing the level of support and innovation you need, we're proposing a new package that includes our Platinum Support tier."</li>
+                </ul>
+            </div>
         </div>`,
-        followUpQuestions: ["Analyze the key drivers of our Net Revenue Retention.", "What caused the dip in EBITDA margin?", "What is the forecast for Q3?"]
+        followUpQuestions: ["What were the root causes of their support tickets?", "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term."]
     },
-    "Model the financial impact of a 15% price reduction on the Professional tier.": {
-        id: 'model-price-reduction',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">Scenario: 15% Price Reduction for Professional Tier</h3></div>
-            <div class="build-item data-table-container"><table class="data-table"><thead><tr><th>Scenario</th><th>Win Rate Assumption</th><th>Net ARR Impact</th></tr></thead><tbody>
-                <tr><td>Scenario A</td><td>Improves to 40%</td><td class="text-success">+$2.2M</td></tr>
-                <tr><td>Scenario B</td><td>Improves to 30%</td><td class="text-error">-$0.5M</td></tr>
-            </tbody></table></div>
-            <div class="build-item judgement-box warning"><p class="judgement-title">Judgement:</p><p class="judgement-text" data-typing-text="The success of a price reduction is highly dependent on achieving a significant increase in conversion volume. The breakeven point is a win rate of approximately 34%. I recommend conducting a pilot with a select group of customers before a full rollout."></p><p class="text-xs text-text-muted mt-2"><strong>Source Confidence:</strong> High (Salesforce CRM, Internal Financial Model).</p></div>
-        </div>`,
-        followUpQuestions: ["Which customers would be good candidates for this pilot?", "How would this impact Gross Margin?"]
-    
-    }
 };
 
 const selectableNotes = [ { id: 'note1', text: 'The management team appears strong but lacks experience in a private equity-backed environment.' }, { id: 'note2', text: 'There is a significant concentration of revenue with the top two customers, posing a potential risk.' }, { id: 'note3', text: 'The company has strong brand recognition in its niche but has not yet explored adjacent markets.' }, { id: 'note4', text: 'Technical debt in the core product could hinder future growth and scalability if not addressed.' } ];
