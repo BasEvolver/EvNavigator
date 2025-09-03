@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Value Creation Canvas</title>
+    <!-- We link to the existing stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-bg-primary text-text-primary p-8">
+
+    <div class="max-w-2xl mx-auto p-6 bg-bg-secondary rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold mb-4 border-b border-border-color pb-2">Canvas API Test</h1>
+        <p class="text-sm text-secondary mb-4">
+            This page tests the API connection and tree rendering logic. It fetches all Disciplines, Capabilities, and Levers. Click the arrows to expand/collapse.
+        </p>
+        
+        <!-- This is where our canvas will be rendered -->
+        <div id="canvas-container" class="mt-4">
+            <p class="text-accent-blue animate-pulse">Fetching data from API...</p>
+        </div>
+    </div>
+
+    <!-- Link to our new, dedicated JavaScript file -->
+    <script src="js/test-canvas.js"></script>
+</body>
+</html>

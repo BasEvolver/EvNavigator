@@ -1,7 +1,18 @@
 const { Pool } = require('pg');
 
 module.exports = async function (context, req) {
-    const poolConfig = { /* ... same as above ... */ };
+    // This complete poolConfig block is required for Azure connections
+    const poolConfig = {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_DATABASE,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    };
+
     const pool = new Pool(poolConfig);
     const assessmentId = context.bindingData.assessmentId;
 
@@ -18,9 +29,9 @@ module.exports = async function (context, req) {
             body: rows
         };
     } catch (err) {
-        context.log.error('Database query failed:', err);
+        context.log.error('Database query failed in get-scores:', err);
         context.res = { status: 500, body: "Error retrieving scores." };
     } finally {
         await pool.end();
     }
-}
+};

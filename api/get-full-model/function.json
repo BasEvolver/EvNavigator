@@ -1,13 +1,12 @@
 {
   "bindings": [
     {
-      "authLevel": "anonymous", 
-      "_comment": "// NOTE: In production, you would change this to function or user for security",
+      "authLevel": "anonymous",
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
       "methods": ["get"],
-      "route": "assessments/{userId}"
+      "route": "get-full-model"
     },
     {
       "type": "http",

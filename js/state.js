@@ -1,4 +1,4 @@
-// js/state.js - Global State Management (Final Version with Multi-Company Assessments)
+// js/state.js - Global State Management (Refactored for API-driven Maturity Model)
 
 const PERSONAS = {
     'adrian': { name: 'Adrian Croft', role: 'Operating Partner', avatarColor: 'var(--text-secondary)', avatarTextColor: 'var(--bg-primary)', defaultCompany: 'all', defaultPage: 'index.html' },
@@ -7,54 +7,34 @@ const PERSONAS = {
     'maya': { name: 'Maya Singh', role: 'Account Manager, CloudVantage', avatarColor: 'var(--accent-teal)', avatarTextColor: 'var(--brand-primary)', defaultCompany: 'cloudvantage', defaultPage: 'aria.html' }
 };
 
-const initialScores = {
-    'techflow-solutions': {
-        // Diligence Target: Foundational issues need fixing.
-        'D1': { current: 2, target: 3 }, 'D2': { current: 1, target: 3 }, 'D3': { current: 1, target: 2 },
-        'D4': { current: 2, target: 3 }, 'D5': { current: 2, target: 3 }, 'D6': { current: 2, target: 3 },
-        'D7': { current: 1, target: 2 }, 'D8': { current: 2, target: 4 }, 'D9': { current: 1, target: 2 },
-        'D-251': { current: 1, target: 3 }, 'D-463': { current: 1, target: 3 }, 'D-821': { current: 2, target: 4 },
-    },
-    'cloudvantage': {
-        // Growth Target: Already mature, pushing for excellence.
-        'D1': { current: 4, target: 5 }, 'D2': { current: 3, target: 4 }, 'D3': { current: 3, target: 5 },
-        'D4': { current: 4, target: 4 }, 'D5': { current: 4, target: 5 }, 'D6': { current: 3, target: 4 },
-        'D7': { current: 4, target: 5 }, 'D8': { current: 4, target: 5 }, 'D9': { current: 2, target: 4 },
-        'C330': { current: 2, target: 5 }, 'D-911': { current: 2, target: 5 },
-    }
-};
-
-function buildInitialAssessmentData(companyId) {
-    const data = {};
-    if (typeof maturityModel === 'undefined') {
-        console.error("CRITICAL ERROR: buildInitialAssessmentData was called before MaturityModel.js was loaded.");
-        return data;
-    }
-
-    const companyScores = initialScores[companyId] || initialScores['techflow-solutions'];
-
-    for (const disc of Object.values(maturityModel.disciplines)) {
-        const discScore = companyScores[disc.id] || { current: 1, target: 1 };
-        for (const cap of Object.values(disc.capabilities)) {
-            const capScore = companyScores[cap.id] || discScore;
-            if (cap.domains) {
-                for (const domain of Object.values(cap.domains)) {
-                    data[domain.id] = { ...(companyScores[domain.id] || capScore) };
-                }
-            }
-        }
-    }
-    return data;
-}
+// Removed initialScores and buildInitialAssessmentData as these will come from API
 
 function getInitialState() {
     return {
         activePersona: 'adrian', // Default to the Operating Partner
         selectedCompanyId: 'all',
+        // New state for API-fetched maturity model data
+        maturityModelData: {
+            disciplines: [],
+            capabilities: {}, // Store capabilities by disciplineId
+            levers: {},      // Store levers by capabilityId
+            rubric: {},      // Store rubric items by itemId
+            roadmap: {}      // Store roadmap items by leverId
+        },
+        // New state for selected assessment and its scores
+        selectedAssessmentId: null,
+        availableAssessments: [], // List of assessments for the selected company
+        assessmentScores: {},     // Scores for the selected assessment (leverId -> { as_is, to_be })
+        
         modeling: {
             selectedItemId: 'all-disciplines', 
-            expandedNodes: {'D1': true}, 
-            assessments: {} 
+            expandedNodes: {'D1': true}, // Still keep D1 expanded by default for initial view
+            // 'assessments' will now be replaced by 'assessmentScores' and 'selectedAssessmentId'
+            // For now, we'll keep a dummy structure to prevent immediate errors, but it will be refactored.
+            assessments: {
+                'techflow-solutions': {},
+                'cloudvantage': {}
+            }
         },
         activeTabId: 'home',
         isReportFinalized: false,
@@ -65,16 +45,21 @@ function getInitialState() {
     };
 }
 
+// initializeAssessmentData is no longer needed in its previous form,
+// as assessments will be loaded dynamically.
 function initializeAssessmentData() {
+    // This function will be refactored or removed once API integration is complete.
+    // For now, ensure the assessments object exists to prevent errors.
     let state = loadState();
-    if (Object.keys(state.modeling.assessments).length === 0 && typeof maturityModel !== 'undefined') {
-        state.modeling.assessments = {
-            'techflow-solutions': buildInitialAssessmentData('techflow-solutions'),
-            'cloudvantage': buildInitialAssessmentData('cloudvantage')
-        };
-        saveState(state);
+    if (!state.modeling.assessments['techflow-solutions']) {
+        state.modeling.assessments['techflow-solutions'] = {};
     }
+    if (!state.modeling.assessments['cloudvantage']) {
+        state.modeling.assessments['cloudvantage'] = {};
+    }
+    saveState(state);
 }
+
 
 function saveState(state) {
     localStorage.setItem('navigatorAppState', JSON.stringify(state));
@@ -93,13 +78,20 @@ function loadState() {
                 modeling: {
                     ...initialState.modeling,
                     ...(savedState.modeling || {}),
+                    // Merge assessments, but be ready to replace this with API-driven scores
                     assessments: {
                         ...initialState.modeling.assessments,
                         ...(savedState.modeling?.assessments || {})
                     }
+                },
+                // Ensure new API data structures are initialized if not present in saved state
+                maturityModelData: {
+                    ...initialState.maturityModelData,
+                    ...(savedState.maturityModelData || {})
                 }
             };
         } catch (e) {
+            console.error("Error parsing saved state, returning initial state:", e);
             return initialState;
         }
     }

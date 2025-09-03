@@ -7632,3 +7632,40 @@ body.page-aria main#main-content {
     line-height: 1.6;
     color: var(--text-secondary);
 }
+
+/* Add this to the end of your css/styles.css file (test model canvas api)*/ 
+
+.tree-node {
+    padding: 6px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.tree-node:hover {
+    background-color: var(--bg-hover);
+}
+
+.node-children {
+    padding-left: 24px;
+    border-left: 1px solid var(--border-color);
+    margin-left: 12px;
+}
+
+.tree-node .chevron {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease-in-out;
+}
+
+.tree-node .chevron.hidden {
+    visibility: hidden;
+}
+
+.tree-node .chevron.expanded {
+    transform: rotate(90deg);
+}
