@@ -299,7 +299,7 @@ INSERT INTO Maturity_Rubric (item_id, level_type, stage_number, description, kpi
 -- ... (This would be repeated for all 150 levers)
 
 -- =================================================================
--- LEVER RUBRICS (Continued) - 
+-- LEVER RUBRICS (Continued)
 -- =================================================================
 
 -- D1 -> C101 -> L101002: Long-Range & Annual Planning

@@ -14,12 +14,14 @@ module.exports = async function (context, req) {
 
     const pool = new Pool(poolConfig);
 
-    // --- START OF DEBUGGING BLOCK ---
+    // --- THIS IS THE ONLY LINE THAT CHANGES ---
+    const disciplineId = context.bindingData.disciplineId; // Use context.bindingData instead of req.params
+
+    // --- Debugging logs (we can leave them for now) ---
     context.log('--- Executing get-capabilities function ---');
-    const disciplineId = req.params.disciplineId;
-    context.log('Received disciplineId from URL:', disciplineId);
+    context.log('Received disciplineId from bindingData:', disciplineId);
     context.log('Type of disciplineId:', typeof disciplineId);
-    // --- END OF DEBUGGING BLOCK ---
+    // ---
 
     if (!disciplineId) {
         context.res = { status: 400, body: "Please provide a disciplineId." };
@@ -28,7 +30,8 @@ module.exports = async function (context, req) {
 
     try {
         context.log(`Querying capabilities for discipline_id = '${disciplineId}'`);
-        const query = 'SELECT * FROM Capabilities WHERE discipline_id = $1 ORDER BY capability_id';
+        // Use the robust query we had before
+        const query = 'SELECT * FROM Capabilities WHERE UPPER(TRIM(discipline_id)) = UPPER(TRIM($1)) ORDER BY capability_id';
         const { rows } = await pool.query(query, [disciplineId]);
         context.log('Query successful. Found', rows.length, 'rows.');
         
