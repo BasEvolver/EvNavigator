@@ -7669,3 +7669,397 @@ body.page-aria main#main-content {
 .tree-node .chevron.expanded {
     transform: rotate(90deg);
 }
+
+/* =================================================================
+   COMPASS (MODELING) PAGE - V3 LAYOUT
+   ================================================================= */
+
+/* Main 3-Pane Grid Layout */
+.compass-container {
+    display: grid;
+    /* NEW LAYOUT: Left (3) | Center (6) | Right (3) */
+    grid-template-columns: 3fr 6fr 3fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    height: calc(100vh - 5rem); /* Full height minus header */
+}
+
+.compass-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+    overflow: hidden;
+}
+
+.compass-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Timeline Selector --- */
+.timeline-selector-card {
+    flex-shrink: 0; /* Prevent this card from shrinking */
+}
+
+.timeline-container {
+    position: relative;
+    width: 100%;
+    height: 60px;
+    padding: 20px 0;
+}
+
+.timeline-track {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.timeline-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    margin-bottom: 4px;
+    transition: color 0.2s ease;
+}
+
+.timeline-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--bg-card);
+    border: 3px solid var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.timeline-circle.committed {
+    width: 16px;
+    height: 16px;
+    border-width: 4px;
+}
+
+.timeline-item:hover .timeline-circle {
+    border-color: var(--accent-blue);
+}
+.timeline-item:hover .timeline-label {
+    color: var(--accent-blue);
+}
+
+.timeline-circle.selected {
+    border-color: var(--accent-blue);
+    background-color: var(--accent-blue);
+}
+
+.timeline-scale {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* --- Center Pane Content --- */
+.compass-center-content {
+    flex-grow: 1;
+    overflow-y: auto; /* Allow this area to scroll if content overflows */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* =================================================================
+COMPASS (MODELING) PAGE - V6 (CORRECTED & REFINED)
+================================================================= */
+/* 1. Tighter Outer Padding */
+#main-content.page-modeling {
+padding: 1rem;
+}
+/* 2. VCC Skinnier, Corrected Grid Layout /
+.compass-container {
+display: grid;
+/ Left (2.55) | Center (6) | Right (3.45) /
+grid-template-columns: 2.55fr 6fr 3.45fr;
+gap: 1rem;
+height: calc(100vh - 7rem); / Adjusted for header + main padding */
+}
+.compass-pane {
+display: flex;
+flex-direction: column;
+gap: 1rem;
+height: 100%;
+overflow: hidden; /* Each pane manages its own overflow */
+}
+.compass-card {
+background-color: var(--bg-card);
+border: 1px solid var(--border-color);
+border-radius: 0.75rem;
+padding: 1.5rem;
+display: flex;
+flex-direction: column;
+}
+/* 3. Timeline Padding & Label Visibility FIX /
+.timeline-container {
+position: relative;
+width: 100%;
+height: 60px;
+padding: 20px 10%; / Increased padding to 10% /
+box-sizing: border-box;
+}
+.timeline-track {
+position: absolute;
+top: 30px;
+left: 10%; / Match padding /
+width: 80%; / Occupy the central 80% /
+height: 4px;
+background-color: var(--border-color);
+border-radius: 2px;
+}
+.timeline-item {
+/ JS will now calculate left position based on the 80% track width */
+}
+.timeline-scale span:first-child {
+padding-left: 10%;
+}
+.timeline-scale span:last-child {
+padding-right: 10%;
+}
+/* 4. Flexible Table Height /
+.maturity-table-container {
+overflow-y: auto;
+flex-shrink: 1; / Allow the table card to shrink if needed */
+}
+/* 5. Enriched Content Card Styles /
+.content-card-body {
+margin-top: 1.5rem;
+display: flex;
+flex-direction: column;
+gap: 1.5rem;
+}
+/ FIX: Maturity stages now use flexbox to stay on one line /
+.maturity-stages-grid {
+display: flex; / Changed from grid to flex /
+gap: 1rem;
+overflow-x: auto; / Allow horizontal scroll on small screens /
+}
+.maturity-stage-item {
+background-color: var(--bg-secondary);
+border-radius: 0.5rem;
+padding: 1rem;
+flex: 1; / Each item takes equal space /
+min-width: 150px; / Prevent them from getting too squished /
+}
+.maturity-stage-title {
+font-size: 0.75rem;
+font-weight: 700;
+text-transform: uppercase;
+color: var(--text-muted);
+}
+.maturity-stage-description {
+font-size: 0.875rem;
+color: var(--text-secondary);
+margin-top: 0.25rem;
+line-height: 1.6;
+}
+.kpi-section {
+border-top: 1px solid var(--border-color);
+padding-top: 1.5rem;
+}
+/ FIX: KPI Table Layout */
+.kpi-table-compass {
+width: 100%;
+border-collapse: collapse;
+margin-top: 0.5rem;
+}
+.kpi-table-compass td {
+padding: 0.5rem 0;
+font-size: 0.875rem;
+text-align: center;
+}
+.kpi-table-compass .kpi-label-compass {
+text-align: left;
+font-weight: 600;
+color: var(--text-secondary);
+}
+.kpi-table-compass .kpi-value-compass {
+font-weight: 700;
+color: var(--text-primary);
+}
+/* 6. Vibrant Gradient Colors for Sliders (Purple & Veridian) /
+.dual-slider-track.as-is-gradient {
+background: linear-gradient(to right, #8b5cf6, #6d28d9); / Purple Gradient /
+}
+.dual-slider-track.to-be-gradient {
+background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradient */
+}
+.dual-slider-range-input.as-is::-webkit-slider-thumb { border-color: #6d28d9; }
+.dual-slider-range-input.to-be::-webkit-slider-thumb { border-color: #059669; }
+.dual-slider-range-input.as-is::-moz-range-thumb { border-color: #6d28d9; }
+.dual-slider-range-input.to-be::-moz-range-thumb { border-color: #059669; }
+
+/* --- Top Section: Description & Benefits --- */
+.description-benefits-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.description-pane, .benefits-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-label {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.info-box {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.benefits-list {
+    list-style-type: none;
+    padding: 0.75rem 1rem !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.benefits-list li strong {
+    color: var(--text-primary);
+}
+
+
+/* --- Middle Section: Advanced Slider --- */
+.dual-slider-component-v2 {
+    margin-bottom: 2rem;
+    padding: 0 0.75rem; /* 12px padding to allow thumbs to reach edges */
+}
+
+.aria-indicator-container {
+    position: relative;
+    height: 28px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.aria-indicator {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+}
+.aria-indicator.as-is { border-top: 8px solid var(--purple); }
+.aria-indicator.to-be { border-top: 8px solid var(--accent-teal); }
+
+.aria-indicator-label {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.aria-indicator-label.as-is { color: var(--purple); }
+.aria-indicator-label.to-be { color: var(--accent-teal); }
+
+.dual-slider-track {
+    background: linear-gradient(to right, var(--purple), var(--accent-blue), var(--accent-teal));
+}
+
+.dual-slider-range-input.as-is::-webkit-slider-thumb { border-color: var(--purple); }
+.dual-slider-range-input.to-be::-webkit-slider-thumb { border-color: var(--accent-teal); }
+.dual-slider-range-input.as-is::-moz-range-thumb { border-color: var(--purple); }
+.dual-slider-range-input.to-be::-moz-range-thumb { border-color: var(--accent-teal); }
+
+
+/* --- Bottom Section: Maturity Grid --- */
+.maturity-grid-container {
+    display: grid;
+    grid-template-columns: 140px 1fr; /* Fixed label column, flexible content */
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.maturity-grid-label-cell {
+    padding: 1rem;
+    font-weight: 700;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+.maturity-grid-label-cell:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+
+.maturity-grid-content-area {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background-color: var(--bg-card);
+}
+.maturity-grid-label-cell + .maturity-grid-content-area {
+    border-bottom: 1px solid var(--border-color);
+}
+
+
+.maturity-grid-header {
+    padding: 1rem;
+    font-weight: 700;
+    text-align: center;
+    border-right: 1px solid var(--border-color);
+}
+.maturity-grid-header:last-child {
+    border-right: none;
+}
+
+.maturity-grid-cell {
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+.maturity-grid-cell:last-child {
+    border-right: none;
+}
+
+/* Align text for benchmark row */
+.maturity-grid-label-cell + .maturity-grid-content-area:last-of-type .maturity-grid-cell {
+    text-align: center;
+    font-weight: 500;
+}

@@ -1,97 +1,68 @@
-// js/modeling.js - Logic for the new Maturity Modeling Canvas V7 (API Integration - FINAL, CORRECTED)
+// js/modeling.js - V6 with All Fixes and Refinements
 
-// This demo data will eventually be replaced by API-fetched scores from a source_id='aria'
-const ariaAssessments = {
-    'techflow-solutions': { 'C130': { as_is: 1.4, to_be: 4.1 }, 'D-111': { as_is: 2.0, to_be: 3.5 }, 'D-112': { as_is: 1.5, to_be: 4.0 }, 'D-131': { as_is: 1.2, to_be: 4.2 }, },
-    'cloudvantage': { 'C130': { as_is: 3.8, to_be: 4.8 }, 'D-131': { as_is: 3.5, to_be: 4.9 }, }
-};
 
-// A fallback for maturity descriptions until the rubric API is fully integrated.
+// FIX: Corrected maturity stages to match your document (no "Initial")
+const maturityStageNames = ["Reactive", "Organized", "Automated", "Platform-led", "Intelligent"];
 const summaryMaturityLevels = [
-    "Initial: Processes are ad-hoc, chaotic, or undefined. Success depends on individual effort.", "Reactive: Basic processes are established, but often reactive. Some consistency, but limited foresight.", "Organized: Processes are documented and somewhat standardized. Proactive measures are taken.", "Platform-led: Processes are integrated, automated, and driven by technology platforms. Data-driven decisions.", "Intelligent: Processes are optimized, self-improving, and leverage advanced analytics/AI for strategic advantage."
+    "Reactive: Basic processes are established, but often reactive. Some consistency, but limited foresight.", 
+    "Organized: Processes are documented and somewhat standardized. Proactive measures are taken.", 
+    "Automated: Processes are largely standardized and automated. Efficiency is a focus.",
+    "Platform-led: Processes are integrated, automated, and driven by technology platforms. Data-driven decisions.", 
+    "Intelligent: Processes are optimized, self-improving, and leverage advanced analytics/AI for strategic advantage."
 ];
+
+
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (Navigation.getCurrentPage() === 'modeling') {
+        document.getElementById('main-content').classList.add('page-modeling');
         await initializeModelingPage();
     }
 });
 
 async function initializeModelingPage() {
     let state = loadState();
-    const urlParams = new URLSearchParams(window.location.search);
-    const companyIdFromUrl = urlParams.get('company');
-    const companyId = companyIdFromUrl || (state.selectedCompanyId && state.selectedCompanyId !== 'all' ? state.selectedCompanyId : 'techflow-solutions');
-    
-    if (state.selectedCompanyId !== companyId) {
-        state.selectedCompanyId = companyId;
-        state.selectedAssessmentId = null;
-        saveState(state);
-    }
-
+    const companyId = state.selectedCompanyId;
     await loadSharedComponents();
-    
-    // Call the new, efficient data loading functions
     await loadMaturityModelFromAPI();
-    await loadAvailableAssessments(state.selectedCompanyId);
-
-    state = loadState(); // Reload state after async operations
+    await loadAvailableAssessments(companyId);
+    state = loadState();
     if (!state.selectedAssessmentId && state.availableAssessments.length > 0) {
-        state.selectedAssessmentId = state.availableAssessments[0].assessment_id;
+        const sortedAssessments = state.availableAssessments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        state.selectedAssessmentId = sortedAssessments[0].assessment_id;
         saveState(state);
     }
-    
     if (state.selectedAssessmentId) {
         await loadAssessmentScores(state.selectedAssessmentId);
     }
-
-    renderModelingPage(loadState());
+    renderCompassPageV3(loadState()); // Use new V3 renderer
     initializeModelingEventListeners();
 }
 
-// --- API FETCHERS ---
-
-// UPDATED to be fast and efficient
+// --- API FETCHERS (No changes) ---
 async function loadMaturityModelFromAPI() {
     let state = loadState();
     if (state.maturityModelData && state.maturityModelData.disciplines.length > 0) return;
-
     try {
-        // 1. Make a SINGLE API call
         const response = await fetch('/api/get-full-model');
         if (!response.ok) throw new Error('Failed to fetch the full model');
         const fullModel = await response.json();
-
-        // 2. Restructure the flat arrays into the nested object format our code expects
-        const structuredModel = {
-            disciplines: fullModel.disciplines,
-            capabilities: {},
-            levers: {}
-        };
-
+        const structuredModel = { disciplines: fullModel.disciplines, capabilities: {}, levers: {} };
         for (const cap of fullModel.capabilities) {
-            if (!structuredModel.capabilities[cap.discipline_id]) {
-                structuredModel.capabilities[cap.discipline_id] = [];
-            }
+            if (!structuredModel.capabilities[cap.discipline_id]) structuredModel.capabilities[cap.discipline_id] = [];
             structuredModel.capabilities[cap.discipline_id].push(cap);
         }
-
         for (const lever of fullModel.levers) {
-            if (!structuredModel.levers[lever.capability_id]) {
-                structuredModel.levers[lever.capability_id] = [];
-            }
+            if (!structuredModel.levers[lever.capability_id]) structuredModel.levers[lever.capability_id] = [];
             structuredModel.levers[lever.capability_id].push(lever);
         }
-        
         state.maturityModelData = structuredModel;
         saveState(state);
-        console.log("Successfully fetched and processed full model in one request.");
     } catch (error) {
         console.error("Fatal Error: Could not load maturity model from API.", error);
         document.getElementById('main-content').innerHTML = `<div class="p-8 text-center"><h1 class="text-2xl font-bold text-red-600">API Error</h1><p class="text-secondary mt-2">Could not load required maturity model data.</p></div>`;
     }
 }
-
 async function loadAvailableAssessments(companyId) {
     let state = loadState();
     try {
@@ -106,7 +77,6 @@ async function loadAvailableAssessments(companyId) {
         saveState(state);
     }
 }
-
 async function loadAssessmentScores(assessmentId) {
     let state = loadState();
     state.assessmentScores = {};
@@ -114,12 +84,14 @@ async function loadAssessmentScores(assessmentId) {
         const response = await fetch(`/api/scores/${assessmentId}`);
         if (!response.ok) throw new Error(`API error: ${response.status}`);
         const scores = await response.json();
-        
         const transformedScores = {};
         scores.forEach(score => {
-            if (score.source_id.toLowerCase().includes('user') || score.source_id.toLowerCase().includes('croft')) {
-                transformedScores[score.lever_id] = { current: score.as_is_score, target: score.to_be_score };
-            }
+            if (!transformedScores[score.source_id]) transformedScores[score.source_id] = {};
+            transformedScores[score.source_id][score.item_id] = {
+                current: score.as_is_score,
+                target: score.to_be_score,
+                rationale: score.as_is_rationale
+            };
         });
         state.assessmentScores = transformedScores;
         saveState(state);
@@ -129,105 +101,138 @@ async function loadAssessmentScores(assessmentId) {
         saveState(state);
     }
 }
-
-async function saveAssessmentScore(assessmentId, leverId, type, value) {
+async function saveAssessmentScore(assessmentId, item, type, value) {
     let state = loadState();
-    const existingScores = state.assessmentScores[leverId] || { current: 0, target: 0 };
     const persona = PERSONAS[state.activePersona] || { name: 'Unknown User' };
-
+    const userScores = state.assessmentScores[persona.name] || {};
+    const existingScores = userScores[item.id] || { current: 0, target: 0 };
     const payload = {
         assessment_id: parseInt(assessmentId, 10),
-        lever_id: leverId,
+        item_id: item.id,
+        item_type: item.type,
         source_id: persona.name,
         as_is_score: type === 'current' ? value : existingScores.current,
         to_be_score: type === 'target' ? value : existingScores.target,
-        as_is_rationale: null, as_is_confidence_score: null, as_is_confidence_rationale: null, to_be_rationale: null
+        as_is_rationale: "Updated via slider",
+        to_be_rationale: "Target set via slider"
     };
-
     try {
         const response = await fetch('/api/scores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!response.ok) { throw new Error(`HTTP error ${response.status}: ${await response.text()}`); }
         const savedScore = await response.json();
-        
         state = loadState();
-        state.assessmentScores[leverId] = { current: savedScore.as_is_score, target: savedScore.to_be_score };
+        if (!state.assessmentScores[persona.name]) state.assessmentScores[persona.name] = {};
+        state.assessmentScores[persona.name][item.id] = { current: savedScore.as_is_score, target: savedScore.to_be_score };
         saveState(state);
     } catch (error) {
         console.error("Error saving score:", error);
     }
 }
 
-// --- MAIN RENDERER ---
-function renderModelingPage(state) {
+// --- NEW V6 RENDERER ---
+function renderCompassPageV3(state) {
     const mainContent = document.getElementById('main-content');
-    mainContent.innerHTML = `<div class="modeling-container"><div class="modeling-pane modeling-left-pane" id="modeling-left-pane"></div><div class="modeling-pane modeling-right-pane" id="modeling-right-pane"></div></div>`;
-    renderRightPane(state);
-    updateDynamicPanes(state);
+    mainContent.innerHTML = `
+        <div class="compass-container">
+            <div class="compass-pane" id="compass-left-pane"></div>
+            <div class="compass-pane" id="compass-center-pane"></div>
+            <div class="compass-pane" id="compass-right-pane"></div>
+        </div>
+    `;
+    renderCompassLeftPaneV3(state);
+    renderCompassCenterPaneV3(state);
+    renderCompassRightPaneV3(state);
 }
 
-function updateDynamicPanes(state) {
-    renderLeftPane(state);
+// --- PANE RENDERERS V6 (Reflecting new layout) ---
+function renderCompassLeftPaneV3(state) {
+    const leftPane = document.getElementById('compass-left-pane');
+    leftPane.innerHTML = `<div class="compass-card h-full"><h2 class="text-xl font-bold mb-4">Value Creation Canvas</h2><div class="tree-view-container">${renderTreeView(state)}</div></div>`;
+}
+
+function renderCompassCenterPaneV3(state) {
+    const centerPane = document.getElementById('compass-center-pane');
+    centerPane.innerHTML = `
+        <div class="compass-card timeline-selector-card">
+            <h3 class="control-title">Assessment Timeline</h3>
+            ${renderTimelineSelector(state)}
+        </div>
+        <div class="compass-center-content">
+            ${renderEnrichedContentCard(state)}
+        </div>
+    `;
+}
+
+function renderCompassRightPaneV3(state) {
+    const rightPane = document.getElementById('compass-right-pane');
+    const item = findItemInModel(state.modeling.selectedItemId);
+    if (!item) return;
+    const title = item.type === 'lever' ? (findParent(item.id)?.name || 'Lever') : item.name;
+    rightPane.innerHTML = `
+        <div class="compass-card" style="height: 300px;">
+            <div class="radar-chart-container h-full">
+                <h3 class="radar-chart-title">${title}</h3>
+                <canvas id="modeling-radar-chart"></canvas>
+            </div>
+        </div>
+        <div class="aria-perspective-card">
+            <div class="aria-perspective-header"><h3>ARIA's Perspective</h3></div>
+            <div id="aria-perspective-content">${generateAriaPerspective(state)}</div>
+        </div>
+        <div class="compass-card flex-grow">
+            <h3 class="control-title mb-4">Drill Down</h3>
+            <div class="maturity-table-container">
+                ${renderMaturityTable(state)}
+            </div>
+        </div>
+    `;
     drawRadarChart(state);
 }
 
-// --- PANE RENDERERS ---
-function renderRightPane(state) {
-    const rightPane = document.getElementById('modeling-right-pane');
-    const { selectedCompanyId, availableAssessments, selectedAssessmentId } = state;
-    const companySelectHtml = `<div class="mb-4 flex items-center space-x-2"><label for="company-select" class="text-sm font-medium text-secondary">Company:</label><select id="company-select" class="form-select text-sm p-1 rounded-md bg-bg-secondary border border-border-color" data-action="select-company"><option value="techflow-solutions" ${selectedCompanyId === 'techflow-solutions' ? 'selected' : ''}>TechFlow Solutions</option><option value="cloudvantage" ${selectedCompanyId === 'cloudvantage' ? 'selected' : ''}>CloudVantage</option></select><label for="assessment-select" class="text-sm font-medium text-secondary ml-4">Assessment:</label><select id="assessment-select" class="form-select text-sm p-1 rounded-md bg-bg-secondary border border-border-color" data-action="select-assessment">${availableAssessments.map(a => `<option value="${a.assessment_id}" ${a.assessment_id == selectedAssessmentId ? 'selected' : ''}>${a.version_name}</option>`).join('')}${availableAssessments.length === 0 ? '<option disabled>No assessments found</option>' : ''}</select><button class="btn-primary text-sm ml-auto" data-action="create-new-assessment">New Assessment</button></div>`;
-    rightPane.innerHTML = `<div class="modeling-card h-full"><h2 class="text-xl font-bold mb-2">Value Creation Canvas</h2>${companySelectHtml}<div class="tree-view-container">${renderTreeView(state)}</div></div>`;
-}
-
-function renderLeftPane(state) {
-    const leftPane = document.getElementById('modeling-left-pane');
-    const { selectedItemId } = state.modeling;
-    const item = findItemInModel(selectedItemId);
-    if (!item) return;
-    const title = item.type === 'lever' ? (findParent(selectedItemId)?.name || 'Lever') : item.name;
-    leftPane.innerHTML = `<div class="modeling-card radar-card"><div class="radar-table-grid"><div class="radar-chart-container"><h3 class="radar-chart-title">${title}</h3><canvas id="modeling-radar-chart"></canvas></div><div class="maturity-table-container">${renderMaturityTable(state)}</div></div></div><div class="aria-perspective-card"><div class="aria-perspective-header"><h3>ARIA's Perspective</h3><button class="reset-button" title="Reset to default scores" disabled><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></button></div><div id="aria-perspective-content">${generateAriaPerspective(state)}</div></div><div class="modeling-card description-card"><h3 class="text-lg font-bold">${item.name}</h3><p class="text-sm text-secondary mt-1">${item.controlQuestion || 'Select an item to see its details.'}</p>${renderDualSlider(state)}</div>`;
-}
-
-function renderMaturityTable(state) {
-    const { selectedItemId } = state.modeling;
-    const assessmentScores = state.assessmentScores;
-    const selectedItem = findItemInModel(selectedItemId);
-    if (!selectedItem) return '<p>Select an item from the tree.</p>';
-    
-    const itemsToDisplay = getChildren(selectedItem);
-    if (!Array.isArray(itemsToDisplay)) return '<p class="text-secondary p-4">Could not load items for this view.</p>';
-
-    let tableHTML = `<table class="maturity-table"><thead><tr><th>Name</th><th class="stage-cell">As-Is Stage</th><th class="stage-cell">To-Be Stage</th><th class="score-cell">Gap</th></tr></thead><tbody>`;
-    itemsToDisplay.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-        const scores = calculateAverage(item, assessmentScores);
-        const gap = scores.target - scores.current;
-        const gapClass = gap > 0.1 ? 'gap-positive' : (gap < -0.1 ? 'gap-negative' : '');
-        tableHTML += `<tr data-action="select-item" data-item-id="${item.id}"><td>${item.name}</td><td class="stage-cell">${getMaturityLevelName(scores.current)}</td><td class="stage-cell">${getMaturityLevelName(scores.target)}</td><td class="score-cell ${gapClass}">${gap.toFixed(1)}</td></tr>`;
-    });
-    return tableHTML + `</tbody></table>`;
-}
-
-function renderDualSlider(state) {
-    const { selectedItemId } = state.modeling;
-    const { assessmentScores, selectedAssessmentId, selectedCompanyId } = state;
-    const item = findItemInModel(selectedItemId);
-    if (!item || !selectedAssessmentId) return `<div class="p-4 text-secondary text-center">Please select an assessment to view and edit scores.</div>`;
-    
-    const isLever = item.type === 'lever';
-    const scores = calculateAverage(item, assessmentScores);
-    const [currentLevelName, targetLevelName] = [getMaturityLevelName(scores.current), getMaturityLevelName(scores.target)];
-    const [currentDescription, targetDescription] = [getMaturityLevelDescription(scores.current), getMaturityLevelDescription(scores.target)];
-    const ariaScores = ariaAssessments[selectedCompanyId]?.[selectedItemId];
-    let ariaIndicatorHTML = '';
-    if (ariaScores) {
-        const asIsPercent = (ariaScores.as_is / 5) * 100;
-        const toBePercent = (ariaScores.to_be / 5) * 100;
-        ariaIndicatorHTML = `<div class="aria-indicator-container"><div class="aria-indicator as-is" style="left: ${asIsPercent}%;" title="Aria As-Is: ${ariaScores.as_is.toFixed(1)}"></div><div class="aria-indicator to-be" style="left: ${toBePercent}%;" title="Aria To-Be: ${ariaScores.to_be.toFixed(1)}"></div></div>`;
+function generateAriaPerspective(state) {
+    const item = findItemInModel(state.modeling.selectedItemId);
+    if (!item || !state.selectedAssessmentId) {
+        return '<p class="text-sm text-secondary">Select an assessment to see ARIA\'s perspective.</p>';
     }
-    const sliderDisabledAttribute = isLever ? '' : 'disabled';
-    return `<div class="dual-slider-component"><div class="dual-slider-header"><div class="dual-slider-labels" data-action="activate-slider" data-type="current">CURRENT STATE <div class="dual-slider-values" id="current-value-display">${scores.current.toFixed(1)} <span class="value-text">${currentLevelName}</span></div></div><div class="dual-slider-labels text-right" data-action="activate-slider" data-type="target">TARGET STATE <div class="dual-slider-values" id="target-value-display">${scores.target.toFixed(1)} <span class="value-text">${targetLevelName}</span></div></div></div>${ariaIndicatorHTML}<div class="dual-slider-track-container ${isLever ? '' : 'disabled-slider'}"><div class="dual-slider-track"></div><input type="range" min="0" max="5" value="${scores.current}" step="0.1" class="dual-slider-range-input as-is" data-action="update-score" data-item-id="${selectedItemId}" data-type="current" ${sliderDisabledAttribute}><input type="range" min="0" max="5" value="${scores.target}" step="0.1" class="dual-slider-range-input to-be" data-action="update-score" data-item-id="${selectedItemId}" data-type="target" ${sliderDisabledAttribute}></div><div class="dual-slider-descriptions"><div class="slider-description-box" id="current-desc-display">${currentDescription}</div><div class="slider-description-box" id="target-desc-display">${targetDescription}</div></div>${!isLever ? '<p class="text-sm text-secondary mt-2 text-center">Select a specific Lever to adjust its scores.</p>' : ''}</div>`;
+
+    // Get all scores for the 'ARIA' source from the live state
+    const ariaScores = state.assessmentScores['ARIA'] || {};
+    
+    // Check if a direct score exists for the currently selected item
+    const directAriaScore = ariaScores[item.id];
+
+    if (directAriaScore && directAriaScore.rationale) {
+        // If a direct score with rationale exists, display it
+        return `
+            <p class="font-semibold">On ${item.name}:</p>
+            <p class="text-sm text-secondary mt-2" data-typing-text="${directAriaScore.rationale}"></p>
+        `;
+    } else {
+        // Otherwise, show a message indicating no specific insight is available
+        return `
+            <p class="text-sm text-secondary">ARIA has not provided a specific rationale for <strong>${item.name}</strong> in this assessment.</p>
+        `;
+    }
 }
 
-// CORRECTED to use the right property names and ID-Name format
+// --- CORE COMPONENTS (Updated for V6) ---
+function renderTimelineSelector(state) {
+    const { availableAssessments, selectedAssessmentId } = state;
+    if (!availableAssessments || availableAssessments.length === 0) return `<div class="flex items-center justify-center h-full text-secondary">No assessments found.</div>`;
+    const sorted = [...availableAssessments].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const firstDate = new Date(sorted[0].created_at);
+    const lastDate = new Date();
+    const totalDuration = Math.max(1, lastDate - firstDate);
+    const timelineItems = sorted.map(assessment => {
+        const assessmentDate = new Date(assessment.created_at);
+        const position = 10 + (((assessmentDate - firstDate) / totalDuration) * 80); // Use 80% of width, offset by 10%
+        const isCommitted = !!assessment.committed_at;
+        const isSelected = assessment.assessment_id == selectedAssessmentId;
+        return `<div class="timeline-item" style="left: ${position}%" data-action="select-assessment" data-assessment-id="${assessment.assessment_id}" title="${assessment.version_name} (${assessmentDate.toLocaleDateString()})"><div class="timeline-label">${assessment.version_name}</div><div class="timeline-circle ${isCommitted ? 'committed' : ''} ${isSelected ? 'selected' : ''}"></div></div>`;
+    }).join('');
+    return `<div class="timeline-container"><div class="timeline-track"></div>${timelineItems}<div class="timeline-scale"><span>${firstDate.toLocaleDateString()}</span><span>Today</span></div></div>`;
+}
+
 function renderTreeView(state) {
     const { expandedNodes, selectedItemId } = state.modeling;
     const { disciplines, capabilities, levers } = state.maturityModelData;
@@ -235,18 +240,18 @@ function renderTreeView(state) {
     let html = `<div class="tree-node ${selectedItemId === 'all-disciplines' ? 'active' : ''}" data-action="select-item" data-item-id="all-disciplines"><span class="chevron hidden"></span><span class="node-label font-bold">All Disciplines</span></div>`;
     disciplines.slice().sort((a, b) => a.discipline_id.localeCompare(b.discipline_id)).forEach(d => {
         const isExpanded = expandedNodes[d.discipline_id];
-        html += `<div class="tree-node ${selectedItemId === d.discipline_id ? 'active' : ''}" data-action="select-item" data-item-id="${d.discipline_id}"><svg class="chevron ${isExpanded ? 'expanded' : ''}" data-action="toggle-node" data-node-id="${d.discipline_id}" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg><span class="node-label">${d.discipline_id} - ${d.name}</span></div>`;
+        html += `<div class="tree-node ${selectedItemId === d.discipline_id ? 'active' : ''}" data-action="select-item" data-item-id="${d.discipline_id}"><svg class="chevron ${isExpanded ? 'expanded' : ''}" data-action="toggle-node" data-node-id="${d.discipline_id}" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg><span class="node-label">${d.name}</span></div>`;
         if (isExpanded) {
             html += `<div class="node-children">`;
             const caps = capabilities[d.discipline_id] || [];
             caps.slice().sort((a, b) => a.capability_id.localeCompare(b.capability_id)).forEach(c => {
                 const capIsExpanded = expandedNodes[c.capability_id];
-                html += `<div class="tree-node ${selectedItemId === c.capability_id ? 'active' : ''}" data-action="select-item" data-item-id="${c.capability_id}"><svg class="chevron ${capIsExpanded ? 'expanded' : ''}" data-action="toggle-node" data-node-id="${c.capability_id}" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg><span class="node-label">${c.capability_id} - ${c.name}</span></div>`;
+                html += `<div class="tree-node ${selectedItemId === c.capability_id ? 'active' : ''}" data-action="select-item" data-item-id="${c.capability_id}"><svg class="chevron ${capIsExpanded ? 'expanded' : ''}" data-action="toggle-node" data-node-id="${c.capability_id}" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg><span class="node-label">${c.name}</span></div>`;
                 if (capIsExpanded) {
                     html += `<div class="node-children">`;
                     const levs = levers[c.capability_id] || [];
                     levs.slice().sort((a, b) => a.lever_id.localeCompare(b.lever_id)).forEach(l => {
-                        html += `<div class="tree-node ${selectedItemId === l.lever_id ? 'active' : ''}" data-action="select-item" data-item-id="${l.lever_id}"><span class="chevron hidden"></span><span class="node-label">${l.lever_id} - ${l.name}</span></div>`;
+                        html += `<div class="tree-node ${selectedItemId === l.lever_id ? 'active' : ''}" data-action="select-item" data-item-id="${l.lever_id}"><span class="chevron hidden"></span><span class="node-label">${l.name}</span></div>`;
                     });
                     html += `</div>`;
                 }
@@ -257,46 +262,167 @@ function renderTreeView(state) {
     return html;
 }
 
-// --- ARIA'S PERSPECTIVE GENERATOR ---
-function generateAriaPerspective(state) {
-    const { selectedItemId } = state.modeling;
-    const { selectedCompanyId, assessmentScores, selectedAssessmentId } = state;
-    if (!selectedAssessmentId) return '<p>Select an assessment to see ARIA\'s perspective.</p>';
-    const item = findItemInModel(selectedItemId);
-    if (!item) return '';
-    const scores = calculateAverage(item, assessmentScores);
-    const gap = scores.target - scores.current;
-    let html = `<h4>On ${item.name}</h4><p class="mt-2">For <strong>${selectedCompanyId === 'techflow-solutions' ? 'TechFlow Solutions' : 'CloudVantage'}</strong>, bridging the gap from <strong>Level ${scores.current.toFixed(1)}</strong> to <strong>${scores.target.toFixed(1)}</strong> is important.</p>`;
-    if (item.type !== 'lever') {
-        const leversWithGaps = getLeversRecursive(item).map(l => ({ ...l, score: assessmentScores[l.id] || { current: 0, target: 0 } })).map(l => ({ ...l, gap: l.score.target - l.score.current })).filter(l => l.gap > 0.1).sort((a, b) => b.gap - a.gap);
-        if (leversWithGaps.length > 0) html += `<p class="mt-4">The highest priority should be on these levers:</p><ul class="list-disc pl-5 mt-2 space-y-1">${leversWithGaps.slice(0, 3).map(l => `<li><strong>${l.name}</strong> (Gap of ${l.gap.toFixed(1)})</li>`).join('')}</ul>`;
-        else html += `<p class="mt-4">All underlying levers currently meet their target maturity levels.</p>`;
-    } else {
-        html += `<p class="mt-4">The immediate next step is achieving the characteristics of <strong>Level ${Math.floor(scores.current) + 1}</strong>.</p>`;
-    }
-    return html;
+function renderMaturityTable(state) {
+    const selectedItem = findItemInModel(state.modeling.selectedItemId);
+    if (!selectedItem) return '<p>Select an item from the tree.</p>';
+    const itemsToDisplay = getChildren(selectedItem);
+    if (!Array.isArray(itemsToDisplay) || itemsToDisplay.length === 0) return '<p class="text-secondary p-4 text-center">No sub-items to display.</p>';
+    let tableHTML = `<table class="maturity-table"><thead><tr><th>Name</th><th class="stage-cell">As-Is</th><th class="stage-cell">To-Be</th><th class="score-cell">Gap</th></tr></thead><tbody>`;
+    itemsToDisplay.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+        const scores = getDisplayScores(item, state.assessmentScores);
+        const gap = scores.target - scores.current;
+        const gapClass = gap > 0.1 ? 'gap-positive' : (gap < -0.1 ? 'gap-negative' : '');
+        tableHTML += `<tr data-action="select-item" data-item-id="${item.id}"><td>${item.name}</td><td class="stage-cell">${scores.current.toFixed(1)}</td><td class="stage-cell">${scores.target.toFixed(1)}</td><td class="score-cell ${gapClass}">${gap.toFixed(1)}</td></tr>`;
+    });
+    return tableHTML + `</tbody></table>`;
 }
 
-// --- CHART & DATA HELPERS ---
-let chartInstance = null;
+function renderEnrichedContentCard(state) {
+    const item = findItemInModel(state.modeling.selectedItemId);
+    if (!item || !item.id) return '<div class="p-8 text-center text-secondary">Please select an item from the Value Creation Canvas to see details.</div>';
+
+    // --- Data Preparation ---
+    const scores = getDisplayScores(item, state.assessmentScores);
+    const ariaScores = getDisplayScores(item, { 'ARIA': state.assessmentScores['ARIA'] || {} }); // Isolate ARIA scores
+    const [currentLevelName, targetLevelName] = [getMaturityLevelName(scores.current), getMaturityLevelName(scores.target)];
+    
+    // Create a plausible benefits statement from the item description for the mockup
+    const benefits = (item.description || "No benefits statement available.")
+        .split('. ')
+        .filter(s => s.length > 10)
+        .map(s => `<li><strong>${s.split(' ')[0]} ${s.split(' ')[1]}:</strong> ${s.substring(s.indexOf(' ') + 1)}</li>`)
+        .join('');
+
+    // --- Maturity Stages Table ---
+    const benchmarkData = { label: "Benchmark: Employee Attrition Rate", values: ["> 20%", "15-20%", "10-15%", "5-10%", "< 5%"] };
+    const characteristicsHTML = summaryMaturityLevels.map(desc => `<div class="maturity-grid-cell">${desc.split(': ')[1]}</div>`).join('');
+    const benchmarkHTML = benchmarkData.values.map(val => `<div class="maturity-grid-cell">${val}</div>`).join('');
+    const stageHeadersHTML = maturityStageNames.map(name => `<div class="maturity-grid-header">${name}</div>`).join('');
+
+    // --- ARIA Indicators for Slider ---
+    const ariaAsIsPosition = (ariaScores.current / 5) * 100;
+    const ariaToBePosition = (ariaScores.target / 5) * 100;
+    
+    const ariaIndicatorHTML = `
+        <div class="aria-indicator-container">
+            <div class="aria-indicator-label as-is" style="left: ${ariaAsIsPosition}%">ARIA As-Is</div>
+            <div class="aria-indicator as-is" style="left: ${ariaAsIsPosition}%"></div>
+            <div class="aria-indicator-label to-be" style="left: ${ariaToBePosition}%">ARIA To-Be</div>
+            <div class="aria-indicator to-be" style="left: ${ariaToBePosition}%"></div>
+        </div>
+    `;
+
+    return `
+        <div class="compass-card description-card">
+            <h3 class="text-2xl font-bold mb-6">${item.name}</h3>
+
+            <!-- Top Section: Description & Benefits -->
+            <div class="description-benefits-grid">
+                <div class="description-pane">
+                    <div>
+                        <h4 class="info-label">Description</h4>
+                        <p class="info-box">${item.description || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <h4 class="info-label">Control Question</h4>
+                        <p class="info-box">${item.controlQuestion || 'N/A'}</p>
+                    </div>
+                </div>
+                <div class="benefits-pane">
+                    <h4 class="info-label">Benefits Statement</h4>
+                    <ul class="info-box benefits-list">${benefits}</ul>
+                </div>
+            </div>
+
+            <!-- Middle Section: Slider -->
+            <div class="dual-slider-component-v2">
+                ${ariaIndicatorHTML}
+                <div class="dual-slider-track-container">
+                    <div class="dual-slider-track"></div>
+                    <input type="range" min="0" max="5" value="${scores.current}" step="0.1" class="dual-slider-range-input as-is" data-action="update-score" data-item-id="${item.id}" data-type="current" title="Current State: ${scores.current.toFixed(1)}">
+                    <input type="range" min="0" max="5" value="${scores.target}" step="0.1" class="dual-slider-range-input to-be" data-action="update-score" data-item-id="${item.id}" data-type="target" title="Target State: ${scores.target.toFixed(1)}">
+                </div>
+                <div class="dual-slider-header mt-2">
+                    <div class="dual-slider-labels">
+                        <span class="text-xs font-semibold text-gray-500">CURRENT STATE</span>
+                        <div class="dual-slider-values" id="current-value-display">${scores.current.toFixed(1)} <span class="value-text">${currentLevelName}</span></div>
+                    </div>
+                    <div class="dual-slider-labels text-right">
+                        <span class="text-xs font-semibold text-gray-500">TARGET STATE</span>
+                        <div class="dual-slider-values" id="target-value-display">${scores.target.toFixed(1)} <span class="value-text">${targetLevelName}</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Section: Maturity Table -->
+            <div class="maturity-grid-container">
+                <div class="maturity-grid-label-cell">Stage</div>
+                <div class="maturity-grid-content-area">${stageHeadersHTML}</div>
+
+                <div class="maturity-grid-label-cell">Characteristics</div>
+                <div class="maturity-grid-content-area">${characteristicsHTML}</div>
+
+                <div class="maturity-grid-label-cell">${benchmarkData.label}</div>
+                <div class="maturity-grid-content-area">${benchmarkHTML}</div>
+            </div>
+        </div>
+    `;
+}
+
 function drawRadarChart(state) {
     const ctx = document.getElementById('modeling-radar-chart')?.getContext('2d');
     if (!ctx) return;
-    if (chartInstance) chartInstance.destroy();
-    const { selectedItemId } = state.modeling;
-    const { assessmentScores, selectedAssessmentId } = state;
-    const selectedItem = findItemInModel(selectedItemId);
-    if (!selectedItem || !selectedAssessmentId) return;
+    if (window.chartInstance) window.chartInstance.destroy();
+    const selectedItem = findItemInModel(state.modeling.selectedItemId);
+    if (!selectedItem || !state.selectedAssessmentId) return;
     const itemsToChart = getChildren(selectedItem);
     if (!Array.isArray(itemsToChart) || itemsToChart.length === 0) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
     const labels = itemsToChart.map(i => i.name);
-    const asIsData = itemsToChart.map(i => calculateAverage(i, assessmentScores).current);
-    const toBeData = itemsToChart.map(i => calculateAverage(i, assessmentScores).target);
+    const asIsData = itemsToChart.map(i => getDisplayScores(i, state.assessmentScores).current);
+    const toBeData = itemsToChart.map(i => getDisplayScores(i, state.assessmentScores).target);
     const styles = getComputedStyle(document.body);
-    chartInstance = new Chart(ctx, { type: 'radar', data: { labels, datasets: [ { label: 'As-Is', data: asIsData, borderColor: styles.getPropertyValue('--purple').trim(), backgroundColor: 'rgba(108, 101, 205, 0.2)', borderWidth: 2, pointBackgroundColor: styles.getPropertyValue('--purple').trim(), fill: true }, { label: 'To-Be', data: toBeData, borderColor: styles.getPropertyValue('--accent-blue').trim(), backgroundColor: 'rgba(72, 170, 221, 0.2)', borderWidth: 2, pointBackgroundColor: styles.getPropertyValue('--accent-blue').trim(), fill: true } ]}, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 5, stepSize: 1, pointLabels: { color: styles.getPropertyValue('--text-secondary').trim() }, grid: { color: styles.getPropertyValue('--border-color').trim() }, angleLines: { color: styles.getPropertyValue('--border-color').trim() }, ticks: { backdropColor: styles.getPropertyValue('--bg-card').trim(), color: styles.getPropertyValue('--text-primary').trim(), }}}, plugins: { legend: { position: 'bottom', labels: { color: styles.getPropertyValue('--text-primary').trim() }}} }});
+
+    window.chartInstance = new Chart(ctx, { type: 'radar', data: { labels, datasets: [ { label: 'As-Is', data: asIsData, borderColor: '#6d28d9', backgroundColor: 'rgba(109, 40, 217, 0.2)', borderWidth: 2, pointBackgroundColor: '#6d28d9', fill: true }, { label: 'To-Be', data: toBeData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.2)', borderWidth: 2, pointBackgroundColor: '#059669', fill: true } ]}, 
+    options: { 
+        responsive: true, maintainAspectRatio: false,
+        scales: { r: { 
+            beginAtZero: true, max: 5, stepSize: 1, 
+            pointLabels: { 
+                font: { weight: 'bold', size: 11 },
+                color: styles.getPropertyValue('--text-secondary').trim(),
+                backdropColor: styles.getPropertyValue('--bg-card').trim(),
+                backdropPadding: 2
+            }, 
+            grid: { color: styles.getPropertyValue('--border-color').trim() }, 
+            angleLines: { color: styles.getPropertyValue('--border-color').trim() }, 
+            ticks: { 
+                backdropColor: styles.getPropertyValue('--bg-card').trim(), 
+                color: styles.getPropertyValue('--text-primary').trim(),
+                z: 1
+            }
+        }}, 
+        plugins: { 
+            legend: { position: 'bottom', labels: { color: styles.getPropertyValue('--text-primary').trim() } }
+        } 
+    }});
 }
 
-// CORRECTED HELPER FUNCTIONS that use the right property names
+// ... (All other helper and event listener functions remain the same)
+function getDisplayScores(item, allScoresBySource) {
+    const persona = PERSONAS[loadState().activePersona] || { name: 'Unknown User' };
+    const userScores = allScoresBySource[persona.name] || {};
+    const ariaScores = allScoresBySource['ARIA'] || {};
+    const directUserScore = userScores[item.id];
+    if (directUserScore) return directUserScore;
+    const directAriaScore = ariaScores[item.id];
+    if (directAriaScore) return directAriaScore;
+    const children = getChildren(item);
+    if (children.length === 0) return { current: 0, target: 0 };
+    const childScores = children.map(child => getDisplayScores(child, allScoresBySource));
+    const totalCurrent = childScores.reduce((sum, s) => sum + s.current, 0);
+    const totalTarget = childScores.reduce((sum, s) => sum + s.target, 0);
+    return { current: totalCurrent / childScores.length, target: totalTarget / childScores.length };
+}
 function findItemInModel(id) {
     const state = loadState();
     const { disciplines, capabilities, levers } = state.maturityModelData;
@@ -312,7 +438,6 @@ function findItemInModel(id) {
     }
     return null;
 }
-
 function findParent(itemId) {
     const state = loadState();
     const { capabilities, levers } = state.maturityModelData;
@@ -328,8 +453,6 @@ function findParent(itemId) {
     }
     return null;
 }
-
-// CORRECTED HELPER with safety filter
 function getChildren(item) {
     const state = loadState();
     const { disciplines, capabilities, levers } = state.maturityModelData;
@@ -341,55 +464,46 @@ function getChildren(item) {
         case 'capability': children = (levers[item.id] || []).map(l => findItemInModel(l.lever_id)); break;
         default: children = [];
     }
-    return children.filter(child => child != null); // CRITICAL FIX
+    return children.filter(child => child != null);
 }
-
-function getLeversRecursive(item) {
-    if (!item) return [];
-    if (item.type === 'lever') return [item];
-    return getChildren(item).flatMap(getLeversRecursive);
-}
-
-function calculateAverage(item, assessmentData) {
-    if (!assessmentData) return { current: 0, target: 0 };
-    if (item.type === 'lever') return assessmentData[item.id] || { current: 0, target: 0 };
-    const childLevers = getLeversRecursive(item);
-    if (childLevers.length === 0) return { current: 0, target: 0 };
-    const scores = childLevers.map(l => assessmentData[l.id] || { current: 0, target: 0 });
-    const totalCurrent = scores.reduce((sum, s) => sum + s.current, 0);
-    const totalTarget = scores.reduce((sum, s) => sum + s.target, 0);
-    return { current: scores.length > 0 ? totalCurrent / scores.length : 0, target: scores.length > 0 ? totalTarget / scores.length : 0 };
-}
-
 function getMaturityLevelName(score) {
-    if (score >= 4.5) return "Intelligent"; if (score >= 3.5) return "Platform-led"; if (score >= 2.5) return "Organized"; if (score >= 1.5) return "Reactive"; return "Initial";
+    if (score >= 4.5) return maturityStageNames[3];
+    if (score >= 3.5) return maturityStageNames[2];
+    if (score >= 2.5) return maturityStageNames[1];
+    if (score >= 1.5) return maturityStageNames[0];
+    return "Initial"; // Keep initial as a fallback for scores < 1.5
 }
-
 function getMaturityLevelDescription(score) {
-    const roundedScore = Math.round(score);
-    if (roundedScore >= 5) return summaryMaturityLevels[4]; if (roundedScore >= 4) return summaryMaturityLevels[3]; if (roundedScore >= 3) return summaryMaturityLevels[2]; if (roundedScore >= 2) return summaryMaturityLevels[1]; return summaryMaturityLevels[0];
+    if (score >= 4.5) return summaryMaturityLevels[3];
+    if (score >= 3.5) return summaryMaturityLevels[2];
+    if (score >= 2.5) return summaryMaturityLevels[1];
+    if (score >= 1.5) return summaryMaturityLevels[0];
+    return "The initial stage before formal processes are established.";
 }
-
-// --- EVENT LISTENERS ---
 function initializeModelingEventListeners() {
     const mainContent = document.getElementById('main-content');
-    
     mainContent.addEventListener('click', async (e) => {
         const target = e.target.closest('[data-action]');
         if (!target) return;
         let state = loadState();
         const action = target.dataset.action;
-
+        if (action === 'select-assessment') {
+            const newAssessmentId = target.dataset.assessmentId;
+            if (state.selectedAssessmentId != newAssessmentId) {
+                state.selectedAssessmentId = newAssessmentId;
+                saveState(state);
+                await loadAssessmentScores(newAssessmentId);
+                renderCompassPageV3(loadState());
+            }
+        }
         if (action === 'select-item' || action === 'toggle-node') {
             e.stopPropagation();
             const nodeId = target.dataset.nodeId || target.dataset.itemId;
             if (action === 'toggle-node') state.modeling.expandedNodes[nodeId] = !state.modeling.expandedNodes[nodeId];
             else if (state.modeling.selectedItemId !== nodeId) state.modeling.selectedItemId = nodeId;
             saveState(state);
-            renderRightPane(state);
-            updateDynamicPanes(state);
+            renderCompassPageV3(loadState());
         }
-
         if (action === 'create-new-assessment') {
             const versionName = prompt("Enter a name for the new assessment (e.g., 'Q4 2025 Baseline'):");
             if (versionName) {
@@ -405,44 +519,23 @@ function initializeModelingEventListeners() {
             }
         }
     });
-    
-    mainContent.addEventListener('change', async (e) => {
-        const target = e.target.closest('[data-action]');
-        if (!target) return;
-        let state = loadState();
-        if (target.dataset.action === 'select-company') window.location.search = `?company=${target.value}`;
-        if (target.dataset.action === 'select-assessment') {
-            if (state.selectedAssessmentId != target.value) {
-                state.selectedAssessmentId = target.value;
-                saveState(state);
-                await loadAssessmentScores(target.value);
-                renderModelingPage(loadState());
-            }
-        }
-    });
-
     mainContent.addEventListener('input', (e) => {
         const target = e.target;
         if (target.dataset.action === 'update-score') {
             let state = loadState();
             const { itemId, type } = target.dataset;
             const value = parseFloat(target.value);
-            const displayId = type === 'current' ? '#current-value-display' : '#target-value-display';
-            const descId = type === 'current' ? '#current-desc-display' : '#target-desc-display';
-            target.closest('.dual-slider-component').querySelector(displayId).innerHTML = `${value.toFixed(1)} <span class="value-text">${getMaturityLevelName(value)}</span>`;
-            target.closest('.dual-slider-component').querySelector(descId).textContent = getMaturityLevelDescription(value);
+            const item = findItemInModel(itemId);
+            if (!item) return;
             
+            // Debounce the save and full re-render
             clearTimeout(window.saveDebounce);
             window.saveDebounce = setTimeout(() => {
-                saveAssessmentScore(state.selectedAssessmentId, itemId, type, value).then(() => {
-                    clearTimeout(window.rerenderDebounce);
-                    window.rerenderDebounce = setTimeout(() => {
-                        const freshState = loadState();
-                        document.querySelector('.maturity-table-container').innerHTML = renderMaturityTable(freshState);
-                        drawRadarChart(freshState);
-                    }, 150);
+                saveAssessmentScore(state.selectedAssessmentId, item, type, value).then(() => {
+                    // Re-render the whole page to ensure all calculated averages are updated
+                    renderCompassPageV3(loadState());
                 });
-            }, 500);
+            }, 250); // A shorter delay for better responsiveness
         }
     });
 }
