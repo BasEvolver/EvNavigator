@@ -87,7 +87,9 @@ html, body {
 #main-content {
     flex: 1;
     overflow-y: auto; /* The main area scrolls by default */
-    padding: 1.5rem 2rem; /* Your padding is fine */
+    padding: 0rem; /* Your padding is fine */
+        height: calc(100vh - 5rem);
+    transition: grid-template-columns 0.3s ease-in-out;
 }
 
 /* Sidebar & Header */
@@ -7674,14 +7676,170 @@ body.page-aria main#main-content {
    COMPASS (MODELING) PAGE - V3 LAYOUT
    ================================================================= */
 
-/* Main 3-Pane Grid Layout */
 .compass-container {
     display: grid;
-    /* NEW LAYOUT: Left (3) | Center (6) | Right (3) */
+    /* Default (expanded) state */
     grid-template-columns: 3fr 6fr 3fr;
+    transition: grid-template-columns 0.3s ease-in-out;
+}
+
+.compass-container.vcc-collapsed {
+    /* Collapsed state: fixed width for VCC, center pane gets flexible space */
+    grid-template-columns: 5.5rem 1fr 3fr;
+}
+
+/* --- 2. Collapsible Pane & Alignment Fixes --- */
+.vcc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.vcc-title {
+    transition: opacity 0.2s ease, width 0.2s ease, visibility 0.2s;
+}
+
+.compass-container.vcc-collapsed .vcc-title {
+    opacity: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+.vcc-tree-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.vcc-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.compass-container.vcc-collapsed .vcc-footer {
+    justify-content: center;
+}
+
+.collapse-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+.collapse-toggle-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* --- 3. Icon Sizing, Alignment & Selection (THE FIX) --- */
+.tree-node {
+    height: 40px; /* FIX: Consistent height for alignment */
+    display: flex;
+    align-items: center;
+}
+
+.vcc-tree-container.icon-only .tree-node {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 0.5rem; /* Match sidebar selection style */
+}
+
+/* FIX: Active state styling for collapsed view */
+.vcc-tree-container.icon-only .tree-node.active {
+    background-color: var(--accent-blue-translucent);
+}
+.vcc-tree-container.icon-only .tree-node.active .discipline-icon-svg {
+    color: var(--accent-blue);
+}
+
+.discipline-icon-svg {
+    width: 24px; /* 1.5rem - MATCHES SIDEBAR */
+    height: 24px;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tree-node:hover .discipline-icon-svg {
+    color: var(--text-primary);
+}
+
+.discipline-icon-svg.expanded-view {
+    margin-right: 0.5rem;
+}
+
+/* --- 4. Font Weight & Breadcrumb Styling (THE FIX) --- */
+.node-label {
+    font-weight: 400; /* Modern, un-bolded default */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.node-label.is-discipline {
+    font-weight: 600; /* Bolder for top-level items */
+}
+
+.compass-breadcrumbs {
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-path {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.breadcrumb-path .breadcrumb-item {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.breadcrumb-path .breadcrumb-item:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
+.breadcrumb-path .breadcrumb-separator {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* --- 5. Pin Button Icon Sizing --- */
+.collapse-toggle-btn svg {
+    width: 1.25rem; /* 20px */
+    height: 1.25rem;
+}
+
+/* =================================================================
+   COMPASS (MODELING) PAGE - V5 STYLES (REFINED ANIMATION & UX)
+   ================================================================= */
+
+/* --- 1. Main Layout & Elegant Animation --- */
+.compass-container {
+    display: grid;
+    grid-template-columns: 25% 1fr 30%;
     gap: 1.5rem;
     padding: 1.5rem;
-    height: calc(100vh - 5rem); /* Full height minus header */
+    height: 100%;
+    /* FIX: Smoother, slower animation */
+    transition: grid-template-columns 0.4s ease-in-out;
+}
+
+.compass-container.vcc-collapsed {
+    grid-template-columns: 5.5rem 1fr 30%;
 }
 
 .compass-pane {
@@ -7701,9 +7859,203 @@ body.page-aria main#main-content {
     flex-direction: column;
 }
 
-/* --- Timeline Selector --- */
+/* --- 2. Collapsible VCC Pane & New Title --- */
+.vcc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align to top */
+    margin-bottom: 1rem;
+    position: relative; /* For positioning the collapsed title */
+    height: 2.25rem; /* Fixed height to prevent layout shift */
+}
+
+.vcc-title {
+    /* FIX: Smoother fade transition */
+    transition: opacity 0.3s ease-in-out;
+}
+
+.compass-container.vcc-collapsed .vcc-title {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* NEW: Styles for the collapsed "VCC" title */
+.vcc-title-collapsed {
+    /* REMOVED writing-mode and transform properties */
+    position: absolute;
+    /* ADDED styles for horizontal centering */
+    left: 0;
+    right: 0;
+    text-align: center;
+    /* --- Unchanged properties below --- */
+    opacity: 0;
+    visibility: hidden;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none; /* Prevents it from interfering with clicks */
+}
+
+.compass-container.vcc-collapsed .vcc-title-collapsed {
+    opacity: 1;
+    visibility: visible;
+}
+
+.vcc-tree-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.vcc-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.compass-container.vcc-collapsed .vcc-footer {
+    justify-content: center;
+}
+
+.collapse-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+.collapse-toggle-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* --- 3. VCC Tree & Icon Styling --- */
+.tree-node {
+    height: 40px; 
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+.tree-node:hover {
+    background-color: var(--bg-hover);
+}
+.tree-node.active {
+    background-color: var(--accent-blue-translucent);
+}
+.tree-node.active .node-label {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+.tree-node.active .is-discipline {
+    font-weight: 700;
+}
+
+.vcc-tree-container.icon-only .tree-node {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+}
+
+.vcc-tree-container.icon-only .tree-node.active {
+    background-color: var(--accent-blue-translucent);
+}
+.vcc-tree-container.icon-only .tree-node.active .discipline-icon-svg {
+    color: var(--accent-blue);
+}
+
+.discipline-icon-svg {
+    width: 24px;
+    height: 24px;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tree-node:hover .discipline-icon-svg {
+    color: var(--text-primary);
+}
+
+.discipline-icon-svg.expanded-view {
+    margin-right: 0.5rem;
+}
+
+.node-children {
+    padding-left: 24px;
+    border-left: 1px solid var(--border-color);
+    margin-left: 12px;
+}
+
+.tree-node .chevron {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease-in-out;
+}
+.tree-node .chevron.hidden { visibility: hidden; }
+.tree-node .chevron.expanded { transform: rotate(90deg); }
+
+
+/* --- 4. Font Weight & Breadcrumb Styling --- */
+.node-label {
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.node-label.is-discipline {
+    font-weight: 600;
+}
+
+.compass-breadcrumbs {
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-path {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.breadcrumb-path .breadcrumb-item {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.breadcrumb-path .breadcrumb-item:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
+.breadcrumb-path .breadcrumb-separator {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* --- 5. Center Pane & Timeline Styles --- */
+.compass-center-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .timeline-selector-card {
-    flex-shrink: 0; /* Prevent this card from shrinking */
+    flex-shrink: 0;
 }
 
 .timeline-container {
@@ -7757,11 +8109,12 @@ body.page-aria main#main-content {
     border-width: 4px;
 }
 
-.timeline-item:hover .timeline-circle {
-    border-color: var(--accent-blue);
-}
+.timeline-item:hover .timeline-circle,
 .timeline-item:hover .timeline-label {
     color: var(--accent-blue);
+}
+.timeline-item:hover .timeline-circle {
+    border-color: var(--accent-blue);
 }
 
 .timeline-circle.selected {
@@ -7779,145 +8132,7 @@ body.page-aria main#main-content {
     color: var(--text-muted);
 }
 
-/* --- Center Pane Content --- */
-.compass-center-content {
-    flex-grow: 1;
-    overflow-y: auto; /* Allow this area to scroll if content overflows */
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-/* =================================================================
-COMPASS (MODELING) PAGE - V6 (CORRECTED & REFINED)
-================================================================= */
-/* 1. Tighter Outer Padding */
-#main-content.page-modeling {
-padding: 1rem;
-}
-/* 2. VCC Skinnier, Corrected Grid Layout /
-.compass-container {
-display: grid;
-/ Left (2.55) | Center (6) | Right (3.45) /
-grid-template-columns: 2.55fr 6fr 3.45fr;
-gap: 1rem;
-height: calc(100vh - 7rem); / Adjusted for header + main padding */
-}
-.compass-pane {
-display: flex;
-flex-direction: column;
-gap: 1rem;
-height: 100%;
-overflow: hidden; /* Each pane manages its own overflow */
-}
-.compass-card {
-background-color: var(--bg-card);
-border: 1px solid var(--border-color);
-border-radius: 0.75rem;
-padding: 1.5rem;
-display: flex;
-flex-direction: column;
-}
-/* 3. Timeline Padding & Label Visibility FIX /
-.timeline-container {
-position: relative;
-width: 100%;
-height: 60px;
-padding: 20px 10%; / Increased padding to 10% /
-box-sizing: border-box;
-}
-.timeline-track {
-position: absolute;
-top: 30px;
-left: 10%; / Match padding /
-width: 80%; / Occupy the central 80% /
-height: 4px;
-background-color: var(--border-color);
-border-radius: 2px;
-}
-.timeline-item {
-/ JS will now calculate left position based on the 80% track width */
-}
-.timeline-scale span:first-child {
-padding-left: 10%;
-}
-.timeline-scale span:last-child {
-padding-right: 10%;
-}
-/* 4. Flexible Table Height /
-.maturity-table-container {
-overflow-y: auto;
-flex-shrink: 1; / Allow the table card to shrink if needed */
-}
-/* 5. Enriched Content Card Styles /
-.content-card-body {
-margin-top: 1.5rem;
-display: flex;
-flex-direction: column;
-gap: 1.5rem;
-}
-/ FIX: Maturity stages now use flexbox to stay on one line /
-.maturity-stages-grid {
-display: flex; / Changed from grid to flex /
-gap: 1rem;
-overflow-x: auto; / Allow horizontal scroll on small screens /
-}
-.maturity-stage-item {
-background-color: var(--bg-secondary);
-border-radius: 0.5rem;
-padding: 1rem;
-flex: 1; / Each item takes equal space /
-min-width: 150px; / Prevent them from getting too squished /
-}
-.maturity-stage-title {
-font-size: 0.75rem;
-font-weight: 700;
-text-transform: uppercase;
-color: var(--text-muted);
-}
-.maturity-stage-description {
-font-size: 0.875rem;
-color: var(--text-secondary);
-margin-top: 0.25rem;
-line-height: 1.6;
-}
-.kpi-section {
-border-top: 1px solid var(--border-color);
-padding-top: 1.5rem;
-}
-/ FIX: KPI Table Layout */
-.kpi-table-compass {
-width: 100%;
-border-collapse: collapse;
-margin-top: 0.5rem;
-}
-.kpi-table-compass td {
-padding: 0.5rem 0;
-font-size: 0.875rem;
-text-align: center;
-}
-.kpi-table-compass .kpi-label-compass {
-text-align: left;
-font-weight: 600;
-color: var(--text-secondary);
-}
-.kpi-table-compass .kpi-value-compass {
-font-weight: 700;
-color: var(--text-primary);
-}
-/* 6. Vibrant Gradient Colors for Sliders (Purple & Veridian) /
-.dual-slider-track.as-is-gradient {
-background: linear-gradient(to right, #8b5cf6, #6d28d9); / Purple Gradient /
-}
-.dual-slider-track.to-be-gradient {
-background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradient */
-}
-.dual-slider-range-input.as-is::-webkit-slider-thumb { border-color: #6d28d9; }
-.dual-slider-range-input.to-be::-webkit-slider-thumb { border-color: #059669; }
-.dual-slider-range-input.as-is::-moz-range-thumb { border-color: #6d28d9; }
-.dual-slider-range-input.to-be::-moz-range-thumb { border-color: #059669; }
-
-/* --- Top Section: Description & Benefits --- */
+/* --- 6. Enriched Content Card Styles --- */
 .description-benefits-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -7958,60 +8173,18 @@ background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradie
     color: var(--text-primary);
 }
 
-
-/* --- Middle Section: Advanced Slider --- */
 .dual-slider-component-v2 {
     margin-bottom: 2rem;
-    padding: 0 0.75rem; /* 12px padding to allow thumbs to reach edges */
+    padding: 0 0.75rem;
 }
 
-.aria-indicator-container {
-    position: relative;
-    height: 28px;
-    width: 100%;
-    margin-bottom: 4px;
-}
-
-.aria-indicator {
-    position: absolute;
-    bottom: 0;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-}
-.aria-indicator.as-is { border-top: 8px solid var(--purple); }
-.aria-indicator.to-be { border-top: 8px solid var(--accent-teal); }
-
-.aria-indicator-label {
-    position: absolute;
-    top: 0;
-    transform: translateX(-50%);
-    font-size: 0.75rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-.aria-indicator-label.as-is { color: var(--purple); }
-.aria-indicator-label.to-be { color: var(--accent-teal); }
-
-.dual-slider-track {
-    background: linear-gradient(to right, var(--purple), var(--accent-blue), var(--accent-teal));
-}
-
-.dual-slider-range-input.as-is::-webkit-slider-thumb { border-color: var(--purple); }
-.dual-slider-range-input.to-be::-webkit-slider-thumb { border-color: var(--accent-teal); }
-.dual-slider-range-input.as-is::-moz-range-thumb { border-color: var(--purple); }
-.dual-slider-range-input.to-be::-moz-range-thumb { border-color: var(--accent-teal); }
-
-
-/* --- Bottom Section: Maturity Grid --- */
 .maturity-grid-container {
     display: grid;
     grid-template-columns: 140px 1fr; /* Fixed label column, flexible content */
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     overflow: hidden;
+    align-items: stretch; /* Ensure rows stretch to the same height */
 }
 
 .maturity-grid-label-cell {
@@ -8020,12 +8193,12 @@ background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradie
     background-color: var(--bg-secondary);
     border-right: 1px solid var(--border-color);
     display: flex;
-    align-items: center;
+    align-items: center; /* Vertically center the label text */
+    justify-content: flex-start; /* Align text to the left */
 }
 .maturity-grid-label-cell:not(:last-child) {
     border-bottom: 1px solid var(--border-color);
 }
-
 
 .maturity-grid-content-area {
     display: grid;
@@ -8036,12 +8209,14 @@ background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradie
     border-bottom: 1px solid var(--border-color);
 }
 
-
 .maturity-grid-header {
     padding: 1rem;
     font-weight: 700;
     text-align: center;
     border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .maturity-grid-header:last-child {
     border-right: none;
@@ -8053,6 +8228,9 @@ background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradie
     color: var(--text-secondary);
     border-right: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Vertically center content */
+    justify-content: flex-start; /* Align text to the left */
 }
 .maturity-grid-cell:last-child {
     border-right: none;
@@ -8060,6 +8238,668 @@ background: linear-gradient(to right, #10b981, #059669); / Veridian/Green Gradie
 
 /* Align text for benchmark row */
 .maturity-grid-label-cell + .maturity-grid-content-area:last-of-type .maturity-grid-cell {
-    text-align: center;
+    justify-content: center; /* Center the benchmark values */
     font-weight: 500;
 }
+
+/* =================================================================
+   API MODEL VIEWER - SCROLLING FIX
+   ================================================================= */
+
+/*
+  This rule targets the main content area ONLY on the model-viewer page.
+  It turns it into a flexible container that fills all available vertical space,
+  which is essential for the child grid's `h-full` class to work correctly.
+*/
+#main-content_ModelView{
+    padding: 1.5rem 1.5rem; /* 24px top/bottom, 32px left/right */
+}
+
+body.page-model-viewer #main-content_ModelView {
+    flex-grow: 1;
+    min-height: 0; /* A crucial property to prevent overflow in flex layouts */
+    padding: 1.5rem; /* Give the page some breathing room */
+}
+
+/*
+  This ensures the grid itself fills the now-defined height of the main content area.
+*/
+body.page-model-viewer .grid {
+    height: 100%;
+}
+
+/* =================================================================
+   API MODEL VIEWER - TRANSFORMATION ROADMAP STEPPER
+   ================================================================= */
+
+.roadmap-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+}
+
+.stage-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.step-arrow {
+    flex-grow: 1;
+    height: 2px;
+    background-color: var(--border-color);
+    margin: 0 -10px; /* Overlap with boxes slightly */
+    position: relative;
+    color: var(--text-muted);
+}
+
+.step-arrow.actionable {
+    cursor: pointer;
+    background-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.step-arrow svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    background-color: var(--bg-card);
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.step-arrow.actionable:hover svg {
+    transform: translate(-50%, -50%) scale(1.1);
+    color: var(--text-primary);
+}
+
+.step-arrow.active svg {
+    background-color: var(--accent-blue);
+    color: white;
+}
+
+/* =================================================================
+   DATABASE INVENTORY PAGE STYLES
+   ================================================================= */
+
+/* This gives the page consistent padding */
+body.page-db-inventory #main-content {
+    padding: 1.5rem 2rem;
+}
+
+.inventory-container { max-width: 1200px; margin: 0 auto; }
+.table-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.75rem; margin-bottom: 2rem; box-shadow: 0 4px 12px var(--shadow); overflow: hidden; }
+.table-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: baseline; }
+.table-title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.record-count { font-size: 1rem; font-weight: 600; color: var(--text-secondary); }
+.schema-table { width: 100%; border-collapse: collapse; }
+.schema-table th, .schema-table td { padding: 0.75rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+.schema-table thead { background-color: var(--bg-secondary); }
+.schema-table th { font-weight: 600; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+.schema-table tbody tr:last-child td { border-bottom: none; }
+.loading-state { text-align: center; padding: 4rem; font-size: 1.25rem; color: var(--text-muted); }
+.spinner { margin: 0 auto 1rem; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* =================================================================
+   API MODEL VIEWER - TRANSFORMATION ROADMAP STEPPER (V2)
+   ================================================================= */
+
+.roadmap-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+}
+
+.stage-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.stage-box:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.stage-box.active {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.step-arrow {
+    flex-grow: 1;
+    height: 2px;
+    background-color: var(--border-color);
+    margin: 0 0.5rem; /* Add some space between arrows and boxes */
+}
+
+/* =================================================================
+   API MODEL VIEWER - SVG ROADMAP VISUALIZER (FINAL)
+   ================================================================= */
+
+#roadmap-svg-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem 0;
+}
+
+.roadmap-node {
+    pointer-events: none;
+}
+
+.roadmap-arrow {
+    cursor: pointer;
+    stroke: var(--text-muted);
+    stroke-width: 2;
+    fill: none;
+    transition: all 0.2s ease;
+}
+
+.roadmap-arrow:hover {
+    stroke: var(--accent-blue);
+    stroke-width: 4;
+}
+
+.roadmap-arrow.active {
+    stroke: var(--purple); /* NEW: Use purple for selected */
+    stroke-width: 5;
+}
+
+.roadmap-arrow path {
+    fill: var(--text-muted); /* Default arrowhead color */
+}
+
+.roadmap-arrow:hover path {
+    fill: var(--accent-blue);
+}
+
+.roadmap-arrow.active path {
+    fill: var(--purple); /* NEW: Purple arrowhead for selected */
+}
+
+/* --- Dark Mode Accessibility Fix --- */
+[data-theme="dark"] .text-green-800 { color: var(--status-success); }
+[data-theme="dark"] .text-green-700 { color: #a7f3d0; } /* Lighter green for list items */
+[data-theme="dark"] .text-red-800 { color: var(--status-error); }
+[data-theme="dark"] .text-red-700 { color: #fecaca; } /* Lighter red for list items */
+
+/* --- Cumulative Initiatives Styling --- */
+.initiatives-container h6 {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+.roadmap-phase-group {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+}
+.roadmap-phase-group:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+.phase-title {
+    font-weight: bold;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* =================================================================
+   COMPASS PAGE - INFO MODAL & CLICKABLE LABELS
+   ================================================================= */
+
+/* Makes the info label and its new icon clickable */
+.info-label-clickable {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    width: fit-content; /* Ensures only the text/icon area is clickable */
+}
+
+.info-label-clickable:hover .info-label,
+.info-label-clickable:hover .info-icon {
+    color: var(--accent-blue);
+}
+
+.info-icon {
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+/* --- Modal Styles --- */
+.info-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(9, 26, 45, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.info-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.info-modal-content {
+    background-color: var(--bg-card);
+    padding: 1.5rem 2rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 25px var(--shadow-hover);
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+
+.info-modal-overlay.visible .info-modal-content {
+    transform: scale(1);
+}
+
+.info-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.info-modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+}
+.info-modal-close-btn:hover {
+    color: var(--text-primary);
+}
+
+.info-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.info-modal-body ul {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+/* =================================================================
+   COMPASS PAGE - DYNAMIC EXPANSION BOX (FINAL & SYNCED HEIGHT)
+   ================================================================= */
+
+/* The grid wrapper that animates its column sizes */
+#description-control-grid-wrapper {
+    display: grid;
+    grid-template-columns: 4fr 6fr; /* Default 40/60 split */
+    gap: 1.5rem;
+    align-items: stretch; /* THE KEY CHANGE: Forces both panes to be equal height */
+    transition: grid-template-columns 0.5s ease-in-out;
+}
+
+#description-control-grid-wrapper.details-expanded {
+    grid-template-columns: 8fr 2fr;
+}
+
+/* The info-pane now uses flexbox to help the info-box grow */
+.info-pane {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* The info-box itself */
+.info-box {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    transition: all 0.5s ease-in-out;
+    flex-grow: 1; /* Allows the box to fill the pane's height */
+    overflow-y: auto; /* Show scrollbar ONLY when content overflows */
+    /* Stylish scrollbar styles */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+}
+
+.info-box::-webkit-scrollbar { width: 8px; }
+.info-box::-webkit-scrollbar-track { background: transparent; }
+.info-box::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid var(--bg-card);
+}
+.info-box::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+
+
+/* The subtle icon button (unchanged) */
+.expand-icon-button {
+    position: absolute;
+    bottom: 0.25rem;
+    right: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.expand-icon-button:hover {
+    color: var(--accent-blue);
+    transform: scale(1.1);
+}
+
+/* Logic to swap between the two icons (unchanged) */
+.expand-icon-button .icon-collapse { display: none; }
+.expand-icon-button.expanded .icon-expand { display: none; }
+.expand-icon-button.expanded .icon-collapse { display: block; }
+
+/* The hidden content container (unchanged) */
+.details-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out, opacity 0.3s 0.1s ease-in-out, margin-top 0.4s ease-in-out;
+    margin-top: 0;
+}
+
+.info-pane.is-expanded .details-content {
+    max-height: 1000px;
+    opacity: 1;
+    margin-top: 1rem;
+}
+
+/* =================================================================
+   COMPASS PAGE - EXPANDABLE CHARACTERISTICS (CORRECTED)
+   ================================================================= */
+
+/* The content box itself. No height restrictions. */
+/* .stage-characteristics {
+    
+} */
+
+/* The expand/collapse icon button */
+.details-toggle-icon {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.details-toggle-icon:hover {
+    color: var(--accent-blue);
+}
+
+/* The chevron icon inside the button */
+.details-toggle-icon svg {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Rotate the icon when the SECTION is expanded */
+.is-expanded .details-toggle-icon svg {
+    transform: rotate(180deg);
+}
+
+/* =================================================================
+   COMPASS PAGE - COLLAPSIBLE RIGHT PANE
+   ================================================================= */
+
+/* Add the right pane to the main grid transition */
+.compass-container {
+    transition: grid-template-columns 0.4s ease-in-out;
+}
+
+/* NEW: Grid state when the right pane is collapsed */
+.compass-container.right-pane-collapsed {
+    grid-template-columns: 25% 1fr 5.5rem; /* VCC | Center | Right Pane */
+}
+/* Handle the double-collapsed state */
+.compass-container.vcc-collapsed.right-pane-collapsed {
+    grid-template-columns: 5.5rem 1fr 5.5rem; /* VCC | Center | Right Pane */
+}
+
+/* The right pane itself */
+#compass-right-pane {
+    transition: all 0.4s ease-in-out;
+}
+
+/* Hide all content inside the cards when collapsed */
+.right-pane-collapsed #compass-right-pane .compass-card > *:not(.card-icon-preview) {
+    opacity: 0;
+    height: 0;
+    visibility: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* The icon preview that is ONLY visible when collapsed */
+.card-icon-preview {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+}
+.right-pane-collapsed #compass-right-pane .card-icon-preview {
+    display: flex; /* Visible when collapsed */
+}
+.card-icon-preview svg {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.5rem;
+}
+.card-icon-preview span {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* The footer for the expand/collapse button */
+.right-pane-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-start; /* Button on the left */
+}
+
+/* =================================================================
+   COMPASS PAGE - UNIFIED MATURITY & TRANSFORMATION GRID (V3 - DEFINITIVE)
+   ================================================================= */
+
+.unified-maturity-grid {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.unified-grid-label {
+    padding: 1rem;
+    font-weight: 700;
+    background-color: var(--bg-card); 
+    border-right: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    position: relative;
+}
+.unified-grid-label:first-child { border-top: none; }
+.unified-grid-label > span { text-align: right; flex-grow: 1; }
+
+.unified-grid-content {
+    border-top: 1px solid var(--border-color);
+    position: relative;
+}
+.unified-grid-content:first-child { border-top: none; }
+
+.content-box-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.stage-header-box {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+}
+
+.stage-content-box {
+    background-color: var(--bg-secondary);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+}
+.stage-characteristics { min-height: 150px; max-height: 300px; color: var(--text-secondary); font-size: 0.875rem; transition: height 0.5s ease-in-out; }
+.stage-kpi { min-height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; color: var(--text-primary); }
+.stage-content-box::-webkit-scrollbar { width: 8px; }
+.stage-content-box::-webkit-scrollbar-track { background: transparent; }
+.stage-content-box::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; border: 2px solid var(--bg-secondary); }
+.stage-content-box::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+
+/* Styling for the slider and priorities rows */
+.slider-row, .priorities-row {
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+}
+.slider-row {
+    height: 80px;
+}
+.priorities-row {
+    height: 60px;
+    transition: height 0.5s ease-in-out;
+}
+.priorities-row.expanded {
+    height: 300px;
+    align-items: flex-start;
+}
+
+/* The invisible slider track */
+.tv-slider-track {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 100%;
+    background: transparent; cursor: pointer; position: absolute; top: 0; left: 0; margin: 0; z-index: 20;
+}
+.tv-slider-track::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; height: 14px; width: 14px; border-radius: 50%;
+    background-color: var(--bg-card); box-shadow: 0 0 0 5px var(--border-color); filter: drop-shadow(0 1px 2px var(--shadow-hover));
+}
+.tv-slider-track.as-is::-webkit-slider-thumb { box-shadow: 0 0 0 5px var(--purple); }
+.tv-slider-track.to-be::-webkit-slider-thumb { box-shadow: 0 0 0 5px var(--accent-teal); }
+
+/* The visible colored line behind the slider */
+.tv-track-line {
+    width: 100%; height: 4px; border-radius: 2px; position: relative;
+}
+.tv-track-line.as-is { background: linear-gradient(to right, var(--purple), var(--text-muted)); }
+.tv-track-line.to-be { background: linear-gradient(to right, var(--accent-teal), var(--text-muted)); }
+
+/* Aria's score icon */
+.tv-aria-indicator {
+    position: absolute; transform: translateX(-50%); width: 24px; height: 24px; background-color: var(--bg-card);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px var(--shadow); z-index: 15;
+}
+.tv-aria-indicator.as-is { top: 0; border: 2px solid var(--purple); }
+.tv-aria-indicator.to-be { bottom: 0; border: 2px solid var(--accent-teal); }
+.tv-aria-indicator img { width: 16px; height: 16px; }
+
+/* The "Reactive / 0.8" text */
+.tv-value-label {
+    position: absolute;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.tv-value-label.as-is { bottom: 10px; }
+.tv-value-label.to-be { top: 10px; }
+.tv-value-label[data-position="left"] { transform: translateX(0); }
+.tv-value-label[data-position="right"] { transform: translateX(-100%); }
+.tv-value-label[data-position="center"] { transform: translateX(-50%); }
+
+/* The new Transformation Priorities bar */
+.tv-priorities-bar {
+    position: relative; width: 66.66%; margin: 0 auto; height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+}
+.tv-priorities-title {
+    width: 100%; height: 40px; background-color: var(--text-secondary); color: var(--bg-primary);
+    display: flex; align-items: center; justify-content: center; font-weight: 700;
+    cursor: pointer; z-index: 10; border-radius: 0.5rem; transition: border-radius 0.3s ease-in-out;
+}
+.priorities-row.expanded .tv-priorities-title { border-radius: 0.5rem 0.5rem 0 0; }
+.tv-priorities-content {
+    flex-grow: 1; background-color: var(--bg-secondary); color: var(--text-primary);
+    padding: 1rem; overflow-y: auto; opacity: 0;
+    transition: opacity 0.3s 0.1s ease-in-out; border-radius: 0 0 0.5rem 0.5rem;
+}
+.priorities-row.expanded .tv-priorities-content { opacity: 1; }
+.priorities-content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; text-align: left; }
+.priorities-content-grid.full-width { grid-template-columns: 1fr; }
+.priorities-content-grid h6 { font-weight: 700; margin-bottom: 0.5rem; }
+.priorities-content-grid ul { list-style-type: disc; padding-left: 1.25rem; font-size: 0.875rem; }

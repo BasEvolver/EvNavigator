@@ -25,12 +25,17 @@ function getInitialState() {
         selectedAssessmentId: null,
         availableAssessments: [], // List of assessments for the selected company
         assessmentScores: {},     // Scores for the selected assessment (leverId -> { as_is, to_be })
-        
+        modelViewer: {
+            selectedItemId: 'all-disciplines',
+            expandedNodes: {}
+        },
+
         modeling: {
+            isVccCollapsed: true,
             selectedItemId: 'all-disciplines', 
-            expandedNodes: {'D1': true}, // Still keep D1 expanded by default for initial view
-            // 'assessments' will now be replaced by 'assessmentScores' and 'selectedAssessmentId'
-            // For now, we'll keep a dummy structure to prevent immediate errors, but it will be refactored.
+            expandedNodes: {'D1': true},
+            // NEW: An object to track the expanded state of each characteristic box by its index (0-4)
+            expandedCharacteristics: {}, 
             assessments: {
                 'techflow-solutions': {},
                 'cloudvantage': {}

@@ -3,6 +3,9 @@
 // =================================================================
 // CRITICAL UTILITIES AND CONSTANTS
 // =================================================================
+
+const maturityStageNames = ["Reactive", "Organized", "Automated", "Platform-led", "Intelligent"];
+
 const PROJECT_DAY_FOR_TODAY = 6;
 
 function calculateStartDate(today, projectDayForToday) {

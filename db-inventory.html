@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Inventory - Navigator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+      // Prevents sidebar flicker on page load
+      (function() {
+        try {
+          if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed-preload');
+          }
+        } catch (e) {}
+      })();
+    </script>
+</head>
+<body class="page-db-inventory">
+    <div class="app-container">
+        <!-- Sidebar will be loaded here -->
+        <div id="sidebar-container"></div>
+
+        <div class="main-content-wrapper">
+            <!-- Header will be loaded here -->
+            <div id="header-container"></div>
+
+            <!-- Main Content for the Inventory Page -->
+            <main id="main-content">
+                <!-- Your unique page content goes here -->
+                <div class="inventory-container">
+                    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Navigator Database Inventory (Live)</h1>
+                    <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 3rem;">A live inventory of all tables, columns, and record counts fetched directly from the database.</p>
+                    <div id="inventory-report">
+                        <!-- Live data will be rendered here by db-inventory.js -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/shared.js"></script>
+    <!-- New script for this page -->
+    <script src="js/db-inventory.js"></script>
+</body>
+</html>

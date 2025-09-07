@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Model Viewer - Navigator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- THIS IS THE CRITICAL MISSING PIECE -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- This script prevents the sidebar from flickering on page load -->
+    <script>
+      (function() {
+        try {
+          if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed-preload');
+          }
+        } catch (e) {
+          console.error('Could not apply sidebar preload state.', e);
+        }
+      })();
+    </script>
+</head>
+<body class="page-model-viewer">
+    <div class="app-container">
+        <!-- Sidebar will be loaded here -->
+        <div id="sidebar-container"></div>
+
+        <div class="main-content-wrapper">
+            <!-- Header will be loaded here -->
+            <div id="header-container"></div>
+
+            <!-- Main Content for the Viewer -->
+            <!-- We now use Tailwind utility classes for the layout, just like other pages -->
+            <main id="main-content_ModelView">
+                <div class="grid grid-cols-12 gap-6 h-full">
+                    <!-- Pane 1: VCC Tree View (4 columns wide) -->
+                    <div id="viewer-vcc-pane" class="col-span-4 refinery-card">
+                        <h2 class="refinery-title">Value Creation Canvas</h2>
+                        <div id="vcc-tree-container" class="refinery-content-area">
+                            <!-- Tree will be rendered here by JS -->
+                        </div>
+                    </div>
+                    <!-- Pane 2: Item Details (8 columns wide) -->
+                    <div id="viewer-details-pane" class="col-span-8 refinery-card">
+                        <h2 class="refinery-title">Selected Item Details</h2>
+                        <div id="item-details-content" class="refinery-content-area">
+                            <!-- Details will be rendered here by JS -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/shared.js"></script>
+    <!-- New script for this page -->
+    <script src="js/model-viewer.js"></script>
+</body>
+</html>
