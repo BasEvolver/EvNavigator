@@ -1,0 +1,5 @@
+committed_score_id,assessment_id,item_id,committed_as_is_score,committed_to_be_score,final_rationale,committed_at,item_type
+1,3,C201,3,4.5,Consensus: The GTM function is effective but informal. Target requires implementing a formal sales methodology.,2022-11-22 10:00:00+00,capability
+2,3,C301,2.8,4.5,Consensus: The finance function is a key risk due to manual processes. Target requires investment in new systems.,2022-11-22 10:00:00+00,capability
+3,4,C201,4.2,4.8,Consensus: VCP execution has been strong. The GTM function has matured significantly. New target focuses on optimization.,2023-11-27 10:00:00+00,capability
+4,4,C301,3.8,4.5,Consensus: Excellent progress. New systems are in place. Target remains relevant as we focus on leveraging them for BI.,2023-11-27 10:00:00+00,capability

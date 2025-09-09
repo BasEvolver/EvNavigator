@@ -28,17 +28,39 @@ async function initializeModelingPage() {
     await loadSharedComponents();
     await loadMaturityModelFromAPI();
     await loadAvailableAssessments(companyId);
-    state = loadState();
+    
+    state = loadState(); // Reload state after async operations
     if (!state.selectedAssessmentId && state.availableAssessments.length > 0) {
         const sortedAssessments = state.availableAssessments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         state.selectedAssessmentId = sortedAssessments[0].assessment_id;
         saveState(state);
     }
+
     if (state.selectedAssessmentId) {
-        await loadAssessmentScores(state.selectedAssessmentId);
+        // THE FIX: Load both scores AND scope when an assessment is selected
+        await Promise.all([
+            loadAssessmentScores(state.selectedAssessmentId),
+            loadAssessmentScope(state.selectedAssessmentId) 
+        ]);
     }
+
     renderCompassPageV3(loadState());
     initializeModelingEventListeners();
+}
+
+async function loadAssessmentScope(assessmentId) {
+    let state = loadState();
+    try {
+        const response = await fetch(`/api/assessments/${assessmentId}/scope`);
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        state.assessmentScope = await response.json();
+        saveState(state);
+        console.log("Successfully loaded assessment scope.");
+    } catch (error) {
+        console.error(`Error loading scope for assessment ${assessmentId}:`, error);
+        state.assessmentScope = {}; // Ensure state is clean on error
+        saveState(state);
+    }
 }
 
 async function loadMaturityModelFromAPI() {
@@ -199,13 +221,13 @@ async function saveAssessmentScore(assessmentId, item, type, value) {
 }
 
 function renderCompassPageV3(state) {
-    const { isVccCollapsed, isRightPaneCollapsed } = state.modeling;
+    const { isVccCollapsed, isRightPaneCollapsed, isRadarExpanded } = state.modeling;
     const mainContent = document.getElementById('main-content');
     
-    // Add classes to the container based on state
     let containerClasses = 'compass-container';
     if (isVccCollapsed) containerClasses += ' vcc-collapsed';
     if (isRightPaneCollapsed) containerClasses += ' right-pane-collapsed';
+    if (isRadarExpanded) containerClasses += ' radar-expanded'; // <-- ADD THIS LINE
 
     mainContent.innerHTML = `
         <div class="${containerClasses}">
@@ -247,13 +269,33 @@ function renderCompassLeftPaneV3(state) {
 
 function renderCompassCenterPaneV3(state) {
     const centerPane = document.getElementById('compass-center-pane');
+    const item = findItemInModel(state.modeling.selectedItemId);
+    const isRoot = !item || item.type === 'root';
+    
+    const scopeData = state.assessmentScope || {};
+    const isInScope = isRoot ? true : (scopeData[item.id] !== false); 
+
     centerPane.innerHTML = `
         <div class="compass-card timeline-selector-card">
             <h3 class="control-title">Assessment Timeline</h3>
             ${renderTimelineSelector(state)}
         </div>
-        <div class="compass-center-content">
-            ${renderEnrichedContentCard(state)}
+        <div class="compass-card description-card">
+            <div class="card-header-with-toggle">
+                <div class="compass-breadcrumbs">${generateBreadcrumbs(state)}</div>
+                ${!isRoot ? `
+                <div class="scope-toggle-wrapper">
+                    <label for="scope-toggle" class="text-sm font-bold text-text-secondary">In Scope</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="scope-toggle" data-action="toggle-item-scope" ${isInScope ? 'checked' : ''}>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                ` : ''}
+            </div>
+            <div class="card-content-scroller">
+                ${renderEnrichedContentCard(state)}
+            </div>
         </div>
     `;
 }
@@ -263,39 +305,40 @@ function renderCompassRightPaneV3(state) {
     const item = findItemInModel(state.modeling.selectedItemId);
     if (!item) return;
 
-    const { isRightPaneCollapsed } = state.modeling;
+    const { isRightPaneCollapsed, isRadarExpanded } = state.modeling;
     const title = item.type === 'lever' ? (findParent(item.id)?.name || 'Lever') : item.name;
 
-    // --- THE FIX: Replaced with your new, preferred radar icon ---
-    const radarIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <polygon points="12,2 20,8 20,16 12,22 4,16 4,8" />
-        <polygon points="12,6 16,9 16,15 12,18 8,15 8,9" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M4 8l16 8M20 8L4 16" />
-    </svg>`;
-    
-    const ariaIcon = `<img src="Evolver_Dark.png" alt="Aria" style="width: 32px; height: 32px; margin-bottom: 0.5rem;">`;
-    
-    const tableIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75z" />
-    </svg>`;
-    // --- END FIX ---
+    const selectedAssessment = state.availableAssessments.find(a => a.assessment_id == state.selectedAssessmentId);
+    const ariaSummaryHTML = selectedAssessment?.aria_assessment_summary || '<p class="text-sm text-secondary">No ARIA summary available for this assessment.</p>';
 
-    const buttonIcon = isRightPaneCollapsed
-        ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" /></svg>`
-        : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" /></svg>`;
+    const radarIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><polygon points="12,2 20,8 20,16 12,22 4,16 4,8" /><polygon points="12,6 16,9 16,15 12,18 8,15 8,9" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M4 8l16 8M20 8L4 16" /></svg>`;
+    const ariaIcon = `<img src="Evolver_Dark.png" alt="Aria" style="width: 32px; height: 32px; margin-bottom: 0.5rem;">`;
+    const tableIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75z" /></svg>`;
+    
+    // THE FIX: The logic for the icon is now swapped to match your request.
+    const collapseIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" /></svg>`; // Right-pointing (Expand)
+    const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" /></svg>`; // Left-pointing (Collapse)
+    const collapseButtonIcon = isRightPaneCollapsed ? collapseIcon : expandIcon;
+
+    const expandRadarIcon = `<svg class="icon-expand w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9" /></svg>`;
+    const collapseRadarIcon = `<svg class="icon-collapse w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9L4.5 4.5M9 9V4.5M9 9H4.5m11.25 11.25L15 15m0 0v4.5m0-4.5h4.5" /></svg>`;
 
     const actionWrapperStart = isRightPaneCollapsed ? `<div data-action="toggle-right-pane" class="h-full flex flex-col gap-6 cursor-pointer">` : `<div class="h-full flex flex-col gap-6">`;
     const actionWrapperEnd = `</div>`;
 
     rightPane.innerHTML = `
         ${actionWrapperStart}
-            <div class="compass-card" style="height: 300px;">
+            <div class="compass-card radar-card ${isRadarExpanded ? 'expanded' : ''}" style="height: 300px;">
                 ${isRightPaneCollapsed ? `
                     <div class="card-icon-preview">${radarIcon} <span>Radar</span></div>
                 ` : `
                     <div class="radar-chart-container h-full">
                         <h3 class="radar-chart-title">${title}</h3>
                         <canvas id="modeling-radar-chart"></canvas>
+                        <button class="expand-icon-button bottom-left ${isRadarExpanded ? 'expanded' : ''}" data-action="toggle-radar-expansion" title="Toggle Focus Mode">
+                            ${expandRadarIcon}
+                            ${collapseRadarIcon}
+                        </button>
                     </div>
                 `}
             </div>
@@ -303,8 +346,8 @@ function renderCompassRightPaneV3(state) {
                 ${isRightPaneCollapsed ? `
                     <div class="card-icon-preview">${ariaIcon} <span>ARIA</span></div>
                 ` : `
-                    <div class="aria-perspective-header"><h3>ARIA's Perspective</h3></div>
-                    <div id="aria-perspective-content">${generateAriaPerspective(state)}</div>
+                    <div class="aria-perspective-header"><h3>ARIA's Assessment Summary</h3></div>
+                    <div class="aria-perspective-content">${ariaSummaryHTML}</div>
                 `}
             </div>
             <div class="compass-card flex-grow">
@@ -319,7 +362,7 @@ function renderCompassRightPaneV3(state) {
             </div>
             <div class="right-pane-footer">
                 <button class="collapse-toggle-btn" data-action="toggle-right-pane" title="${isRightPaneCollapsed ? 'Expand Details' : 'Collapse Details'}">
-                    ${buttonIcon}
+                    ${collapseButtonIcon}
                 </button>
             </div>
         ${actionWrapperEnd}
@@ -328,6 +371,52 @@ function renderCompassRightPaneV3(state) {
     if (!isRightPaneCollapsed) {
         drawRadarChart(state);
     }
+}
+
+function drawRadarChart(state) {
+    const ctx = document.getElementById('modeling-radar-chart')?.getContext('2d');
+    if (!ctx) return;
+    if (window.chartInstance) window.chartInstance.destroy();
+    const selectedItem = findItemInModel(state.modeling.selectedItemId);
+    if (!selectedItem || !state.selectedAssessmentId) return;
+    const itemsToChart = getChildren(selectedItem);
+    if (!Array.isArray(itemsToChart) || itemsToChart.length === 0) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
+    const labels = itemsToChart.map(i => i.name);
+    const asIsData = itemsToChart.map(i => getDisplayScores(i, state.assessmentScores).current);
+    const toBeData = itemsToChart.map(i => getDisplayScores(i, state.assessmentScores).target);
+    const styles = getComputedStyle(document.body);
+
+    // THE FIX: Use the new CSS variables for colors
+    const asIsColor = styles.getPropertyValue('--as-is-color').trim();
+    const toBeColor = styles.getPropertyValue('--to-be-color').trim();
+
+    window.chartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'As-Is',
+                    data: asIsData,
+                    borderColor: asIsColor,
+                    backgroundColor: `${asIsColor}33`, // 20% opacity
+                    borderWidth: 2,
+                    pointBackgroundColor: asIsColor,
+                    fill: true
+                },
+                {
+                    label: 'To-Be',
+                    data: toBeData,
+                    borderColor: toBeColor,
+                    backgroundColor: `${toBeColor}33`, // 20% opacity
+                    borderWidth: 2,
+                    pointBackgroundColor: toBeColor,
+                    fill: true
+                }
+            ]
+        },
+        options: { /* ... your existing options ... */ }
+    });
 }
 
 function generateAriaPerspective(state) {
@@ -435,10 +524,28 @@ function renderTreeView(state) {
 function renderMaturityTable(state) {
     const selectedItem = findItemInModel(state.modeling.selectedItemId);
     if (!selectedItem) return '<p>Select an item from the tree.</p>';
-    const itemsToDisplay = getChildren(selectedItem);
-    if (!Array.isArray(itemsToDisplay) || itemsToDisplay.length === 0) return '<p class="text-secondary p-4 text-center">No sub-items to display.</p>';
+
+    let itemsToDisplay = [];
+    
+    // THE FIX: Handle the "All Disciplines" case
+    if (selectedItem.type === 'root') {
+        itemsToDisplay = state.maturityModelData.disciplines.map(d => findItemInModel(d.discipline_id));
+    } else {
+        itemsToDisplay = getChildren(selectedItem);
+    }
+
+    // Filter for only items that are in scope
+    const scopeData = state.assessmentScope || {};
+    const inScopeItems = itemsToDisplay.filter(item => scopeData[item.id] !== false);
+
+    if (inScopeItems.length === 0) {
+        return '<p class="text-secondary p-4 text-center">No in-scope sub-items to display.</p>';
+    }
+    
+    inScopeItems.sort((a, b) => a.id.localeCompare(b.id));
+
     let tableHTML = `<table class="maturity-table"><thead><tr><th>Name</th><th class="stage-cell">As-Is</th><th class="stage-cell">To-Be</th><th class="score-cell">Gap</th></tr></thead><tbody>`;
-    itemsToDisplay.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+    inScopeItems.forEach(item => {
         const scores = getDisplayScores(item, state.assessmentScores);
         const gap = scores.target - scores.current;
         const gapClass = gap > 0.1 ? 'gap-positive' : (gap < -0.1 ? 'gap-negative' : '');
@@ -449,26 +556,38 @@ function renderMaturityTable(state) {
 
 // in js/modeling.js
 
-// in js/modeling.js
-
 function renderEnrichedContentCard(state) {
     const item = findItemInModel(state.modeling.selectedItemId);
-    if (!item || !item.id) return '<div class="p-8 text-center text-secondary">Please select an item to see details.</div>';
+    if (!item || !item.id || item.type === 'root') {
+        return '<div class="p-8 text-center text-secondary flex flex-col items-center justify-center h-full"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mb-4"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0h3.75m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h3.75" /></svg><h3 class="font-bold text-lg text-text-primary">Select an Item</h3><p>Please select a Discipline, Capability, or Lever from the canvas on the left to see its details.</p></div>';
+    }
 
-    // --- 1. Data Preparation ---
+    // --- Data Preparation ---
     const scores = getDisplayScores(item, state.assessmentScores);
-    const ariaScores = getDisplayScores(item, { 'ARIA': state.assessmentScores['ARIA'] || {} });
     const [currentLevelName, targetLevelName] = [getMaturityLevelName(scores.current), getMaturityLevelName(scores.target)];
-    const rubricItems = state.maturityModelData.rubricCache[item.id] || [];
     
+    const allScoresForThisItem = Object.entries(state.assessmentScores).map(([source, scores]) => ({
+        source_id: source,
+        ...scores[item.id]
+    })).filter(s => s.current !== undefined);
+
+    const itemAriaScore = allScoresForThisItem.find(s => s.source_id === 'ARIA') || { 
+        current: 0, target: 0, as_is_confidence_score: 0, 
+        as_is_rationale: 'No ARIA score available for this item.',
+        to_be_rationale: 'No ARIA recommendation available for this item.'
+    };
+    const ariaAsIsPercent = (itemAriaScore.current / 5) * 100;
+    const ariaToBePercent = (itemAriaScore.target / 5) * 100;
+
+    const rubricItems = state.maturityModelData.rubricCache[item.id] || [];
     const primaryKpiItem = rubricItems.find(r => r.kpi_name) || {};
     const kpiTargetsByStage = maturityStageNames.map((name, index) => {
         const rubricForStage = rubricItems.find(r => r.stage_number === (index + 1));
         return rubricForStage ? rubricForStage.kpi_target_value : 'N/A';
     });
-    
-    const isExpanded = state.modeling.characteristicsExpanded;
-    
+    const isCharacteristicsExpanded = state.modeling.characteristicsExpanded;
+    const isTransformationExpanded = state.modeling.transformationExpanded;
+
     let maxSummaryLines = 1;
     maturityStageNames.forEach((name, index) => {
         const rubricForStage = rubricItems.find(r => r.stage_number === (index + 1));
@@ -479,17 +598,15 @@ function renderEnrichedContentCard(state) {
         if (lines > maxSummaryLines) maxSummaryLines = lines;
     });
     const summaryHeight = `${(maxSummaryLines * 1.5) + 2}rem`;
-
     const characteristicsHTML = maturityStageNames.map((name, index) => {
         const rubricForStage = rubricItems.find(r => r.stage_number === (index + 1));
         const fullText = rubricForStage ? rubricForStage.description : 'N/A';
         const firstPeriodIndex = fullText.indexOf('.');
         const summaryText = firstPeriodIndex > -1 ? fullText.substring(0, firstPeriodIndex + 1) : fullText;
-        const style = !isExpanded ? `style="height: ${summaryHeight};"` : '';
-        return `<div class="stage-content-box stage-characteristics" ${style}><p>${isExpanded ? fullText : summaryText}</p></div>`;
+        const style = !isCharacteristicsExpanded ? `style="height: ${summaryHeight};"` : '';
+        return `<div class="stage-content-box stage-characteristics" ${style}><p>${isCharacteristicsExpanded ? fullText : summaryText}</p></div>`;
     }).join('');
 
-    // --- 2. Generate HTML for all components ---
     let benefitsHTML = '';
     if (item.type === 'discipline' || item.type === 'capability' || item.type === 'root') {
         benefitsHTML = `<p>${item.benefitsStatement || 'No benefits statement available.'}</p>`;
@@ -508,109 +625,169 @@ function renderEnrichedContentCard(state) {
     const stageHeadersHTML = maturityStageNames.map(name => `<div class="stage-header-box">${name}</div>`).join('');
     const kpiHTML = kpiTargetsByStage.map(content => `<div class="stage-content-box stage-kpi">${content}</div>`).join('');
     
-    const asIsPercent = (scores.current / 5) * 100;
-    const toBePercent = (scores.target / 5) * 100;
-    const ariaAsIsPercent = (ariaScores.current / 5) * 100;
-    const ariaToBePercent = (ariaScores.target / 5) * 100;
+    let prioritiesContentHTML = '<p class="text-sm text-text-muted p-4">No transformation path defined for this gap.</p>';
     const fromStage = Math.floor(scores.current);
     const toStage = Math.ceil(scores.target);
     const stageGap = toStage - fromStage;
-    let prioritiesContentHTML = '<p>No transformation path defined for this gap.</p>';
+
     if (stageGap > 0 && item.type === 'lever') {
         const allRoadmapItems = state.maturityModelData.roadmapCache[item.id] || [];
-        let initiativesHTML = '';
-        for (let i = fromStage; i < toStage; i++) {
-            const step = allRoadmapItems.find(r => r.from_stage === (i + 1) && r.to_stage === (i + 2));
-            if (step && step.key_initiatives) {
-                initiativesHTML += (step.key_initiatives || '').split('\n').filter(Boolean).map(line => `<li>${line}</li>`).join('');
-            }
-        }
-        initiativesHTML = `<ul>${initiativesHTML}</ul>`;
+        const directTransitionData = allRoadmapItems.find(i => i.from_stage == fromStage && i.to_stage == toStage);
+
         if (stageGap > 1) {
-            const directPath = allRoadmapItems.find(r => r.from_stage === fromStage && r.to_stage === toStage);
-            const skipsHTML = (directPath && directPath.what_to_skip) ? (directPath.what_to_skip || '').split('\n').filter(Boolean).map(line => `<li>${line}</li>`).join('') : '<li>None specified.</li>';
-            prioritiesContentHTML = `<div class="priorities-content-grid"><div><h6>Key Initiatives (Cumulative)</h6>${initiativesHTML}</div><div><h6>What to Skip</h6><ul>${skipsHTML}</ul></div></div>`;
-        } else {
-            prioritiesContentHTML = `<div class="priorities-content-grid full-width"><div><h6>Key Initiatives</h6>${initiativesHTML}</div></div>`;
+            let initiativesHtml = `<h6>Cumulative Initiatives</h6>`;
+            let cumulativeInitiativesList = '';
+            for (let i = fromStage; i < toStage; i++) {
+                const intermediateStep = allRoadmapItems.find(item => item.from_stage == i && item.to_stage == i + 1);
+                if (intermediateStep && intermediateStep.key_initiatives) {
+                    cumulativeInitiativesList += (intermediateStep.key_initiatives || '').split('\n').filter(Boolean).map(line => `<li>${line}</li>`).join('');
+                }
+            }
+            initiativesHtml += `<ul class="list-disc pl-5 mt-2 text-sm text-green-700 space-y-1">${cumulativeInitiativesList || '<li>No initiatives defined.</li>'}</ul>`;
+
+            let skipsHtml = `<h6>What to Skip (Direct Path)</h6>`;
+            const skipsList = (directTransitionData && directTransitionData.what_to_skip) ? (directTransitionData.what_to_skip || '').split('\n').filter(Boolean).map(line => `<li>${line}</li>`).join('') : '';
+            if (skipsList) {
+                skipsHtml += `<ul class="list-disc pl-5 mt-2 text-sm text-red-700 space-y-1">${skipsList}</ul>`;
+            } else {
+                skipsHtml += `<p class="text-sm text-red-700 mt-2 italic">None specified.</p>`;
+            }
+            
+            prioritiesContentHTML = `<div class="priorities-content-grid"><div>${initiativesHtml}</div><div>${skipsHtml}</div></div>`;
+
+        } else { // stageGap === 1
+            const singleStepInitiatives = (directTransitionData && directTransitionData.key_initiatives) ? (directTransitionData.key_initiatives || '').split('\n').filter(Boolean).map(line => `<li>${line}</li>`).join('') : '';
+            let initiativesHtml = `<h6>Key Initiatives</h6>`;
+            if (singleStepInitiatives) {
+                initiativesHtml += `<ul class="list-disc pl-5 mt-2 text-sm text-green-700 space-y-1">${singleStepInitiatives}</ul>`;
+            } else {
+                initiativesHtml += `<p class="text-sm text-green-700 mt-2 italic">None specified.</p>`;
+            }
+            prioritiesContentHTML = `<div class="priorities-content-grid full-width"><div>${initiativesHtml}</div></div>`;
         }
     }
 
+  // THE FIX: New, stylish HTML for the dual-column ARIA Insight Box
+    const ariaInsightHTML = `
+        <div class="aria-insight-box">
+            <div class="aria-insight-header">
+                <img src="Evolver_Dark.png" alt="Aria">
+                <span>ARIA's Perspective</span>
+            </div>
+            <div class="aria-insight-grid-dual">
+                <!-- As-Is Column -->
+                <div class="aria-insight-column">
+                    <h5>As-Is View</h5>
+                    <div class="aria-insight-metric">
+                        <label>As-Is Score</label>
+                        <p>${itemAriaScore.current.toFixed(1)}</p>
+                    </div>
+                    <div class="aria-insight-metric">
+                        <label>Confidence</label>
+                        <div class="confidence-bar-wrapper">
+                            <div class="confidence-bar" style="width: ${itemAriaScore.as_is_confidence_score || 0}%;"></div>
+                            <span>${itemAriaScore.as_is_confidence_score || 'N/A'}%</span>
+                        </div>
+                    </div>
+                    <div class="aria-insight-rationale">
+                        <label><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM9.25 8.75a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0v-3.5ZM10 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>Rationale</label>
+                        <p>${itemAriaScore.as_is_rationale}</p>
+                    </div>
+                </div>
+                <!-- To-Be Column -->
+                <div class="aria-insight-column">
+                    <h5>To-Be Recommendation</h5>
+                    <div class="aria-insight-metric">
+                        <label>Recommended To-Be Score</label>
+                        <p>${itemAriaScore.target.toFixed(1)}</p>
+                    </div>
+                    <div class="aria-insight-rationale">
+                        <label><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM9.25 8.75a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0v-3.5ZM10 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>Rationale</label>
+                        <p>${itemAriaScore.to_be_rationale || 'No specific rationale provided for the To-Be recommendation.'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
     const unifiedGridHTML = `
-        <div class="unified-maturity-grid ${isExpanded ? 'is-expanded' : ''}">
+        <div class="unified-maturity-grid ${isCharacteristicsExpanded ? 'is-expanded' : ''}">
             <div class="unified-grid-label"><span>Stage</span></div>
             <div class="unified-grid-content"><div class="content-box-row">${stageHeadersHTML}</div></div>
             <div class="unified-grid-label">
                 <span>Characteristics</span>
                 <button class="details-toggle-icon" data-action="toggle-characteristic-details">${chevronIcon}</button>
             </div>
-            <div class="unified-grid-content"><div class="content-box-row">${characteristicsHTML}</div></div>
+            <div class="unified-grid-content" id="characteristics-content-row"><div class="content-box-row">${characteristicsHTML}</div></div>
             <div class="unified-grid-label" id="kpi-label-cell">
                 <span>KPI: ${primaryKpiItem.kpi_name || "Not Defined"}</span>
                 <button class="expand-icon-button ml-2" data-action="toggle-kpi-popup" title="Show KPI details">${infoIcon}</button>
             </div> 
             <div class="unified-grid-content"><div class="content-box-row">${kpiHTML}</div></div>
             <div class="unified-grid-label"><span>As-Is</span></div>
-            <div class="unified-grid-content slider-row">
-                <div class="tv-track-line as-is"></div>
-                <input type="range" min="0" max="5" value="${scores.current}" step="0.1" class="tv-slider-track as-is" data-action="update-score" data-item-id="${item.id}" data-type="current">
-                <div class="tv-aria-indicator as-is" style="left: ${ariaAsIsPercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
-                <div class="tv-value-label as-is" style="left: ${asIsPercent}%;" data-position="${getLabelPosition(asIsPercent)}">${currentLevelName} / ${scores.current.toFixed(1)}</div>
+            <div class="unified-grid-content slider-row as-is-row">
+                <div class="static-value-label">
+                    <span class="value-level-name">${currentLevelName}</span>
+                    <span class="value-score">${scores.current.toFixed(1)}</span>
+                </div>
+                <div class="tv-track-container">
+                    <div class="tv-track-line as-is"></div>
+                    <input type="range" min="0" max="5" value="${scores.current}" step="0.1" class="tv-slider-track as-is" data-action="update-score" data-item-id="${item.id}" data-type="current">
+                    <div class="tv-aria-indicator as-is" style="left: ${ariaAsIsPercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
+                </div>
             </div>
             <div class="unified-grid-label"></div>
-            <div class="unified-grid-content priorities-row" id="priorities-row">
-                <div class="tv-priorities-bar">
-                    <div class="tv-priorities-title" data-action="toggle-transformation-priorities">Transformation Priorities</div>
+            <div class="unified-grid-content priorities-row ${isTransformationExpanded ? 'expanded' : ''}" id="priorities-row">
+                <div class="transformation-wrapper">
+                    <button class="transformation-toggle-button ${isTransformationExpanded ? 'expanded' : ''}" data-action="toggle-transformation-priorities">
+                        <span>Transformation Initiatives</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                    </button>
                     <div class="tv-priorities-content">${prioritiesContentHTML}</div>
                 </div>
             </div>
             <div class="unified-grid-label"><span>To-Be</span></div>
-            <div class="unified-grid-content slider-row">
-                <div class="tv-track-line to-be"></div>
-                <input type="range" min="0" max="5" value="${scores.target}" step="0.1" class="tv-slider-track to-be" data-action="update-score" data-item-id="${item.id}" data-type="target">
-                <div class="tv-aria-indicator to-be" style="left: ${ariaToBePercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
-                <div class="tv-value-label to-be" style="left: ${toBePercent}%;" data-position="${getLabelPosition(toBePercent)}">${targetLevelName} / ${scores.target.toFixed(1)}</div>
+            <div class="unified-grid-content slider-row to-be-row">
+                <div class="static-value-label">
+                    <span class="value-level-name">${targetLevelName}</span>
+                    <span class="value-score">${scores.target.toFixed(1)}</span>
+                </div>
+                <div class="tv-track-container">
+                    <div class="tv-track-line to-be"></div>
+                    <input type="range" min="0" max="5" value="${scores.target}" step="0.1" class="tv-slider-track to-be" data-action="update-score" data-item-id="${item.id}" data-type="target">
+                    <div class="tv-aria-indicator to-be" style="left: ${ariaToBePercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
+                </div>
+            </div>
+            <div class="unified-grid-label"></div>
+            <div class="unified-grid-content">
+                ${ariaInsightHTML}
             </div>
         </div>
     `;
 
-    // --- 3. Final Assembly ---
-    const expandIcon = `<svg class="icon-expand w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5 9 9m0 0H4.5M9 9V4.5" /></svg>`;
-    const collapseIcon = `<svg class="icon-collapse w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 19.5 15 15m0 0v4.5m0-4.5h4.5" /></svg>`;
+    const expandIcon = `<svg class="icon-expand w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9" /></svg>`;
+    const collapseIcon = `<svg class="icon-collapse w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9L4.5 4.5M9 9V4.5M9 9H4.5m11.25 11.25L15 15m0 0v4.5m0-4.5h4.5" /></svg>`;
 
-    return `
-        <div class="compass-card description-card">
-            <div class="compass-breadcrumbs mb-6">${generateBreadcrumbs(state)}</div>
-            
+       return `
+        <div class="card-content-padding-wrapper">
             <div id="description-control-grid-wrapper" class="mb-8">
-                <div class="info-pane" id="description-pane">
-                    <h4 class="info-label">Description</h4>
-                    <div class="info-box">
-                        <p>${item.short_description || 'N/A'}</p>
-                        <div class="details-content">
-                            <h5 class="text-sm font-bold text-text-primary mb-2">Detailed Description</h5>
-                            <p class="mb-4">${item.description || 'No detailed description available.'}</p>
-                            <h5 class="text-sm font-bold text-text-primary mb-2">Benefits Statement</h5>
-                            ${benefitsHTML}
-                        </div>
-                        <button class="expand-icon-button" data-action="toggle-details-expansion" title="Show more details">
-                            ${expandIcon}
-                            ${collapseIcon}
-                        </button>
-                    </div>
-                </div>
-                <div class="info-pane">
-                    <h4 class="info-label">Control Question</h4>
-                    <p class="info-box">${item.controlQuestion || 'N/A'}</p>
+                <!-- ... Description and Control Question panes ... -->
+            </div>
+            ${unifiedGridHTML}
+            <div id="kpi-details-popup" class="kpi-details-popup"></div>
+            <div class="assessment-conversation-section">
+                <h4 class="response-section-title">Assessment Conversation</h4>
+                ${renderAssessmentConversation(allScoresForThisItem)}
+                <div class="comment-input-area">
+                    <textarea id="assessment-comment-input" placeholder="Add a comment or rationale..."></textarea>
+                    <button data-action="post-assessment-comment" class="prompt-send-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                    </button>
                 </div>
             </div>
-
-            ${unifiedGridHTML}
-            
-            <div id="kpi-details-popup" class="kpi-details-popup"></div>
         </div>
     `;
 }
-
 
 function updateTransformationBoxPosition() {
     const asIsSlider = document.querySelector('.tv-slider-track.as-is');
@@ -683,19 +860,52 @@ function drawRadarChart(state) {
 }
 
 function getDisplayScores(item, allScoresBySource) {
-    const persona = PERSONAS[loadState().activePersona] || { name: 'Unknown User' };
+    const state = loadState();
+    const persona = PERSONAS[state.activePersona] || { name: 'Unknown User' };
     const userScores = allScoresBySource[persona.name] || {};
     const ariaScores = allScoresBySource['ARIA'] || {};
+    
+    // 1. Check for a direct score from the current user first.
     const directUserScore = userScores[item.id];
-    if (directUserScore) return directUserScore;
+    if (directUserScore) {
+        return directUserScore;
+    }
+
+    // 2. If no user score, check for a direct score from ARIA.
     const directAriaScore = ariaScores[item.id];
-    if (directAriaScore) return directAriaScore;
+    if (directAriaScore) {
+        return directAriaScore;
+    }
+
+    // 3. If no direct scores exist, calculate the score by aggregating from children.
     const children = getChildren(item);
-    if (children.length === 0) return { current: 0, target: 0 };
+    if (children.length === 0) {
+        // If there are no children, the score is 0.
+        return { current: 0, target: 0 };
+    }
+
+    // THE FIX STARTS HERE: Corrected Aggregation Logic
+    
+    // First, get the scores for all children recursively.
     const childScores = children.map(child => getDisplayScores(child, allScoresBySource));
-    const totalCurrent = childScores.reduce((sum, s) => sum + s.current, 0);
-    const totalTarget = childScores.reduce((sum, s) => sum + s.target, 0);
-    return { current: totalCurrent / childScores.length, target: totalTarget / childScores.length };
+
+    // Next, filter this list to include ONLY children that have a score > 0.
+    // This correctly ignores unscored children, which were previously dragging down the average.
+    const scoredChildren = childScores.filter(score => score.current > 0 || score.target > 0);
+
+    // If there are no scored children, the parent's score is 0.
+    if (scoredChildren.length === 0) {
+        return { current: 0, target: 0 };
+    }
+
+    // Finally, calculate the average using ONLY the scored children.
+    const totalCurrent = scoredChildren.reduce((sum, s) => sum + s.current, 0);
+    const totalTarget = scoredChildren.reduce((sum, s) => sum + s.target, 0);
+
+    return {
+        current: totalCurrent / scoredChildren.length,
+        target: totalTarget / scoredChildren.length
+    };
 }
 
 function findItemInModel(id) {
@@ -782,10 +992,18 @@ function getChildren(item) {
 }
 
 function getMaturityLevelName(score) {
-    const roundedScore = Math.round(score);
-    if (roundedScore >= 5) return maturityStageNames[4];
-    if (roundedScore >= 1) return maturityStageNames[roundedScore - 1];
-    return "Initial";
+    // Use a series of checks to handle the inclusive upper bounds correctly, as defined.
+    if (score <= 1) {
+        return maturityStageNames[0]; // "Reactive" for scores 0-1
+    } else if (score <= 2) {
+        return maturityStageNames[1]; // "Organized" for scores >1 to 2
+    } else if (score <= 3) {
+        return maturityStageNames[2]; // "Automated" for scores >2 to 3
+    } else if (score <= 4) {
+        return maturityStageNames[3]; // "Platform-led" for scores >3 to 4
+    } else { // This covers all scores >4 up to and including 5
+        return maturityStageNames[4]; // "Intelligent"
+    }
 }
 
 function getLabelPosition(percent) {
@@ -801,43 +1019,149 @@ function getMaturityLevelDescription(score) {
     return "The initial stage before formal processes are established.";
 }
 
-// in js/modeling.js
+function renderAssessmentConversation(allScoresForItem) {
+    let conversationHTML = '';
+    const sortedScores = allScoresForItem.filter(s => s.rationale); // Only show items with comments
 
-// in js/modeling.js
+    if (sortedScores.length === 0) {
+        return '<p class="text-sm text-text-muted text-center p-4">No comments or rationales have been added for this item yet.</p>';
+    }
 
+    sortedScores.forEach(score => {
+        const isAria = score.source_id === 'ARIA';
+        const persona = Object.values(PERSONAS).find(p => p.name === score.source_id) || {};
+        const nameParts = (persona.name || 'ARIA').split(' ');
+        const initials = isAria ? 'A' : (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
+        const avatarColor = isAria ? 'var(--accent-blue)' : (persona.avatarColor || 'var(--text-secondary)');
+        
+        const bubbleClass = isAria ? 'aria-bubble' : 'user-bubble';
+        const wrapperClass = isAria ? '' : 'user-wrapper';
+
+        conversationHTML += `
+            <div class="bubble-wrapper ${wrapperClass}">
+                <div class="persona-avatar-chat" style="background-color: ${avatarColor}; color: white;">${initials}</div>
+                <div class="chat-bubble ${bubbleClass}">
+                    <p class="bubble-header">${score.source_id}</p>
+                    <p class="bubble-text">${score.rationale}</p>
+                </div>
+            </div>
+        `;
+    });
+
+    return `<div class="assessment-conversation-container">${conversationHTML}</div>`;
+}
+
+async function saveAssessmentComment(itemId, commentText) {
+    let state = loadState();
+    const persona = PERSONAS[state.activePersona];
+    if (!persona) return;
+
+    // Get existing scores to avoid overwriting them
+    const allUserScores = state.assessmentScores[persona.name] || {};
+    const existingScores = allUserScores[itemId] || { current: 0, target: 0 };
+
+    const payload = {
+        assessment_id: parseInt(state.selectedAssessmentId, 10),
+        item_id: itemId,
+        item_type: findItemInModel(itemId).type,
+        source_id: persona.name,
+        as_is_score: existingScores.current,
+        to_be_score: existingScores.target,
+        as_is_rationale: commentText // The new comment
+    };
+
+    try {
+        const response = await fetch('/api/scores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        
+        // Update the local state to reflect the change immediately
+        if (!state.assessmentScores[persona.name]) state.assessmentScores[persona.name] = {};
+        state.assessmentScores[persona.name][itemId] = {
+            ...existingScores,
+            rationale: commentText
+        };
+        saveState(state);
+        renderCompassCenterPaneV3(loadState()); // Re-render to show the new comment
+
+    } catch (error) {
+        console.error("Error saving comment:", error);
+        // Optionally, add UI feedback for the user that the save failed
+    }
+}
 // in js/modeling.js
 
 // in js/modeling.js
 
 function initializeModelingEventListeners() {
+    // --- CLICK LISTENER ---
     document.body.addEventListener('click', async (e) => {
         if (Navigation.getCurrentPage() !== 'modeling') return;
-
         const target = e.target.closest('[data-action]');
-        const popup = document.getElementById('kpi-details-popup');
-
-        if (popup && popup.classList.contains('visible') && !target.closest('#kpi-details-popup') && !target.closest('[data-action="toggle-kpi-popup"]')) {
-            popup.classList.remove('visible');
-        }
-
         if (!target) return;
         e.stopPropagation();
-        
         let state = loadState();
         const action = target.dataset.action;
 
-        if (action === 'toggle-characteristic-details') {
-            state.modeling.characteristicsExpanded = !state.modeling.characteristicsExpanded;
-            saveState(state);
-            renderCompassCenterPaneV3(state);
-        }
-        else if (action === 'toggle-transformation-priorities') {
-            const prioritiesRow = document.getElementById('priorities-row');
-            if (prioritiesRow) {
-                prioritiesRow.classList.toggle('expanded');
+        if (action === 'post-assessment-comment') {
+            const input = document.getElementById('assessment-comment-input');
+            const commentText = input ? input.value.trim() : '';
+            if (commentText) {
+                await saveAssessmentComment(state.modeling.selectedItemId, commentText);
             }
         }
+        else if (action === 'toggle-vcc') {
+            const isCurrentlyCollapsed = state.modeling.isVccCollapsed;
+            state.modeling.isVccCollapsed = !isCurrentlyCollapsed;
+            state.modeling.vccIsPinnedOpen = !isCurrentlyCollapsed;
+            saveState(state);
+            renderCompassPageV3(loadState());
+        }
+        else if (action === 'select-item' || action === 'toggle-node') {
+            const nodeId = target.dataset.nodeId || target.dataset.itemId;
+            const item = findItemInModel(nodeId);
+
+            if (action === 'toggle-node') {
+                state.modeling.expandedNodes[nodeId] = !state.modeling.expandedNodes[nodeId];
+            } else {
+                state.modeling.selectedItemId = nodeId;
+                state.modeling.characteristicsExpanded = false;
+                state.modeling.transformationExpanded = false;
+
+                if (state.modeling.isVccCollapsed && item.type === 'discipline') {
+                    state.modeling.isVccCollapsed = false;
+                    state.modeling.vccIsPinnedOpen = false;
+                    state.modeling.expandedNodes = {};
+                    state.modeling.expandedNodes[nodeId] = true;
+                } 
+                else if (!state.modeling.isVccCollapsed && !state.modeling.vccIsPinnedOpen && item.type !== 'discipline') {
+                    state.modeling.isVccCollapsed = true;
+                }
+                else if (!state.modeling.isVccCollapsed && state.modeling.isRadarExpanded) {
+                    state.modeling.isRadarExpanded = false;
+                }
+            }
+            
+            saveState(state);
+            await loadRubricForItem(nodeId);
+            await loadRoadmapForItem(nodeId);
+            renderCompassPageV3(loadState());
+        }
+        else if (action === 'toggle-transformation-priorities') {
+            state.modeling.transformationExpanded = !state.modeling.transformationExpanded;
+            saveState(state);
+            renderCompassCenterPaneV3(loadState());
+        }
+        else if (action === 'toggle-right-pane') {
+            state.modeling.isRightPaneCollapsed = !state.modeling.isRightPaneCollapsed;
+            saveState(state);
+            renderCompassPageV3(loadState());
+        }
         else if (action === 'toggle-kpi-popup') {
+            const popup = document.getElementById('kpi-details-popup');
             const isVisible = popup.classList.contains('visible');
             if (isVisible) {
                 popup.classList.remove('visible');
@@ -867,13 +1191,12 @@ function initializeModelingEventListeners() {
                     </div>
                 `;
                 popup.innerHTML = popupContent;
+                const mainContentEl = document.getElementById('main-content');
+                const containerRect = mainContentEl.getBoundingClientRect();
                 const labelCell = document.getElementById('kpi-label-cell');
-                const containerRect = document.getElementById('main-content').getBoundingClientRect();
                 const labelRect = labelCell.getBoundingClientRect();
                 popup.style.left = `${labelRect.right - containerRect.left}px`;
-                const characteristicsRow = document.getElementById('characteristics-content-row');
-                const charRect = characteristicsRow.getBoundingClientRect();
-                const verticalMidpoint = charRect.top + (charRect.height / 2);
+                const verticalMidpoint = labelRect.top + (labelRect.height / 2);
                 popup.style.top = `${verticalMidpoint - containerRect.top}px`;
                 popup.style.transformOrigin = 'top left';
                 popup.style.transform = `translateY(-50%)`;
@@ -881,7 +1204,12 @@ function initializeModelingEventListeners() {
             }
         }
         else if (action === 'close-kpi-popup') {
-            if (popup) popup.classList.remove('visible');
+            document.getElementById('kpi-details-popup')?.classList.remove('visible');
+        }
+        else if (action === 'toggle-characteristic-details') {
+            state.modeling.characteristicsExpanded = !state.modeling.characteristicsExpanded;
+            saveState(state);
+            renderCompassCenterPaneV3(state);
         }
         else if (action === 'toggle-details-expansion') {
             const gridWrapper = document.getElementById('description-control-grid-wrapper');
@@ -890,11 +1218,6 @@ function initializeModelingEventListeners() {
             gridWrapper.classList.toggle('details-expanded');
             descPane.classList.toggle('is-expanded');
             button.classList.toggle('expanded');
-        }
-        else if (action === 'toggle-vcc') {
-            state.modeling.isVccCollapsed = !state.modeling.isVccCollapsed;
-            saveState(state);
-            renderCompassPageV3(loadState());
         }
         else if (action === 'select-assessment') {
             const newAssessmentId = target.dataset.assessmentId;
@@ -905,28 +1228,26 @@ function initializeModelingEventListeners() {
                 renderCompassPageV3(loadState());
             }
         }
-        else if (action === 'select-item' || action === 'toggle-node') {
-            const nodeId = target.dataset.nodeId || target.dataset.itemId;
-            if (action === 'toggle-node') {
-                state.modeling.expandedNodes[nodeId] = !state.modeling.expandedNodes[nodeId];
-            } else {
-                state.modeling.characteristicsExpanded = false;
-                state.modeling.selectedItemId = nodeId;
-                if (state.modeling.isVccCollapsed) {
-                    state.modeling.isVccCollapsed = false;
-                    state.modeling.expandedNodes = {};
-                    state.modeling.expandedNodes[nodeId] = true;
-                } else {
-                    state.modeling.isVccCollapsed = true;
-                }
-            }
+        else if (action === 'toggle-radar-expansion') {
+            state.modeling.isRadarExpanded = !state.modeling.isRadarExpanded;
             saveState(state);
-            await loadRubricForItem(nodeId);
-            await loadRoadmapForItem(nodeId);
             renderCompassPageV3(loadState());
+        }
+        else if (action === 'toggle-item-scope') {
+            const checkbox = document.getElementById('scope-toggle');
+            const newScopeState = checkbox.checked;
+            const itemId = state.modeling.selectedItemId;
+            
+            state.assessmentScope[itemId] = newScopeState;
+            updateScopeInState(state, itemId, newScopeState);
+            saveState(state);
+            renderCompassPageV3(loadState());
+
+            await setAssessmentScope(state.selectedAssessmentId, itemId, newScopeState);
         }
     });
 
+    // --- INPUT LISTENER ---
     document.body.addEventListener('input', (e) => {
         if (Navigation.getCurrentPage() !== 'modeling') return;
         const target = e.target;
@@ -934,22 +1255,32 @@ function initializeModelingEventListeners() {
         if (target.matches('.tv-slider-track')) {
             const type = target.dataset.type;
             const value = parseFloat(target.value);
-            const levelName = getMaturityLevelName(value);
-            const percent = (value / 5) * 100;
             
-            const trackContainer = target.closest('.unified-grid-content');
-            const valueLabel = trackContainer.querySelector('.tv-value-label');
-            valueLabel.style.left = `${percent}%`;
-            valueLabel.textContent = `${levelName} / ${value.toFixed(1)}`;
+            const scroller = document.querySelector('.card-content-scroller');
+            const savedScrollTop = scroller ? scroller.scrollTop : 0;
+
+            let tempState = loadState();
+            const persona = PERSONAS[tempState.activePersona] || { name: 'Unknown User' };
+            if (!tempState.assessmentScores[persona.name]) tempState.assessmentScores[persona.name] = {};
+            const item = findItemInModel(tempState.modeling.selectedItemId);
+            if (!tempState.assessmentScores[persona.name][item.id]) tempState.assessmentScores[persona.name][item.id] = { current: 0, target: 0 };
             
-            updateTransformationBoxPosition();
+            if (type === 'current') {
+                tempState.assessmentScores[persona.name][item.id].current = value;
+            } else {
+                tempState.assessmentScores[persona.name][item.id].target = value;
+            }
+            
+            renderCompassCenterPaneV3(tempState);
+
+            const newScroller = document.querySelector('.card-content-scroller');
+            if (newScroller) {
+                newScroller.scrollTop = savedScrollTop;
+            }
 
             clearTimeout(window.saveDebounce);
             window.saveDebounce = setTimeout(() => {
-                let state = loadState();
-                const item = findItemInModel(state.modeling.selectedItemId);
-                if (!item) return;
-                saveAssessmentScore(state.selectedAssessmentId, item, type, value)
+                saveAssessmentScore(tempState.selectedAssessmentId, item, type, value)
                     .then(() => console.log(`Saved ${type} score: ${value}`));
             }, 500);
         }

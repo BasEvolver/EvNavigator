@@ -1,0 +1,7 @@
+CREATE TABLE assessment_scope (
+    scope_id SERIAL PRIMARY KEY,
+    assessment_id INTEGER NOT NULL REFERENCES assessments(assessment_id) ON DELETE CASCADE,
+    item_id VARCHAR(20) NOT NULL,
+    is_in_scope BOOLEAN NOT NULL DEFAULT true,
+    UNIQUE (assessment_id, item_id)
+);

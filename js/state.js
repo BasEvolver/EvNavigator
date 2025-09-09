@@ -34,13 +34,17 @@ function getInitialState() {
             isVccCollapsed: true,
             selectedItemId: 'all-disciplines', 
             expandedNodes: {'D1': true},
-            // NEW: An object to track the expanded state of each characteristic box by its index (0-4)
-            expandedCharacteristics: {}, 
+            characteristicsExpanded: false,
+            transformationExpanded: false,
+            vccIsPinnedOpen: false,
+            isRadarExpanded: false,
+            currentItemScope: true, // <-- ADD THIS NEW LINE
             assessments: {
                 'techflow-solutions': {},
                 'cloudvantage': {}
             }
         },
+
         activeTabId: 'home',
         isReportFinalized: false,
         diligenceWorkspace: { keyRisks: {}, valueLevers: [], strategicNotes: [], itemSelections: {} },

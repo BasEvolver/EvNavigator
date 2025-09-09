@@ -1,0 +1,6 @@
+assessment_id,portfolio_company_id,version_name,version_description,is_committed,created_at,committed_at
+1,techflow-solutions,Pre-LOI Assessment,NULL,False,2025-08-06 19:31:51.320539+00,NULL
+2,techflow-solutions,Due Diligence Findings,NULL,False,2025-09-02 19:31:51.320539+00,NULL
+3,cloudvantage,Q4 2022 Baseline,NULL,False,2022-11-15 10:00:00+00,2022-11-22 10:00:00+00
+4,cloudvantage,Q4 2023 Annual Review,NULL,False,2023-11-20 10:00:00+00,2023-11-27 10:00:00+00
+5,cloudvantage,Q2 2025 Interim Check-in,NULL,False,2025-08-20 19:31:51.320539+00,NULL

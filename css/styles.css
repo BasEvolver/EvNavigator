@@ -8753,7 +8753,8 @@ body.page-db-inventory #main-content {
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
     display: flex;
-    justify-content: flex-start; /* Button on the left */
+    /* THE FIX: Center the button instead of left-aligning it */
+    justify-content: center; 
 }
 
 /* =================================================================
@@ -8903,3 +8904,849 @@ body.page-db-inventory #main-content {
 .priorities-content-grid.full-width { grid-template-columns: 1fr; }
 .priorities-content-grid h6 { font-weight: 700; margin-bottom: 0.5rem; }
 .priorities-content-grid ul { list-style-type: disc; padding-left: 1.25rem; font-size: 0.875rem; }
+
+/* =================================================================
+   COMPASS PAGE - DEFINITIVE STYLES FOR ALL COMPONENTS (V9 - FINAL FIX)
+   ================================================================= */
+
+/* --- 1. Scrollable Center Pane --- */
+.compass-center-content {
+    flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 1.5rem; scrollbar-width: thin; scrollbar-color: var(--accent-blue) transparent;
+}
+.compass-center-content::-webkit-scrollbar { width: 8px; }
+.compass-center-content::-webkit-scrollbar-track { background: transparent; }
+.compass-center-content::-webkit-scrollbar-thumb {
+    background-color: var(--border-color); border-radius: 10px; border: 2px solid var(--bg-card);
+}
+.compass-center-content::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+
+/* --- 2. KPI Details Popup (Unchanged) --- */
+.kpi-details-popup {
+    position: absolute; width: 450px; background-color: var(--bg-card);
+    border: 1px solid var(--border-color); border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--shadow-hover); padding: 0; z-index: 50;
+    opacity: 0; visibility: hidden; transform: scale(0.95) translateY(-50%);
+    transform-origin: top left; transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+.kpi-details-popup.visible { opacity: 1; visibility: visible; transform: scale(1) translateY(-50%); }
+.kpi-popup-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
+}
+.kpi-popup-title { font-weight: 700; color: var(--text-primary); margin: 0; }
+.kpi-popup-close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; }
+.kpi-popup-close-btn:hover { color: var(--text-primary); }
+.kpi-popup-body { font-size: 0.875rem; color: var(--text-secondary); max-height: 50vh; overflow-y: auto; padding: 1rem 1.5rem; }
+.kpi-popup-body strong { display: block; margin-top: 0.75rem; color: var(--text-primary); font-weight: 600; }
+.kpi-popup-body code { font-family: monospace; background-color: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+.kpi-popup-body .alternatives-list { list-style-type: none; padding-left: 0; }
+.kpi-popup-body .alternatives-list li { padding: 0.125rem 0; }
+
+/* --- 3. Slider Row Structure & Alignment (FIXED) --- */
+.slider-row {
+    position: relative; /* Anchor for the static label */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Align track to the bottom */
+    padding: 0.5rem 1rem;
+    height: 80px;
+}
+.tv-track-container {
+    height: 50%;
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* --- 4. Slider Track & Static Label Logic (FIXED) --- */
+.tv-track-line {
+    position: absolute; width: 100%; height: 4px; border-radius: 2px;
+    top: 50%; transform: translateY(-50%);
+}
+.tv-track-line.as-is { background: linear-gradient(to right, var(--purple), var(--text-muted)); }
+.tv-track-line.to-be { background: linear-gradient(to right, var(--accent-teal), var(--text-muted)); }
+.tv-slider-track {
+    position: absolute; top: 0; left: 0; margin: 0; z-index: 20;
+}
+.static-value-label {
+    position: absolute;
+    top: 0.5rem; /* Padding from the top of the row */
+    right: 1rem;  /* Padding from the left of the row */
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+.value-level-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.value-score {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* --- 5. ARIA PIN STYLES (FIXED & CONTROLLABLE) --- */
+.tv-aria-indicator {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: var(--bg-card);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px var(--shadow);
+    z-index: 15;
+    transform: translateX(-50%);
+    /* Base positioning is removed from here to be handled by specific rules below */
+}
+.tv-aria-indicator img { width: 20px; height: 20px; }
+.tv-aria-indicator::after {
+    content: ''; position: absolute; bottom: -12px; left: 50%;
+    transform: translateX(-50%); width: 0; height: 0;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top-width: 14px; border-top-style: solid;
+}
+
+/* THE FIX: Separate positioning for each pin */
+.tv-aria-indicator.as-is {
+    border: 3px solid var(--purple);
+    /* 
+      THIS IS THE LINE TO EDIT FOR THE "AS-IS" PIN:
+      top: calc(50% - [pin_height] - [desired_gap]);
+      e.g., top: calc(50% - 32px - 12px) = top: calc(50% - 44px);
+    */
+    top: calc(50% - 44px);
+}
+.tv-aria-indicator.as-is::after {
+    border-top-color: var(--purple);
+}
+
+.tv-aria-indicator.to-be {
+    border: 3px solid var(--accent-teal);
+    /* 
+      THIS IS THE LINE TO EDIT FOR THE "TO-BE" PIN:
+    */
+    top: calc(50% - 44px);
+}
+.tv-aria-indicator.to-be::after {
+    border-top-color: var(--accent-teal);
+}
+.tv-aria-indicator img { width: 20px; height: 20px; }
+.tv-aria-indicator::after {
+    content: ''; position: absolute; bottom: -12px; left: 50%;
+    transform: translateX(-50%); width: 0; height: 0;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top-width: 14px; border-top-style: solid;
+}
+.tv-aria-indicator.as-is { border: 3px solid var(--purple); }
+.tv-aria-indicator.as-is::after { border-top-color: var(--purple); }
+.tv-aria-indicator.to-be { border: 3px solid var(--accent-teal); }
+.tv-aria-indicator.to-be::after { border-top-color: var(--accent-teal); }
+
+/* --- 6. Refined Transformation Initiatives Toggle (FIXED) --- */
+.priorities-row {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 0.5rem 1rem;
+    min-height: 60px; height: auto; transition: all 0.5s ease-in-out;
+}
+.transformation-toggle-button {
+    background: none; border: none; color: var(--text-secondary); cursor: pointer;
+    padding: 0.5rem 1rem; border-radius: 0.5rem;
+    transition: all 0.3s ease-in-out;
+    display: flex; align-items: center; gap: 0.5rem;
+    font-weight: 700; font-size: 1rem;
+}
+.transformation-toggle-button:hover {
+    background-color: var(--bg-hover); color: var(--accent-blue);
+}
+.transformation-toggle-button svg {
+    width: 20px; height: 20px; transition: transform 0.3s ease-in-out;
+}
+.transformation-toggle-button.expanded svg { transform: rotate(180deg); }
+
+/* --- 7. Content Expansion (FIXED) --- */
+.priorities-row.expanded { justify-content: flex-start; }
+.tv-priorities-content {
+    width: 100%; max-height: 0; opacity: 0; overflow: hidden;
+    transition: max-height 0.4s ease-in-out, opacity 0.3s 0.1s ease-in-out, margin-top 0.4s ease-in-out;
+    margin-top: 0;
+}
+.priorities-row.expanded .tv-priorities-content {
+    max-height: 500px; opacity: 1; margin-top: 1rem;
+}
+
+/* =================================================================
+   COMPASS PAGE - MODERN SCROLLBAR FOR CENTER PANE
+   ================================================================= */
+
+/* 1. Make the content area scrollable */
+.compass-center-content {
+    overflow-y: auto;
+    /* Modern Scrollbar for Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+}
+
+/* 2. Modern Scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+.compass-center-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.compass-center-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.compass-center-content::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    /* Creates a nice padding effect around the scrollbar thumb */
+    border: 2px solid var(--bg-card);
+}
+
+.compass-center-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-blue);
+}
+
+.transformation-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* This ensures the button and content stay centered */
+}
+
+/* =================================================================
+   COMPASS PAGE - DEFINITIVE STYLES (V17 - FINAL LAYOUT & COLORS)
+   ================================================================= */
+
+/* --- 1. Color Variable Override for a more vibrant purple --- */
+:root {
+    --purple: #8B5CF6; /* A harder, more vibrant purple (violet-500) */
+}
+[data-theme="dark"] {
+    --purple: #A78BFA; /* A brighter, more saturated purple for dark mode (violet-400) */
+}
+
+/* --- 2. Scrollable Center Pane --- */
+.card-content-scroller {
+    flex-grow: 1; min-height: 0; overflow-y: auto; padding: 1.5rem;
+    scrollbar-width: thin; scrollbar-color: var(--accent-blue) transparent;
+}
+.card-content-scroller::-webkit-scrollbar { width: 8px; }
+.card-content-scroller::-webkit-scrollbar-track { background: transparent; }
+.card-content-scroller::-webkit-scrollbar-thumb {
+    background-color: var(--border-color); border-radius: 10px; border: 2px solid var(--bg-card);
+}
+.card-content-scroller::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+.compass-card.description-card {
+    padding: 0 !important; flex-grow: 1; min-height: 0; display: flex; flex-direction: column;
+}
+
+/* --- 3. KPI Details Popup --- */
+.kpi-details-popup {
+    position: absolute; width: 450px; background-color: var(--bg-card);
+    border: 1px solid var(--border-color); border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--shadow-hover); padding: 0; z-index: 50;
+    opacity: 0; visibility: hidden; transform: scale(0.95) translateY(-50%);
+    transform-origin: top left; transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+.kpi-details-popup.visible { opacity: 1; visibility: visible; transform: scale(1) translateY(-50%); }
+.kpi-popup-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
+}
+.kpi-popup-title { font-weight: 700; color: var(--text-primary); margin: 0; }
+.kpi-popup-close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; }
+.kpi-popup-close-btn:hover { color: var(--text-primary); }
+.kpi-popup-body { font-size: 0.875rem; color: var(--text-secondary); max-height: 50vh; overflow-y: auto; padding: 1rem 1.5rem; }
+.kpi-popup-body strong { display: block; margin-top: 0.75rem; color: var(--text-primary); font-weight: 600; }
+.kpi-popup-body code { font-family: monospace; background-color: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; }
+.kpi-popup-body .alternatives-list { list-style-type: none; padding-left: 0; }
+.kpi-popup-body .alternatives-list li { padding: 0.125rem 0; }
+
+/* --- 4. Slider Row Structure & Alignment --- */
+.slider-row {
+    position: relative; display: flex; flex-direction: column;
+    justify-content: flex-end; padding: 0.5rem 1rem; height: 80px;
+}
+.tv-track-container {
+    height: 50%; position: relative; width: 100%;
+    display: flex; align-items: center;
+}
+
+/* --- 5. Slider Track, GRADIENTS & Static Label (THE FIX) --- */
+.tv-track-line {
+    position: absolute; width: 100%; height: 4px; border-radius: 2px;
+    top: 50%; transform: translateY(-50%);
+}
+.tv-track-line.as-is {
+    background: linear-gradient(to right, var(--accent-blue), var(--status-success));
+}
+.tv-track-line.to-be {
+    background: linear-gradient(to right, var(--status-warning), var(--purple));
+}
+.tv-slider-track {
+    position: absolute; top: 0; left: 0; margin: 0; z-index: 20;
+}
+.static-value-label {
+    position: absolute; top: 0.5rem; right: 1rem;
+    display: flex; align-items: baseline; gap: 0.5rem;
+}
+.value-level-name {
+    font-size: 1rem; font-weight: 700; color: var(--text-primary);
+}
+.value-score {
+    font-size: 0.875rem; font-weight: 600; color: var(--text-secondary);
+}
+
+/* --- 6. UNIFIED SLIDER & PIN COLORS (THE FIX) --- */
+.tv-slider-track.as-is::-webkit-slider-thumb { box-shadow: 0 0 0 5px var(--accent-blue); }
+.tv-slider-track.as-is::-moz-range-thumb { box-shadow: 0 0 0 5px var(--accent-blue); }
+.tv-aria-indicator.as-is { border: 3px solid var(--accent-blue); }
+.tv-aria-indicator.as-is::after { border-top-color: var(--accent-blue); }
+
+.tv-slider-track.to-be::-webkit-slider-thumb { box-shadow: 0 0 0 5px var(--purple); }
+.tv-slider-track.to-be::-moz-range-thumb { box-shadow: 0 0 0 5px var(--purple); }
+.tv-aria-indicator.to-be { border: 3px solid var(--purple); }
+.tv-aria-indicator.to-be::after { border-top-color: var(--purple); }
+
+/* --- 7. ARIA PIN STYLES (Base) --- */
+.tv-aria-indicator {
+    position: absolute; width: 32px; height: 32px; background-color: var(--bg-card);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 4px var(--shadow); z-index: 15; transform: translateX(-50%);
+    top: calc(50% - 36px);
+}
+.tv-aria-indicator img { width: 20px; height: 20px; }
+.tv-aria-indicator::after {
+    content: ''; position: absolute; bottom: -12px; left: 50%;
+    transform: translateX(-50%); width: 0; height: 0;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top-width: 14px; border-top-style: solid;
+}
+
+/* --- 8. Refined Transformation Initiatives Toggle --- */
+.priorities-row {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start; /* Align button to the top */
+    padding: 0.5rem 1rem; min-height: 60px; height: auto;
+}
+.transformation-wrapper {
+    width: 100%; display: flex; flex-direction: column; align-items: center;
+}
+.transformation-toggle-button {
+    background: none; border: none; color: var(--text-secondary); cursor: pointer;
+    padding: 0.5rem 1rem; border-radius: 0.5rem;
+    transition: all 0.3s ease-in-out;
+    display: flex; align-items: center; gap: 0.5rem;
+    font-weight: 700; font-size: 1rem;
+}
+.transformation-toggle-button:hover {
+    background-color: var(--bg-hover); color: var(--accent-blue);
+}
+.transformation-toggle-button svg {
+    width: 20px; height: 20px; transition: transform 0.3s ease-in-out;
+}
+.transformation-toggle-button.expanded svg { transform: rotate(180deg); }
+
+/* --- 9. INITIATIVES CONTENT SCROLLING (THE FIX) --- */
+.tv-priorities-content {
+    width: 100%;
+    max-height: 0; /* Collapsed by default */
+    opacity: 0;
+    overflow: hidden; /* Hide content and scrollbar when collapsed */
+    transition: max-height 0.4s ease-in-out, opacity 0.3s 0.1s ease-in-out, margin-top 0.4s ease-in-out;
+    margin-top: 0;
+}
+.priorities-row.expanded .tv-priorities-content {
+    opacity: 1;
+    margin-top: 1rem;
+    /* Set a max-height based on ~12 lines of text */
+    max-height: 18rem; /* (12 lines * ~1.5rem line-height) */
+    overflow-y: auto; /* Show scrollbar ONLY when content exceeds this max-height */
+    
+    /* Apply modern scrollbar styles */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+}
+.priorities-row.expanded .tv-priorities-content::-webkit-scrollbar { width: 8px; }
+.priorities-row.expanded .tv-priorities-content::-webkit-scrollbar-track { background: transparent; }
+.priorities-row.expanded .tv-priorities-content::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid var(--bg-secondary);
+}
+.priorities-row.expanded .tv-priorities-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-blue);
+}
+
+/* =================================================================
+   COMPASS PAGE - DEFINITIVE STYLES (V21 - FINAL LAYOUT & PADDING)
+   ================================================================= */
+
+/* --- 1. Color Variables for Sliders & Chart --- */
+:root {
+    --as-is-color: #3B82F6;
+    --to-be-color: #A855F7;
+}
+[data-theme="dark"] {
+    --as-is-color: #60A5FA;
+    --to-be-color: #C084FC;
+}
+
+/* --- 2. THE PADDING & ALIGNMENT FIX --- */
+.card-header-with-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem 1.5rem 0 1.5rem; /* Add padding to the header */
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+.scope-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    padding-left: 1.rem;
+}
+.card-content-padding-wrapper {
+    padding: 1.5rem; /* Add padding to the inner content */
+}
+
+/* --- 3. Scrollable Center Pane --- */
+.compass-card.description-card {
+    padding: 0 !important; /* Remove padding from the outer card */
+    flex-grow: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.card-content-scroller {
+    flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+}
+.card-content-scroller::-webkit-scrollbar { width: 8px; }
+.card-content-scroller::-webkit-scrollbar-track { background: transparent; }
+.card-content-scroller::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid var(--bg-card);
+}
+.card-content-scroller::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+
+/* --- 4. ARIA Insight Box --- */
+.aria-insight-box {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    padding: 1rem 1.5rem;
+}
+.aria-insight-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-weight: 700; color: var(--text-primary);
+    padding-bottom: 0.75rem; margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.aria-insight-header img { width: 24px; height: 24px; }
+.aria-insight-grid {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;
+}
+.aria-insight-metric label, .aria-insight-rationale label {
+    font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; display: flex; align-items: center; gap: 0.25rem;
+}
+.aria-insight-metric p { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+.aria-insight-metric .confidence-bar-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+.confidence-bar-wrapper .confidence-bar {
+    height: 6px; background-color: var(--accent-blue); border-radius: 99px;
+}
+.confidence-bar-wrapper span { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); }
+.aria-insight-rationale p {
+    font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.25rem;
+}
+
+/* --- 5. Radar Chart "Focus Mode" Layout (FIXED) --- */
+.compass-container {
+    --vcc-width: 25%;
+    transition: grid-template-columns 0.4s ease-in-out;
+}
+.compass-container.vcc-collapsed {
+    --vcc-width: 5.5rem;
+}
+.compass-container.radar-expanded .compass-pane#compass-center-pane,
+.compass-container.radar-expanded .aria-perspective-card,
+.compass-container.radar-expanded .compass-card.flex-grow,
+.compass-container.radar-expanded .right-pane-footer {
+    visibility: hidden; opacity: 0;
+    transition: visibility 0s 0.2s, opacity 0.2s ease-in-out;
+}
+.compass-card.radar-card {
+    transition: all 0.4s ease-in-out;
+    display: flex; flex-direction: column;
+}
+.compass-card.radar-card.expanded {
+    position: fixed;
+    top: calc(5rem + 1.5rem);left: calc(var(--vcc-width) + 10% + 6rem); /* VCC width + Center Pane width (30%) + (2 * 1.5rem gaps) */ left: calc(var(--vcc-width) + 1.5rem + 1.5rem); /* VCC width + padding + gap */
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: auto;
+    height: auto !important;
+    z-index: 100;
+}
+.radar-chart-container {
+    flex-grow: 1; min-height: 0; position: relative;
+}
+
+/* --- 6. UNIFIED SLIDER & PIN COLORS --- */
+.tv-slider-track.as-is::-webkit-slider-thumb { box-shadow: 0 0 0 5px var(--as-is-color); }
+.tv-slider-track.as-is::-moz-range-thumb { box-shadow: 0 0 0 5px var(--as-is-color); }
+.tv-aria-indicator.as-is { border: 3px solid var(--as-is-color); }
+.tv-aria-indicator.as-is::after { border-top-color: var(--as-is-color); }
+
+.tv-slider-track.to-be::-webkit-slider-thumb { box-shadow: 0 0 0 5px var(--to-be-color); }
+.tv-slider-track.to-be::-moz-range-thumb { box-shadow: 0 0 0 5px var(--to-be-color); }
+.tv-aria-indicator.to-be { border: 3px solid var(--to-be-color); }
+.tv-aria-indicator.to-be::after { border-top-color: var(--to-be-color); }
+
+/* =================================================================
+   COMPASS PAGE - DEFINITIVE STYLES (V23 - FINAL UI)
+   ================================================================= */
+
+/* --- 1. Color Variables & Padding Wrapper --- */
+:root { --as-is-color: #3B82F6; --to-be-color: #A855F7; }
+[data-theme="dark"] { --as-is-color: #60A5FA; --to-be-color: #C084FC; }
+.card-content-padding-wrapper { padding: 1.5rem; }
+
+/* --- 2. Scrollable Center Pane & Header --- */
+.card-header-with-toggle {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 1.5rem 1.5rem 0 1.5rem; flex-shrink: 0;
+}
+.scope-toggle-wrapper {
+    display: flex; align-items: center; gap: 0.75rem;
+    flex-shrink: 0; padding-left: 1rem;
+}
+.compass-card.description-card {
+    padding: 0 !important; flex-grow: 1; min-height: 0;
+    display: flex; flex-direction: column;
+}
+.card-content-scroller {
+    flex-grow: 1; min-height: 0; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--accent-blue) transparent;
+}
+.card-content-scroller::-webkit-scrollbar { width: 8px; }
+.card-content-scroller::-webkit-scrollbar-track { background: transparent; }
+.card-content-scroller::-webkit-scrollbar-thumb {
+    background-color: var(--border-color); border-radius: 10px; border: 2px solid var(--bg-card);
+}
+.card-content-scroller::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+
+/* --- 3. NEW: ARIA Insight Box (Dual Column) --- */
+.aria-insight-box {
+    background-color: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-blue); border-radius: 0.5rem;
+    margin-top: 1rem; padding: 0;
+}
+.aria-insight-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-weight: 700; color: var(--text-primary);
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
+}
+.aria-insight-header img { width: 24px; height: 24px; }
+.aria-insight-grid-dual {
+    display: grid; grid-template-columns: 1fr 1fr;
+}
+.aria-insight-column {
+    padding: 1rem 1.5rem;
+    display: flex; flex-direction: column; gap: 1rem;
+}
+.aria-insight-column:first-child {
+    border-right: 1px solid var(--border-color);
+}
+.aria-insight-column h5 {
+    font-size: 1rem; font-weight: 700; color: var(--text-primary);
+}
+.aria-insight-metric label, .aria-insight-rationale label {
+    font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; display: flex; align-items: center; gap: 0.25rem;
+}
+.aria-insight-metric p { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+.aria-insight-metric .confidence-bar-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+.confidence-bar-wrapper .confidence-bar {
+    height: 6px; background-color: var(--accent-blue); border-radius: 99px;
+}
+.confidence-bar-wrapper span { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); }
+.aria-insight-rationale p {
+    font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.25rem;
+}
+
+/* --- 4. Assessment Conversation & Input (FIXED) --- */
+.assessment-conversation-section {
+    margin-top: 2rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+.assessment-conversation-container {
+    display: flex; flex-direction: column; gap: 1rem;
+    max-height: 400px; overflow-y: auto; padding: 1rem;
+    margin-bottom: 1rem; background-color: var(--bg-secondary);
+    border-radius: 0.5rem;
+}
+.bubble-wrapper { display: flex; gap: 0.75rem; max-width: 85%; }
+.bubble-wrapper.user-wrapper { margin-left: auto; flex-direction: row-reverse; }
+.persona-avatar-chat {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.875rem; flex-shrink: 0;
+}
+.chat-bubble { padding: 0.75rem 1rem; border-radius: 0.75rem; }
+.aria-bubble {
+    background-color: var(--bg-card); border: 1px solid var(--border-color);
+    border-top-left-radius: 0;
+}
+.user-bubble {
+    background-color: var(--accent-blue-translucent); border: 1px solid var(--accent-blue);
+    border-top-right-radius: 0;
+}
+.bubble-header {
+    font-weight: 700; font-size: 0.875rem;
+    margin-bottom: 0.25rem; color: var(--text-primary);
+}
+.bubble-text {
+    font-size: 0.875rem; line-height: 1.6; color: var(--text-secondary);
+}
+.comment-input-area {
+    display: flex; gap: 0.75rem; align-items: flex-end;
+    padding: 0.5rem; border: 1px solid var(--border-color);
+    border-radius: 0.75rem; background-color: var(--bg-card);
+}
+.comment-input-area textarea {
+    flex-grow: 1; border: none; background: transparent; resize: none;
+    font-size: 0.875rem; color: var(--text-primary);
+    max-height: 150px; padding: 0.25rem;
+}
+.comment-input-area textarea:focus { outline: none; }
+
+/* =================================================================
+   COMPASS PAGE - VCC TEXT WRAP (DEFINITIVE FIX)
+   ================================================================= */
+
+/* --- 1. Base style for all node labels (Single Line) --- */
+/* This ensures that by default, and especially in the collapsed icon-only view,
+   labels are always on a single line with an ellipsis. */
+.node-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%; /* Prevents long text from pushing icons out of place */
+}
+
+/* --- 2. THE FIX: Two-line wrapping for the EXPANDED VCC view --- */
+/* This rule targets the .node-label ONLY when its parent container
+   does NOT have the .icon-only class. */
+.vcc-tree-container:not(.icon-only) .node-label {
+    /* Allow text to wrap naturally */
+    white-space: normal; 
+    
+    /* The magic for line-clamping */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* This is the key: Limit to a maximum of 2 lines */
+    overflow: hidden; /* This is required for line-clamp to work */
+}
+
+/* --- 3. Adjust the container height to accommodate two lines --- */
+/* This ensures the rows can grow slightly taller when text wraps. */
+.vcc-tree-container:not(.icon-only) .tree-node {
+    /* Change from a fixed height to a minimum height to allow growth */
+    min-height: 40px; 
+    height: auto; /* Let the content determine the final height */
+    align-items: center; /* Keep icons and text vertically centered */
+}
+
+/* =================================================================
+   COMPASS PAGE - UNIFIED MODERN SCROLLBAR STYLES (DEFINITIVE)
+   ================================================================= */
+
+/* --- 1. Define the list of all scrollable containers on the Compass page --- */
+.card-content-scroller,
+.aria-perspective-content,
+.maturity-table-container,
+.tv-priorities-content,
+.kpi-popup-body,
+.vcc-tree-container,
+.info-box {
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+/* --- 2. Style the scrollbar track and size for Webkit browsers --- */
+.card-content-scroller::-webkit-scrollbar,
+.aria-perspective-content::-webkit-scrollbar,
+.maturity-table-container::-webkit-scrollbar,
+.tv-priorities-content::-webkit-scrollbar,
+.kpi-popup-body::-webkit-scrollbar,
+.vcc-tree-container::-webkit-scrollbar,
+.info-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.card-content-scroller::-webkit-scrollbar-track,
+.aria-perspective-content::-webkit-scrollbar-track,
+.maturity-table-container::-webkit-scrollbar-track,
+.tv-priorities-content::-webkit-scrollbar-track,
+.kpi-popup-body::-webkit-scrollbar-track,
+.vcc-tree-container::-webkit-scrollbar-track,
+.info-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* --- 3. Style the scrollbar thumb (the part you drag) --- */
+/* This group is for elements with a primary card background */
+.card-content-scroller::-webkit-scrollbar-thumb,
+.aria-perspective-content::-webkit-scrollbar-thumb,
+.maturity-table-container::-webkit-scrollbar-thumb,
+.kpi-popup-body::-webkit-scrollbar-thumb,
+.vcc-tree-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid var(--bg-card); /* Inset from the card's background */
+}
+
+/* This group is for elements with a secondary, slightly darker background */
+.tv-priorities-content::-webkit-scrollbar-thumb,
+.info-box::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid var(--bg-secondary); /* Inset from the secondary background */
+}
+
+/* --- 4. THE HOVER EFFECT: Make the thumb turn blue for ALL scrollbars --- */
+.card-content-scroller::-webkit-scrollbar-thumb:hover,
+.aria-perspective-content::-webkit-scrollbar-thumb:hover,
+.maturity-table-container::-webkit-scrollbar-thumb:hover,
+.tv-priorities-content::-webkit-scrollbar-thumb:hover,
+.kpi-popup-body::-webkit-scrollbar-thumb:hover,
+.vcc-tree-container::-webkit-scrollbar-thumb:hover,
+.info-box::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-blue);
+}
+
+/* =================================================================
+   COMPASS PAGE - DEFINITIVE STYLES (V25 - FINAL LAYOUT & SCOPE)
+   ================================================================= */
+
+/* --- 1. Color Variables & Padding Wrapper --- */
+:root { --as-is-color: #3B82F6; --to-be-color: #A855F7; }
+[data-theme="dark"] { --as-is-color: #60A5FA; --to-be-color: #C084FC; }
+.card-content-padding-wrapper { padding: 1.5rem; }
+
+/* --- 2. Scrollable Center Pane & Header --- */
+.card-header-with-toggle {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 1.5rem 1.5rem 0 1.5rem; flex-shrink: 0;
+}
+.scope-toggle-wrapper {
+    display: flex; align-items: center; gap: 0.75rem;
+    flex-shrink: 0; padding-left: 1rem;
+}
+.compass-card.description-card {
+    padding: 0 !important; flex-grow: 1; min-height: 0;
+    display: flex; flex-direction: column;
+}
+.card-content-scroller {
+    flex-grow: 1; min-height: 0; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--accent-blue) transparent;
+}
+.card-content-scroller::-webkit-scrollbar { width: 8px; }
+.card-content-scroller::-webkit-scrollbar-track { background: transparent; }
+.card-content-scroller::-webkit-scrollbar-thumb {
+    background-color: var(--border-color); border-radius: 10px; border: 2px solid var(--bg-card);
+}
+.card-content-scroller::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue); }
+
+/* --- 3. THE RIGHT PANE LAYOUT FIX --- */
+.compass-pane#compass-right-pane .action-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.aria-perspective-card {
+    /* It should take up 1/3 of the available space */
+    flex: 1 1 33.33%; 
+    min-height: 0; /* Allow card to shrink */
+    display: flex;
+    flex-direction: column;
+}
+.compass-card.flex-grow {
+    /* It should take up the rest of the space */
+    flex: 1 1 66.67%;
+    min-height: 0; /* Allow card to shrink */
+    display: flex;
+    flex-direction: column;
+}
+.aria-perspective-content, .maturity-table-container {
+    flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+}
+/* Webkit scrollbar styles for these new containers */
+.aria-perspective-content::-webkit-scrollbar,
+.maturity-table-container::-webkit-scrollbar { width: 8px; }
+.aria-perspective-content::-webkit-scrollbar-track,
+.maturity-table-container::-webkit-scrollbar-track { background: transparent; }
+.aria-perspective-content::-webkit-scrollbar-thumb,
+.maturity-table-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid var(--bg-card);
+}
+.aria-perspective-content::-webkit-scrollbar-thumb:hover,
+.maturity-table-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-blue);
+}
+
+/* --- 4. Radar Chart "Focus Mode" Layout --- */
+.compass-container {
+    --vcc-width: 25%;
+    --center-pane-width: 30%; 
+    transition: grid-template-columns 0.4s ease-in-out;
+}
+.compass-container.vcc-collapsed {
+    --vcc-width: 5.5rem;
+}
+.compass-container.radar-expanded .compass-pane#compass-center-pane,
+.compass-container.radar-expanded .aria-perspective-card,
+.compass-container.radar-expanded .compass-card.flex-grow,
+.compass-container.radar-expanded .right-pane-footer {
+    visibility: hidden; opacity: 0;
+    transition: visibility 0s 0.2s, opacity 0.2s ease-in-out;
+}
+.compass-card.radar-card {
+    transition: all 0.4s ease-in-out;
+    display: flex; flex-direction: column;
+}
+.compass-card.radar-card.expanded {
+    position: fixed;
+    top: calc(5rem + 1.5rem);
+    left: calc(var(--vcc-width) + var(--center-pane-width) + 3rem);
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: auto;
+    height: auto !important;
+    z-index: 100;
+}
+.radar-chart-container {
+    flex-grow: 1; min-height: 0; position: relative;
+}
