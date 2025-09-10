@@ -8,6 +8,11 @@ const maturityStageNames = ["Reactive", "Organized", "Automated", "Platform-led"
 
 const PROJECT_DAY_FOR_TODAY = 6;
 
+function getThemeColor(variableName) {
+    // This function gets the computed value of a CSS variable from the root element.
+    return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+}
+
 function calculateStartDate(today, projectDayForToday) {
     let startDate = new Date(today);
     let businessDaysToGoBack = projectDayForToday - 1;
@@ -31,28 +36,24 @@ const CURRENT_PROJECT_DAY = PROJECT_DAY_FOR_TODAY;
 function isPromptModeled(promptText) {
     if (!promptText) return false;
 
-    // Combine all possible response maps into one place for checking.
-    // This makes the function aware of every possible response in the app.
-    const allResponses = {
-        ...(typeof techflow_ariaResponses !== 'undefined' ? techflow_ariaResponses : {}),
-        ...(typeof cloudvantage_ariaResponses !== 'undefined' ? cloudvantage_ariaResponses : {}),
-        ...(typeof commandCenterAriaResponses !== 'undefined' ? commandCenterAriaResponses : {}),
-        ...(typeof diligenceHubAriaResponses !== 'undefined' ? diligenceHubAriaResponses : {}),
-        ...(typeof portco_ariaResponses !== 'undefined' ? portco_ariaResponses : {}),
-        ...(typeof portfolio_ariaResponses !== 'undefined' ? portfolio_ariaResponses : {})
-    };
+    // 1. Get the current company context from the application's state.
+    const state = loadState();
+    const companyId = state.selectedCompanyId || 'all';
 
-    // Check if a direct key exists in any of the response maps.
-    if (allResponses[promptText]) {
+    // 2. Access the correct set of responses from our unified ariaResponseMap.
+    const relevantResponses = ariaResponseMap[companyId] || {};
+
+    // 3. Check if the prompt exists as a key in that specific, relevant map.
+    if (relevantResponses[promptText]) {
         return true;
     }
 
-    // Check for dynamic prompts that are handled by logic, not just a key.
+    // 4. Keep the fallback check for dynamically generated prompts.
     if (promptText.startsWith("Provide me with a current overview and understanding of the")) {
         return true;
     }
     
-    // If no match is found, it's unmodeled.
+    // 5. If no match is found anywhere, it is truly unmodeled.
     return false;
 }
 
@@ -538,4 +539,26 @@ async function loadSharedComponents() {
         initializeAssessmentData();
     }
     Navigation.updateAll();
+}
+
+/**
+ * Creates a reusable HTML progress bar component.
+ * @param {string} label - The title for the progress bar.
+ * @param {number} value - The percentage value (0-100).
+ * @param {string} statusText - Text to display on the right (e.g., "On Track").
+ * @param {string} statusClass - A CSS class for color-coding the status (e.g., 'status-completed').
+ * @returns {string} - The complete HTML for the progress bar.
+ */
+function createProgressBarHTML(label, value, statusText, statusClass) {
+    return `
+        <div class="mb-3">
+            <div class="progress-header">
+                <p class="font-semibold text-sm">${label}</p>
+                <span class="status-badge ${statusClass} !text-xs">${statusText}</span>
+            </div>
+            <div class="progress-bar-container !h-2 mt-1">
+                <div class="progress-bar-fill" style="width: ${value}%;"></div>
+            </div>
+        </div>
+    `;
 }

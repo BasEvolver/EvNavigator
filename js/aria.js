@@ -16,15 +16,36 @@ function getContextualPillsForCompany(companyId) {
     const state = loadState();
     const persona = state.activePersona;
 
-    if (!companyId || companyId === 'all') return null;
+    // --- NEW LOGIC: Handle the "All Portfolio" case first ---
+    if (!companyId || companyId === 'all') {
+        // For any persona looking at the whole portfolio, show these top-level prompts.
+        return {
+            title: "Portfolio Analysis:",
+            pills: [
+                { label: "Performance", prompt: "How did the portfolio perform over the past 12 months?", color: "var(--accent-blue)" },
+                { label: "Forecasting", prompt: "Forecast portfolio ARR for the next 6 months.", color: "var(--accent-teal)" },
+                { label: "Scenario Modeling", prompt: "Model the next 12 months assuming we acquire TechFlow.", color: "var(--purple)" }
+            ]
+        };
+    }
 
+    // --- Existing logic for specific companies remains below ---
     const companyInfo = workspaceHeaders[companyId];
     const isDiligence = companyInfo && companyInfo.stage === 'Due Diligence';
 
     if (isDiligence) {
-        // ... (existing TechFlow logic remains here)
+        // This correctly handles the TechFlow diligence case
+        const workstreamPills = techflow_workstreamData.map(ws => ({
+            label: ws.title,
+            prompt: `Show me the ${ws.title} workstream.`,
+            color: ws.color
+        }));
+        return {
+            title: "Explore Workstreams:",
+            pills: workstreamPills
+        };
     } else {
-        // --- UPDATED PERSONA PILLS ---
+        // This correctly handles the persona-specific views for CloudVantage
         switch (persona) {
             case 'connor': // CRO
                 return {
@@ -53,17 +74,26 @@ function getContextualPillsForCompany(companyId) {
                 const disciplinePills = coreDisciplineIds.map(id => {
                     const discipline = maturityModel.disciplines[id];
                     return { label: discipline.name, prompt: `Tell me about the ${discipline.name} discipline for CloudVantage.`, color: disciplineColorMap[id] || 'var(--text-secondary)' };
-                });
+                }).filter(Boolean);
                 return { title: "Explore Disciplines:", pills: disciplinePills };
         }
     }
 }
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (Navigation.getCurrentPage() === 'aria') {
         document.body.classList.add('page-aria');
-        await loadSharedComponents();
-        initializeAriaPage();
-        initializeAriaEventListeners();
+        
+        // --- CORRECTED ORDER ---
+        // 1. Initialize the page first to set the state from the URL
+        initializeAriaPage(); 
+        
+        // 2. NOW load shared components, which will use the correct state
+        await loadSharedComponents(); 
+        
+        // 3. Attach event listeners
+        initializeAriaEventListeners(); 
+        
         if (!document.getElementById('file-attachment-input')) {
             document.body.insertAdjacentHTML('beforeend', `<input type="file" id="file-attachment-input" style="display: none;" multiple />`);
         }
@@ -199,14 +229,51 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
         await new Promise(r => setTimeout(r, 50)); 
         item.classList.add('visible');
         
-        // --- FIX: RENDER CHART AT THE RIGHT TIME ---
+        // --- MODIFIED SECTION START ---
         if (responseData.chartId && responseData.chartConfig) {
             const canvas = item.querySelector(`#${responseData.chartId}`);
             if (canvas) {
+                // 1. Deep copy the config to avoid modifying the original object
+                let finalChartConfig = JSON.parse(JSON.stringify(responseData.chartConfig));
+
+                // 2. Create a map of our placeholders to the actual CSS variables
+                const colorMap = {
+                    'THEME_ACCENT_BLUE': '--accent-blue',
+                    'THEME_ACCENT_BLUE_TRANSLUCENT': '--accent-blue-translucent',
+                    'THEME_ACCENT_TEAL': '--accent-teal',
+                    'THEME_ACCENT_TEAL_TRANSLUCENT': '--accent-teal-translucent',
+                    'THEME_STATUS_SUCCESS': '--status-success',
+                    'THEME_STATUS_SUCCESS_TRANSLUCENT': '--status-success-translucent',
+                    'THEME_STATUS_ERROR': '--status-error',
+                    'THEME_STATUS_ERROR_TRANSLUCENT': '--status-error-translucent',
+                    'THEME_PURPLE': '--purple',
+                    'THEME_PURPLE_TRANSLUCENT': '--purple-translucent',
+                       'THEME_TEXT_PRIMARY': '--text-primary',
+                    'THEME_TEXT_SECONDARY': '--text-secondary',
+                    'THEME_TEXT_MUTED': '--text-muted',
+                    'THEME_BORDER_COLOR': '--border-color',
+                    'THEME_BG_CARD': '--bg-card'
+                };
+
+                // 3. Recursively find and replace all placeholder strings with live theme colors
+                function replacePlaceholders(obj) {
+                    for (const key in obj) {
+                        if (typeof obj[key] === 'string' && colorMap[obj[key]]) {
+                            obj[key] = getThemeColor(colorMap[obj[key]]);
+                        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                            replacePlaceholders(obj[key]);
+                        }
+                    }
+                }
+                
+                replacePlaceholders(finalChartConfig);
+
+                // 4. Draw the chart with the final, theme-aware config
                 const ctx = canvas.getContext('2d');
-                new Chart(ctx, responseData.chartConfig);
+                new Chart(ctx, finalChartConfig);
             }
         }
+        // --- MODIFIED SECTION END ---
         
         const typingElements = item.querySelectorAll('[data-typing-text]');
         for (const el of typingElements) {
@@ -241,13 +308,7 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
     let state = loadState();
     const companyId = state.selectedCompanyId;
     
-   
-    const companyDataMap = {
-        'techflow-solutions': { ariaResponses: { ...techflow_ariaResponses, ...diligenceHubAriaResponses, ...portco_ariaResponses } },
-        'cloudvantage': { ariaResponses: { ...cloudvantage_ariaResponses } }, // This now works because cloudvantage_ariaResponses is globally available from data.js
-        'all': { ariaResponses: { ...portfolio_ariaResponses, ...commandCenterAriaResponses } }
-    };
-    const allStaticResponses = companyDataMap[companyId]?.ariaResponses || {};
+const allStaticResponses = ariaResponseMap[companyId] || {};
 
     const conversationContainer = document.getElementById('aria-conversation-container');
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
@@ -435,11 +496,27 @@ case 'toggle-category':
         chevronIcon.classList.toggle('rotate-90'); 
     }
     break;
-            case 'flag-response':
+                      case 'flag-response':
                 const responseId = target.dataset.responseId;
                 if (!responseId) break;
-                
-const allSources = [...techflow_anomalies, ...otherObservations_v2, ...techflow_minorObservations, ...Object.values(techflow_ariaResponses), ...Object.values(cloudvantage_ariaResponses), ...Object.values(portfolio_ariaResponses), ...Object.values(commandCenterAriaResponses), ...Object.values(diligenceHubAriaResponses), ...Object.values(portco_ariaResponses)];
+
+                // --- THIS IS THE CORRECTED LOGIC ---
+                // 1. Get all possible responses from our new, unified map.
+                const allResponsesFromMap = {
+                    ...ariaResponseMap['all'],
+                    ...ariaResponseMap['techflow-solutions'],
+                    ...ariaResponseMap['cloudvantage']
+                };
+
+                // 2. Combine them with other flaggable items like anomalies.
+                const allSources = [
+                    ...techflow_anomalies, 
+                    ...otherObservations_v2, 
+                    ...techflow_minorObservations, 
+                    ...Object.values(allResponsesFromMap)
+                ];
+                // --- END OF CORRECTION ---
+
                 const responseData = allSources.find(item => item.id === responseId);
 
                 if (responseData) {
@@ -459,7 +536,7 @@ const allSources = [...techflow_anomalies, ...otherObservations_v2, ...techflow_
                     }
                     saveState(state);
                 }
-                break;
+                break
             case 'thumb-up':
             case 'thumb-down':
                 const btn = target.closest('button');
