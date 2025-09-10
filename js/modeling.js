@@ -267,37 +267,47 @@ function renderCompassLeftPaneV3(state) {
         </div>`;
 }
 
+// in js/modeling.js
+
 function renderCompassCenterPaneV3(state) {
     const centerPane = document.getElementById('compass-center-pane');
-    const item = findItemInModel(state.modeling.selectedItemId);
-    const isRoot = !item || item.type === 'root';
-    
-    const scopeData = state.assessmentScope || {};
-    const isInScope = isRoot ? true : (scopeData[item.id] !== false); 
+    const selectedItemId = state.modeling.selectedItemId;
 
-    centerPane.innerHTML = `
-        <div class="compass-card timeline-selector-card">
-            <h3 class="control-title">Assessment Timeline</h3>
-            ${renderTimelineSelector(state)}
-        </div>
-        <div class="compass-card description-card">
-            <div class="card-header-with-toggle">
-                <div class="compass-breadcrumbs">${generateBreadcrumbs(state)}</div>
-                ${!isRoot ? `
-                <div class="scope-toggle-wrapper">
-                    <label for="scope-toggle" class="text-sm font-bold text-text-secondary">In Scope</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="scope-toggle" data-action="toggle-item-scope" ${isInScope ? 'checked' : ''}>
-                        <span class="slider round"></span>
-                    </label>
+    // THE FIX: Route to the correct view based on selection
+    if (selectedItemId === 'all-disciplines') {
+        // Render the new summary view
+        centerPane.innerHTML = renderAllDisciplinesSummary(state);
+    } else {
+        // Render the detailed item view (the existing logic)
+        const item = findItemInModel(selectedItemId);
+        const isRoot = !item || item.type === 'root';
+        const scopeData = state.assessmentScope || {};
+        const isInScope = isRoot ? true : (scopeData[item.id] !== false);
+
+        centerPane.innerHTML = `
+            <div class="compass-card timeline-selector-card">
+                <h3 class="control-title">Assessment Timeline</h3>
+                ${renderTimelineSelector(state)}
+            </div>
+            <div class="compass-card description-card">
+                <div class="card-header-with-toggle">
+                    <div class="compass-breadcrumbs">${generateBreadcrumbs(state)}</div>
+                    ${!isRoot ? `
+                    <div class="scope-toggle-wrapper">
+                        <label for="scope-toggle" class="text-sm font-bold text-text-secondary">In Scope</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="scope-toggle" data-action="toggle-item-scope" ${isInScope ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    ` : ''}
                 </div>
-                ` : ''}
+                <div class="card-content-scroller">
+                    ${renderEnrichedContentCard(state)}
+                </div>
             </div>
-            <div class="card-content-scroller">
-                ${renderEnrichedContentCard(state)}
-            </div>
-        </div>
-    `;
+        `;
+    }
 }
 
 function renderCompassRightPaneV3(state) {
@@ -556,6 +566,127 @@ function renderMaturityTable(state) {
 
 // in js/modeling.js
 
+// in js/modeling.js
+
+function renderAllDisciplinesSummary(state) {
+    // 1. --- Data Preparation (Corrected & Expanded) ---
+    const rootItem = findItemInModel('all-disciplines');
+    const scopeData = state.assessmentScope || {};
+
+    // Get the true overall scores, respecting scope
+    const overallScores = getDisplayScores(rootItem, state.assessmentScores, scopeData);
+    const [currentLevelName, targetLevelName] = [getMaturityLevelName(overallScores.current), getMaturityLevelName(overallScores.target)];
+    const asIsPercent = (overallScores.current / 5) * 100;
+    const toBePercent = (overallScores.target / 5) * 100;
+
+    // Get the true overall ARIA scores, respecting scope
+    const ariaScores = state.assessmentScores['ARIA'] || {};
+    const overallAriaScores = getDisplayScores(rootItem, { 'ARIA': ariaScores }, scopeData);
+    const ariaAsIsPercent = (overallAriaScores.current / 5) * 100;
+    const ariaToBePercent = (overallAriaScores.target / 5) * 100;
+
+    const selectedAssessment = state.availableAssessments.find(a => a.assessment_id == state.selectedAssessmentId);
+    const assessmentDate = selectedAssessment ? new Date(selectedAssessment.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+    // THE FIX: Accurately count in-scope items that have scores
+    const allScoredItemIds = new Set(
+        Object.values(state.assessmentScores).flatMap(sourceScores => Object.keys(sourceScores))
+    );
+    
+    const inScopeScoredItems = [...allScoredItemIds].filter(id => scopeData[id] !== false);
+
+    let scoredItemsSummaryHtml = '';
+    state.maturityModelData.disciplines.forEach(discipline => {
+        const children = getChildren(discipline, true); // Get all descendants
+        const scoredInScopeChildren = children.filter(child => inScopeScoredItems.includes(child.id));
+        
+        if (scoredInScopeChildren.length > 0) {
+            scoredItemsSummaryHtml += `
+                <li class="discipline-summary-item">
+                    <span class="font-bold">${discipline.name} (${scoredInScopeChildren.length})</span>
+                    <ul class="lever-summary-list">
+                        ${scoredInScopeChildren.map(child => `<li>${child.name} (${child.type})</li>`).join('')}
+                    </ul>
+                </li>
+            `;
+        }
+    });
+
+    // 2. --- High-Level Stage Descriptions (Unchanged) ---
+    const summaryStageDescriptions = [
+        "**Reactive:** Processes are ad-hoc, inconsistent, and driven by immediate needs rather than a strategic plan.",
+        "**Organized:** Key processes are documented and repeatable, but often operate in silos with limited cross-functional visibility.",
+        "**Automated:** Core workflows are supported by technology, data is centralized, and reporting becomes more reliable.",
+        "**Platform-led:** The organization operates on an integrated platform, enabling data-driven decisions and scalable operations.",
+        "**Intelligent:** The business uses predictive analytics and AI to optimize processes, anticipate market changes, and drive innovation."
+    ];
+
+    // 3. --- Final HTML Assembly (Corrected Layout) ---
+    return `
+        <div class="compass-card timeline-selector-card">
+            <h3 class="control-title">Assessment Timeline</h3>
+            ${renderTimelineSelector(state)}
+        </div>
+        <div class="compass-card description-card">
+            <div class="card-content-scroller">
+                <div class="card-content-padding-wrapper">
+                    <h3 class="text-2xl font-bold">Overall Maturity Assessment</h3>
+                    <p class="text-text-secondary mt-2">This is a calculated summary of all in-scope Disciplines, Capabilities, and Levers for the selected assessment. It provides a holistic view of the organization's current state and strategic targets.</p>
+                    
+                    <div class="assessment-context-box">
+                        <p>You are viewing the <strong>"${selectedAssessment?.version_name || 'N/A'}"</strong> assessment, created on ${assessmentDate}.</p>
+                    </div>
+
+                    <div class="summary-stage-grid">
+                        ${summaryStageDescriptions.map((desc, index) => `
+                            <div class="summary-stage-card">
+                                <h5 class="font-bold text-accent-blue">Stage ${index + 1}: ${maturityStageNames[index]}</h5>
+                                <p class="text-sm text-text-secondary mt-1">${desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="unified-maturity-grid summary-grid">
+                        <div class="unified-grid-label"><span>As-Is</span></div>
+                        <div class="unified-grid-content slider-row as-is-row">
+                            <div class="static-value-label">
+                                <span class="value-level-name">${currentLevelName}</span>
+                                <span class="value-score">${overallScores.current.toFixed(1)}</span>
+                            </div>
+                            <div class="tv-track-container">
+                                <div class="tv-track-line as-is"></div>
+                                <div class="tv-slider-thumb as-is" style="left: ${asIsPercent}%;"></div>
+                                <div class="tv-aria-indicator as-is" style="left: ${ariaAsIsPercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
+                            </div>
+                        </div>
+                        <div class="unified-grid-label"><span>To-Be</span></div>
+                        <div class="unified-grid-content slider-row to-be-row">
+                            <div class="static-value-label">
+                                <span class="value-level-name">${targetLevelName}</span>
+                                <span class="value-score">${overallScores.target.toFixed(1)}</span>
+                            </div>
+                            <div class="tv-track-container">
+                                <div class="tv-track-line to-be"></div>
+                                <div class="tv-slider-thumb to-be" style="left: ${toBePercent}%;"></div>
+                                <div class="tv-aria-indicator to-be" style="left: ${ariaToBePercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scored-items-summary">
+                        <h4 class="response-section-title">Summary of Scored Items (${inScopeScoredItems.length} total)</h4>
+                        <p class="text-sm text-text-muted mb-4">The scores above are calculated from the following in-scope items that have been assessed:</p>
+                        <ul>${scoredItemsSummaryHtml || '<li class="text-text-muted italic">No items have been scored in this assessment yet.</li>'}</ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+// in js/modeling.js
+
+// in js/modeling.js
+
 function renderEnrichedContentCard(state) {
     const item = findItemInModel(state.modeling.selectedItemId);
     if (!item || !item.id || item.type === 'root') {
@@ -667,7 +798,6 @@ function renderEnrichedContentCard(state) {
         }
     }
 
-  // THE FIX: New, stylish HTML for the dual-column ARIA Insight Box
     const ariaInsightHTML = `
         <div class="aria-insight-box">
             <div class="aria-insight-header">
@@ -703,13 +833,14 @@ function renderEnrichedContentCard(state) {
                     </div>
                     <div class="aria-insight-rationale">
                         <label><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM9.25 8.75a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0v-3.5ZM10 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>Rationale</label>
-                        <p>${itemAriaScore.to_be_rationale || 'No specific rationale provided for the To-Be recommendation.'}</p>
+                        <p>${itemAriaScore.to_be_rationale}</p>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
+    // THE FIX: This is the complete grid structure, restoring the missing rows.
     const unifiedGridHTML = `
         <div class="unified-maturity-grid ${isCharacteristicsExpanded ? 'is-expanded' : ''}">
             <div class="unified-grid-label"><span>Stage</span></div>
@@ -758,23 +889,39 @@ function renderEnrichedContentCard(state) {
                     <div class="tv-aria-indicator to-be" style="left: ${ariaToBePercent}%;"><img src="Evolver_Dark.png" alt="Aria"></div>
                 </div>
             </div>
-            <div class="unified-grid-label"></div>
-            <div class="unified-grid-content">
-                ${ariaInsightHTML}
-            </div>
         </div>
     `;
 
     const expandIcon = `<svg class="icon-expand w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9" /></svg>`;
     const collapseIcon = `<svg class="icon-collapse w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9L4.5 4.5M9 9V4.5M9 9H4.5m11.25 11.25L15 15m0 0v4.5m0-4.5h4.5" /></svg>`;
 
-       return `
+    return `
         <div class="card-content-padding-wrapper">
             <div id="description-control-grid-wrapper" class="mb-8">
-                <!-- ... Description and Control Question panes ... -->
+                <div class="info-pane" id="description-pane">
+                    <h4 class="info-label">Description</h4>
+                    <div class="info-box">
+                        <p>${item.short_description || 'N/A'}</p>
+                        <div class="details-content">
+                            <h5 class="text-sm font-bold text-text-primary mb-2">Detailed Description</h5>
+                            <p class="mb-4">${item.description || 'No detailed description available.'}</p>
+                            <h5 class="text-sm font-bold text-text-primary mb-2">Benefits Statement</h5>
+                            ${benefitsHTML}
+                        </div>
+                        <button class="expand-icon-button bottom-right" data-action="toggle-details-expansion" title="Show more details">
+                            ${expandIcon}
+                            ${collapseIcon}
+                        </button>
+                    </div>
+                </div>
+                <div class="info-pane">
+                    <h4 class="info-label">Control Question</h4>
+                    <p class="info-box">${item.controlQuestion || 'N/A'}</p>
+                </div>
             </div>
             ${unifiedGridHTML}
             <div id="kpi-details-popup" class="kpi-details-popup"></div>
+            ${ariaInsightHTML}
             <div class="assessment-conversation-section">
                 <h4 class="response-section-title">Assessment Conversation</h4>
                 ${renderAssessmentConversation(allScoresForThisItem)}

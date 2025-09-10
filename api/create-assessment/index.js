@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 module.exports = async function (context, req) {
     const pool = new Pool({ /* your database connection config */ });
-    const client = await pool.connect(); // Get a single client for the transaction
+    const client = await pool.connect();
 
     const { portfolio_company_id, version_name, version_description } = req.body;
 
@@ -14,10 +14,8 @@ module.exports = async function (context, req) {
     }
 
     try {
-        // Start the transaction
         await client.query('BEGIN');
 
-        // Step 1: Create the new assessment and get its ID
         const assessmentQuery = `
             INSERT INTO assessments (portfolio_company_id, version_name, version_description) 
             VALUES ($1, $2, $3) 
@@ -26,7 +24,7 @@ module.exports = async function (context, req) {
         const assessmentResult = await client.query(assessmentQuery, [portfolio_company_id, version_name, version_description]);
         const newAssessment = assessmentResult.rows[0];
 
-        // Step 2: Get all item IDs from the entire model
+        // THE FIX: Use all-lowercase table names without quotes here as well.
         const allItemsResult = await client.query(`
             SELECT discipline_id AS item_id FROM disciplines
             UNION ALL
@@ -36,7 +34,6 @@ module.exports = async function (context, req) {
         `);
         const allItemIds = allItemsResult.rows;
 
-        // Step 3: Pre-populate the assessment_scope table
         if (allItemIds.length > 0) {
             const params = [];
             const values = [];
@@ -54,21 +51,18 @@ module.exports = async function (context, req) {
             await client.query(scopeQuery, params);
         }
 
-        // If everything succeeded, commit the transaction
         await client.query('COMMIT');
 
         context.res = {
-            status: 201, // Created
+            status: 201,
             body: newAssessment
         };
 
     } catch (error) {
-        // If any step failed, roll back the entire transaction
         await client.query('ROLLBACK');
-        context.log.error('Transaction failed:', error);
-        context.res = { status: 500, body: "Database operation failed." };
+        context.log.error('Transaction failed in create-assessment:', error);
+        context.res = { status: 500, body: "Database operation failed. Check the function logs for details." };
     } finally {
-        // Release the client back to the pool
         client.release();
         await pool.end();
     }

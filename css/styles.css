@@ -95,11 +95,10 @@ html, body {
 #main-content {
     flex: 1;
     overflow-y: auto; /* The main area scrolls by default */
-    padding: 0rem; /* Your padding is fine */
-        height: calc(100vh - 5rem);
+    padding: 1.5rem 1.5rem; /* RESTORED: This provides the default 24px/32px padding */
+    height: calc(100vh - 5rem);
     transition: grid-template-columns 0.3s ease-in-out;
 }
-
 /* Sidebar & Header */
 #sidebar {
     background-color: var(--bg-card);
@@ -9757,6 +9756,116 @@ body.page-db-inventory #main-content {
 }
 .radar-chart-container {
     flex-grow: 1; min-height: 0; position: relative;
+}
+
+/* =================================================================
+   ARIA LIST FORMATTING (GLOBAL FIX)
+   ================================================================= */
+
+.aria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Space between list items */
+}
+
+.aria-list-item {
+    display: flex;
+    align-items: flex-start; /* Aligns icon/number with the top of the text */
+    gap: 0.75rem; /* Space between icon/number and text */
+}
+
+/* Style for the number or bullet */
+.aria-list-item > span {
+    flex-shrink: 0; /* Prevents the number from shrinking */
+    font-weight: 700;
+    margin-top: 0.125rem; /* Fine-tunes vertical alignment with text */
+    color: var(--text-primary);
+}
+
+/* Style for the text content block */
+.aria-list-item h4 {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.125rem; /* Small space between title and text */
+}
+
+.aria-list-item p {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* =================================================================
+   COMPASS PAGE - "ALL DISCIPLINES" SUMMARY VIEW (V27 - FINAL FIX)
+   ================================================================= */
+
+/* --- 1. Main Container for the Summary View (Layout Fix) --- */
+.all-disciplines-summary-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+}
+.all-disciplines-summary-container > .compass-card {
+    flex-grow: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+}
+.all-disciplines-summary-container .timeline-selector-card {
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: 1.5rem !important;
+}
+
+/* --- 2. Assessment Context Box --- */
+.assessment-context-box {
+    margin-top: 1.5rem; padding: 1rem; background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color); border-left: 4px solid var(--accent-blue);
+    border-radius: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);
+}
+.assessment-context-box strong { color: var(--text-primary); font-weight: 700; }
+
+/* --- 3. High-Level Stage Grid --- */
+.summary-stage-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 1rem; margin: 2rem 0;
+}
+.summary-stage-card {
+    background-color: var(--bg-secondary); border-radius: 0.5rem; padding: 1rem;
+}
+
+/* --- 4. NEW: Non-Interactive Slider Thumb for Summary View --- */
+.tv-slider-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--bg-card);
+    box-shadow: 0 0 0 5px var(--border-color), 0 1px 2px var(--shadow-hover);
+    z-index: 18; /* Above the track, below the pin */
+}
+.tv-slider-thumb.as-is { box-shadow: 0 0 0 5px var(--as-is-color); }
+.tv-slider-thumb.to-be { box-shadow: 0 0 0 5px var(--to-be-color); }
+
+/* --- 5. Scored Items Summary List --- */
+.scored-items-summary {
+    margin-top: 2rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+.scored-items-summary > ul {
+    list-style-type: none; padding-left: 0;
+    columns: 2; gap: 2rem;
+}
+.discipline-summary-item {
+    margin-bottom: 1rem; break-inside: avoid-column;
+}
+.lever-summary-list {
+    list-style-type: disc; padding-left: 1.25rem; margin-top: 0.25rem;
+    font-size: 0.875rem; color: var(--text-secondary);
 }
 
 /* =================================================================

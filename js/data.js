@@ -1016,6 +1016,167 @@ renderFunc: () => `<div class="aria-response-content">
     // CONTEXT: CloudVantage
     // ===========================================================
     'cloudvantage': {
+          "Tell me about the Organizational Excellence discipline for CloudVantage.": {
+            id: 'cv-discipline-d1',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);"><h3 class="response-title">D1 - Organizational Excellence</h3><p class="response-text" data-typing-text="Organizational Excellence underpins the entire business. For CloudVantage, the key challenge is managing the cultural integration of the NewCo acquisition while maintaining a high-performance rhythm. The current focus is on aligning strategic planning (OKRs) and developing talent to fill key leadership gaps, like the EMEA VP of Sales."></p></div></div>`,
+            followUpQuestions: ["Show me the latest OKR progress report.", "Draft a job description for the new EMEA VP of Sales."]
+        },
+        "Tell me about the Sales discipline for CloudVantage.": {
+            id: 'cv-discipline-d2',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);"><h3 class="response-title">D2 - Sales</h3><p class="response-text" data-typing-text="The Sales discipline is a tale of two regions. North America is significantly over-performing at 115% of quota, driven by the successful NewCo cross-sell playbook. This is masking a critical issue in the EMEA region, which is tracking at only 75% of its target due to the recent departure of the regional VP."></p></div></div>`,
+            followUpQuestions: ["What is the plan to address the EMEA performance issue?", "Analyze the NewCo customer base for further cross-sell opportunities."]
+        },
+        "Tell me about the Marketing discipline for CloudVantage.": {
+            id: 'cv-discipline-d3',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-teal);"><h3 class="response-title">D3 - Marketing</h3><p class="response-text" data-typing-text="Marketing is effectively supporting the GTM strategy, with MQLs 15% above target. However, competitive intelligence reports show we are increasingly losing late-stage deals to a competitor named 'AgileCloud' due to their aggressive discounting."></p></div></div>`,
+            followUpQuestions: ["How has our win rate against AgileCloud changed over time?", "Generate a battle card for the sales team to compete against AgileCloud."]
+        },
+        "Tell me about the Partner Ecosystem discipline for CloudVantage.": {
+            id: 'cv-discipline-d4',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--purple);"><h3 class="response-title">D4 - Partner Ecosystem</h3><p class="response-text" data-typing-text="The partner ecosystem is an underdeveloped but high-potential area. We have a strong technology alliance with AWS, but the reseller and GSI channels are nascent. The immediate opportunity is to formalize the reseller program to accelerate expansion into the APAC market."></p></div></div>`,
+            followUpQuestions: ["What is the revenue contribution from the AWS partnership?", "Draft a plan for a formal reseller program."]
+        },
+        "Tell me about the Product & Engineering discipline for CloudVantage.": {
+            id: 'cv-discipline-d5',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--status-warning);"><h3 class="response-title">D5 - Product & Engineering</h3><p class="response-text" data-typing-text="The team is maintaining excellent platform stability with 99.98% uptime. However, they are facing a significant challenge with the 'AI-Powered Feature Launch,' which is currently 'At Risk'. The delay is due to technical complexities in integrating NewCo's legacy data models."></p></div></div>`,
+            followUpQuestions: ["Generate a risk mitigation plan for the AI feature delay.", "What is the status of the NewCo product integration?"]
+        },
+        "Tell me about the Customer Experience discipline for CloudVantage.": {
+            id: 'cv-discipline-d6',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--status-success);"><h3 class="response-title">D6 - Customer Experience</h3><p class="response-text" data-typing-text="The Customer Experience is strong, reflected in a high NPS of 52 and 98% customer retention. The integration of NewCo customers has led to a temporary 15% increase in support ticket volume, which the team is managing by improving the onboarding experience."></p></div></div>`,
+            followUpQuestions: ["Analyze the root cause of recent support tickets.", "What is our plan to improve the onboarding experience for NewCo customers?"]
+        },
+        "Tell me about the Digital Core discipline for CloudVantage.": {
+            id: 'cv-discipline-d7',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--text-secondary);"><h3 class="response-title">D7 - Digital Core</h3><p class="response-text" data-typing-text="The Digital Core is stable and scalable, with cloud infrastructure costs running 5% under budget due to recent FinOps initiatives. The primary focus is now on data strategy, specifically the integration of NewCo's data to power the upcoming AI features."></p></div></div>`,
+            followUpQuestions: ["Show me the latest cloud cost optimization report.", "What is the data integration roadmap?"]
+        },
+        "Tell me about the Finance discipline for CloudVantage.": {
+            id: 'cv-discipline-d8',
+            renderFunc: function() { return `<div class="aria-response-content">
+                <div class="build-item themed-synthesis-box" style="--theme-color: var(--status-success);"><h3 class="response-title">D8 - Finance</h3><p class="response-text" data-typing-text="The company's financial health is strong, with a 'Rule of 40' score of 58%. However, our pricing analysis reveals a low win rate for the 'Professional' tier, suggesting a price/value mismatch that is leaving revenue on the table."></p></div>
+                ${renderRecommendedActionsHTML(this.recommendedActions)}
+            </div>`},
+            recommendedActions: [{
+                text: "Suggest Modeling: Pricing & Margin Analysis",
+                description: "Let's use the modeling canvas to analyze the 'Pricing & Margin Analysis' capability and identify specific actions to improve our pricing strategy.",
+                prompt: "navigate-to-modeling:C804" // Corrected Capability ID for Pricing
+            }],
+            followUpQuestions: ["Generate a board-level summary of Q2 financial performance.", "Model the financial impact of a 15% price reduction on the Professional tier."]
+        },
+        "Tell me about the General & Administrative discipline for CloudVantage.": {
+            id: 'cv-discipline-d9',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item themed-synthesis-box" style="--theme-color: var(--text-secondary);"><h3 class="response-title">D9 - General & Administrative</h3><p class="response-text" data-typing-text="The G&A functions are operating efficiently. The legal team is focused on standardizing NewCo customer contracts, and HR is actively recruiting for the EMEA VP of Sales role. There are no major G&A-related risks at this time."></p></div></div>`,
+            followUpQuestions: ["What is the status of the EMEA VP of Sales search?", "Summarize the key differences in NewCo's customer contracts."]
+        },
+               // --- NEW: Initial Summary Prompt ---
+        "Explore the Engine for Growth pillar.": {
+            id: 'cv-pillar-gtm',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item"><p class="response-text" data-typing-text="The **Engine for Growth** pillar is strong overall, with NRR at 128% and MQLs 15% above target. However, this is masking underperformance in the EMEA region and increasing competitive pressure from AgileCloud. The key disciplines to investigate are:"></p></div></div>`,
+            // These are the NEW COLORFUL PILLS that will appear after the click
+            followUpQuestions: [
+                { label: "Sales", prompt: "Tell me about the Sales discipline for CloudVantage.", color: "var(--accent-blue)" },
+                { label: "Marketing", prompt: "Tell me about the Marketing discipline for CloudVantage.", color: "var(--accent-teal)" },
+                { label: "Partner Ecosystem", prompt: "Tell me about the Partner discipline for CloudVantage.", color: "var(--purple)" }
+            ],
+            // These are the NEW SUGGESTED PROMPTS (grey pills) that will appear
+            suggestedPrompts: [
+                "What is the plan to address the EMEA performance issue?",
+                "Analyze the NewCo customer base for further cross-sell opportunities.",
+                "Generate a battle card for the sales team to compete against AgileCloud."
+            ]
+        },
+        "Explore the Product & Value pillar.": {
+            id: 'cv-pillar-product',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item"><p class="response-text" data-typing-text="The **Product & Value** pillar is strong, reflected in a high NPS of 52 and 98% customer retention. The core challenge is the 'At Risk' status of the AI Feature Launch, which is directly tied to technical debt from the NewCo integration. The key disciplines to investigate are:"></p></div></div>`,
+            followUpQuestions: [
+                { label: "Product & Engineering", prompt: "Tell me about the Build discipline for CloudVantage.", color: "var(--status-warning)" },
+                { label: "Customer Experience", prompt: "Tell me about the Run discipline for CloudVantage.", color: "var(--status-success)" },
+                { label: "Digital Core", prompt: "Tell me about the Digital Core discipline for CloudVantage.", color: "var(--text-secondary)" }
+            ],
+            suggestedPrompts: [
+                "Generate a risk mitigation plan for the AI feature delay.",
+                "What is the status of the NewCo product integration?",
+                "Analyze the root cause of recent support tickets."
+            ]
+        },
+        "Explore the Operational Excellence pillar.": {
+            id: 'cv-pillar-opex',
+            renderFunc: function() { return `<div class="aria-response-content">
+                <div class="build-item"><p class="response-text" data-typing-text="The company's financial health is strong, with a **Rule of 40 score of 58%**. However, our pricing analysis indicates a low win rate for the 'Professional' tier, suggesting a price/value mismatch. This is a key area for optimization. The key disciplines to investigate are:"></p></div>
+                ${renderRecommendedActionsHTML(this.recommendedActions)}
+            </div>`},
+            recommendedActions: [{
+                text: "Suggest Modeling: Pricing & Margin Analysis",
+                description: "Let's use the modeling canvas to analyze the 'Pricing & Margin Analysis' capability and identify specific actions to improve our pricing strategy.",
+                prompt: "navigate-to-modeling:C840"
+            }],
+            followUpQuestions: [
+                { label: "Organizational Excellence", prompt: "Tell me about the Organizational Excellence discipline for CloudVantage.", color: "var(--accent-blue)" },
+                { label: "Finance", prompt: "Tell me about the Finance discipline for CloudVantage.", color: "var(--status-success)" },
+                { label: "General & Administrative", prompt: "Tell me about the General & Administrative discipline for CloudVantage.", color: "var(--text-secondary)" }
+            ],
+            suggestedPrompts: [
+                "Generate a board-level summary of Q2 financial performance.",
+                "Model the financial impact of a 15% price reduction on the Professional tier.",
+                "What are the key tax and compliance risks associated with the NewCo integration?"
+            ]
+        },
+        "Give me a summary of CloudVantage's Q2 business performance.": {
+            id: 'cv-q2-summary',
+            renderFunc: () => `<div class="aria-response-content">
+                <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
+                    <h3 class="response-title">CloudVantage: Q2 Business Synthesis</h3>
+                    <p class="response-text" data-typing-text="The business is performing exceptionally well, with NRR at 128% significantly outperforming the annual plan. The primary driver is the successful NewCo integration and cross-sell playbook. However, this success is creating a new challenge: the integration of NewCo's legacy data models is behind schedule, which has now become the primary blocker for the critical AI-Powered Feature Launch. This is the most significant risk to the Q4 forecast."></p>
+                </div>
+                <div class="build-item">
+                    <h4 class="response-section-title">Recommended Actions</h4>
+                    <div class="aria-list mt-4">
+                        <div class="aria-list-item"><span>1.</span><div><h4>Allocate dedicated engineering resources to unblock the data integration project.</h4></div></div>
+                        <div class="aria-list-item"><span>2.</span><div><h4>Hire a new VP of Sales for EMEA to address regional underperformance.</h4></div></div>
+                        <div class="aria-list-item"><span>3.</span><div><h4>Develop a risk mitigation plan for the AI feature launch, including a de-scoped MVP option.</h4></div></div>
+                    </div>
+                </div>
+            </div>`,
+            followUpQuestions: ["Analyze the key drivers of our Net Revenue Retention.", "What caused the dip in EBITDA margin?", "What is the forecast for Q3?"]
+        },
+        "What are the key risks to achieving the annual plan?": {
+            id: 'cv-annual-plan-risks',
+            renderFunc: () => `<div class="aria-response-content">
+                <div class="build-item"><h2 class="response-title">Key Risks to Annual Plan</h2></div>
+                <div class="build-item aria-list mt-4">
+                    <div class="aria-list-item"><span class="text-error">1.</span><div><h4>AI Feature Delay</h4><p>The delay in the AI-Powered Feature Launch is the most significant risk, potentially impacting the Q4 forecast and our competitive positioning.</p></div></div>
+                    <div class="aria-list-item"><span class="text-warning">2.</span><div><h4>EMEA Underperformance</h4><p>The leadership vacuum in the EMEA sales region is causing a drag on overall growth and needs to be addressed urgently to meet global targets.</p></div></div>
+                    <div class="aria-list-item"><span class="text-warning">3.</span><div><h4>Competitive Pressure</h4><p>Aggressive discounting from competitors like AgileCloud continues to threaten win rates in the mid-market segment.</p></div></div>
+                </div>
+            </div>`,
+            followUpQuestions: ["Generate a risk mitigation plan for the AI feature delay.", "What is the plan to address the EMEA performance issue?"]
+        },
+
+        // --- NEW: Pillar Synthesis Prompts ---
+        "Explore the Engine for Growth pillar.": {
+            id: 'cv-pillar-gtm',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item"><p class="response-text" data-typing-text="The **Engine for Growth** pillar is strong overall, with NRR at 128% and MQLs 15% above target. However, this is masking underperformance in the EMEA region and increasing competitive pressure from AgileCloud. The key disciplines to investigate are:"></p></div></div>`,
+            followUpQuestions: ["Tell me about the Sales discipline for CloudVantage.", "Tell me about the Marketing discipline for CloudVantage.", "Tell me about the Partner discipline for CloudVantage."]
+        },
+        "Explore the Product & Value pillar.": {
+            id: 'cv-pillar-product',
+            renderFunc: () => `<div class="aria-response-content"><div class="build-item"><p class="response-text" data-typing-text="The **Product & Value** pillar is strong, reflected in a high NPS of 52 and 98% customer retention. The core challenge is the 'At Risk' status of the AI Feature Launch, which is directly tied to technical debt from the NewCo integration. The key disciplines to investigate are:"></p></div></div>`,
+            followUpQuestions: ["Tell me about the Build discipline for CloudVantage.", "Tell me about the Run discipline for CloudVantage.", "Tell me about the Digital Core discipline for CloudVantage."]
+        },
+        "Explore the Operational Excellence pillar.": {
+            id: 'cv-pillar-opex',
+            renderFunc: function() { return `<div class="aria-response-content">
+                <div class="build-item"><p class="response-text" data-typing-text="The company's financial health is strong, with a **Rule of 40 score of 58%**. However, our pricing analysis indicates a low win rate for the 'Professional' tier, suggesting a price/value mismatch. This is a key area for optimization. The key disciplines to investigate are:"></p></div>
+                ${renderRecommendedActionsHTML(this.recommendedActions)}
+            </div>`},
+            recommendedActions: [{
+                text: "Suggest Modeling: Pricing & Margin Analysis",
+                description: "Let's use the modeling canvas to analyze the 'Pricing & Margin Analysis' capability and identify specific actions to improve our pricing strategy.",
+                prompt: "navigate-to-modeling:C840" // Special prompt format
+            }],
+            followUpQuestions: ["Tell me about the Organizational Excellence discipline for CloudVantage.", "Tell me about the Finance discipline for CloudVantage.", "Tell me about the General & Administrative discipline for CloudVantage."]
+        },
         // --- CONNOR (CRO) WORKFLOWS ---
     // --- CONNOR (CRO) WORKFLOWS ---
 
