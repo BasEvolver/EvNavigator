@@ -292,7 +292,9 @@ const Navigation = {
         if (!activePersona) return;
 
         document.querySelectorAll('#sidebar-menu li[data-roles]').forEach(li => {
-            const allowedRoles = li.dataset.roles.split(',');
+            // THE FIX: Trim whitespace from each role to prevent parsing errors.
+            const allowedRoles = li.dataset.roles.split(',').map(role => role.trim());
+            
             if (allowedRoles.includes(activePersona)) {
                 li.style.display = '';
             } else {
