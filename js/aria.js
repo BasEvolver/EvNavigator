@@ -1,54 +1,5 @@
 // js/aria.js - Central Conversational Engine for the Navigator Application (Persona-Aware Hub Version)
 
-function renderCroHub() {
-    const ariaView = document.getElementById('aria-main-view');
-    if (!ariaView) return;
-
-    const initialPrompts = [
-        "Give me a breakdown of our current sales performance against targets.",
-        "What are the biggest risks and opportunities in the current sales pipeline?",
-        "Analyze the key drivers of our Net Revenue Retention."
-    ];
-
-    ariaView.innerHTML = `
-        <div class="persona-dashboard-layout">
-            <div class="persona-main-column">
-                <div class="portco-card">
-                    <h3 class="card-title">Key Performance Indicators (YTD)</h3>
-                    <div class="kpi-grid-modeling">
-                        <div class="kpi-card-modeling"><div class="kpi-info"><p class="kpi-label-modeling">Global Quota Attainment</p><p class="kpi-value-modeling text-success">103%</p></div></div>
-                        <div class="kpi-card-modeling"><div class="kpi-info"><p class="kpi-label-modeling">Net Revenue Retention</p><p class="kpi-value-modeling text-success">128%</p></div></div>
-                        <div class="kpi-card-modeling"><div class="kpi-info"><p class="kpi-label-modeling">Win Rate vs. AgileCloud</p><p class="kpi-value-modeling text-error">35%</p></div></div>
-                    </div>
-                </div>
-                <div class="portco-card">
-                    <h3 class="card-title">Top Pipeline Risks & Opportunities</h3>
-                     <div class="data-table-container">
-                        <table class="data-table">
-                            <thead><tr><th>Account</th><th>ARR</th><th>Stage</th><th>Risk/Opportunity</th></tr></thead>
-                            <tbody>
-                                <tr><td>Apex Solutions</td><td>$2.8M</td><td>Negotiation</td><td class="text-error">Stalled (14 months in cycle)</td></tr>
-                                <tr><td>Stellar Technologies</td><td>$925k</td><td>Proposal</td><td class="text-warning">Competing with AgileCloud</td></tr>
-                                <tr><td>Global Enterprises Inc.</td><td>$3.2M</td><td>Verbal Commit</td><td class="text-success">Opportunity to upsell Security Module</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="persona-sidebar-column">
-                <div class="portco-card">
-                    <h3 class="card-title">ARIA Assistant</h3>
-                    <div id="aria-conversation-container" class="space-y-4">
-                        <!-- Initial briefing will be loaded by runAriaSequence -->
-                    </div>
-                    <div id="aria-prompt-wrapper" class="mt-4">${getAdvancedPromptBoxHTML(initialPrompts)}</div>
-                </div>
-            </div>
-        </div>
-    `;
-    // Kick off Connor's specific conversational narrative
-    runAriaSequence("Give me my CRO daily briefing.", true);
-}
 
 function renderAmActionCenter() {
     const ariaView = document.getElementById('aria-main-view');
@@ -130,8 +81,8 @@ function getContextualPillsForCompany(companyId) {
     const state = loadState();
     const persona = state.activePersona;
 
+    // Handle the "All Portfolio" case for Adrian first
     if (!companyId || companyId === 'all') {
-        // Portfolio view remains a single group of prompts
         return {
             title: "Portfolio Analysis:",
             pills: [
@@ -142,11 +93,12 @@ function getContextualPillsForCompany(companyId) {
         };
     }
 
+    // Handle specific companies based on persona
     const companyInfo = workspaceHeaders[companyId];
     const isDiligence = companyInfo && companyInfo.stage === 'Due Diligence';
 
     if (isDiligence) {
-        // Diligence view remains a single group of prompts
+        // This is for Adrian's view of TechFlow
         const workstreamPills = techflow_workstreamData.map(ws => ({
             label: ws.title,
             prompt: `Show me the ${ws.title} workstream.`,
@@ -155,17 +107,30 @@ function getContextualPillsForCompany(companyId) {
         workstreamPills.unshift({ label: "Plan", prompt: "Show me the TechFlow diligence plan.", color: "var(--text-secondary)" });
         return { title: "Explore Diligence Workstreams:", pills: workstreamPills };
     } else {
-        // This handles all other cases, including CloudVantage for different personas
+        // This handles CloudVantage for all other personas
         switch (persona) {
-            case 'connor':
-            case 'maya':
-                // This logic can be filled in later for these personas
-                return null;
+            case 'connor': // CRO
+                return {
+                    title: "CRO Hub:",
+                    pills: [
+                        { label: "Performance", prompt: "Give me a breakdown of our current sales performance against targets.", color: "var(--status-success)" },
+                        { label: "Pipeline & Forecast", prompt: "What are the biggest risks and opportunities in the current sales pipeline?", color: "var(--accent-blue)" },
+                        { label: "Organization", prompt: "What is the plan to address the EMEA performance issue?", color: "var(--purple)" },
+                        { label: "Initiatives", prompt: "Analyze the NewCo customer base for further cross-sell opportunities.", color: "var(--accent-teal)" }
+                    ]
+                };
+            case 'maya': // Account Manager
+                 return {
+                    title: "AM Action Center:",
+                    pills: [
+                        { label: "Prepare for Global Inc. call", prompt: "Generate a conversation guide for my call with Global Enterprises Inc.", color: "var(--accent-blue)" },
+                        { label: "Review Apex Solutions contract", prompt: "Summarize the key terms of the Apex Solutions renewal contract.", color: "var(--accent-teal)" },
+                        { label: "Propose Platinum Offer", prompt: "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term.", color: "var(--purple)" }
+                    ]
+                };
             case 'evelyn':
             case 'adrian':
-            default:
-                // --- THIS IS THE CORRECTED LOGIC FOR CLOUDVANTAGE (ADRIAN/EVELYN) ---
-                // It now correctly returns ONLY the three top-level "Strategic Pillar" pills.
+            default: // This is for the CEO/Operating Partner view of CloudVantage
                 return {
                     title: "Explore Value Creation Pillars:",
                     pills: [
@@ -177,7 +142,6 @@ function getContextualPillsForCompany(companyId) {
         }
     }
 }
-
 document.addEventListener('DOMContentLoaded', async () => {
     if (Navigation.getCurrentPage() === 'aria') {
         document.body.classList.add('page-aria');
@@ -234,34 +198,30 @@ function initializeAriaPage() {
     Navigation.updateCompanySelector();
     
     // --- THIS IS THE PERSONA ROUTER ---
-    if (activePersona === 'connor') {
-        renderCroHub(); // Route to Connor's custom dashboard
-    } else if (activePersona === 'maya') {
-        renderAmActionCenter(); // Route to Maya's custom dashboard
+const conversationContainer = document.getElementById('aria-conversation-container');
+    if (!conversationContainer) return;
+    
+    // Clear the container for a fresh start
+    conversationContainer.innerHTML = '';
+
+    if (contextSource) {
+        try {
+            const contextData = JSON.parse(atob(contextSource));
+            renderContextualHeader(contextData);
+        } catch (e) {
+            console.error("Failed to parse context source:", e);
+        }
+    }
+
+    if (prompt) {
+        if (workstream) {
+            state.techflowAria.activeWorkstream = workstream;
+            saveState(state);
+        }
+        runAriaSequence(prompt);
     } else {
-        // All other personas (Adrian, Evelyn) get the default conversational view
-        const conversationContainer = document.getElementById('aria-conversation-container');
-        if (!conversationContainer) return;
-        conversationContainer.innerHTML = '';
-
-        if (contextSource) {
-            try {
-                const contextData = JSON.parse(atob(contextSource));
-                renderContextualHeader(contextData);
-            } catch (e) {
-                console.error("Failed to parse context source:", e);
-            }
-        }
-
-        if (prompt) {
-            if (workstream) {
-                state.techflowAria.activeWorkstream = workstream;
-                saveState(state);
-            }
-            runAriaSequence(prompt);
-        } else {
-            renderAriaCleanSlate(companyId, activePersona);
-        }
+        // This function now correctly handles the startup for ALL personas
+        renderAriaCleanSlate(companyId, activePersona);
     }
 }
 
@@ -286,32 +246,37 @@ function renderAriaCleanSlate(companyId, persona) {
     if (!promptWrapper) return;
 
     const contextualPills = getContextualPillsForCompany(companyId);
-    let suggestedPrompts = [];
+    let initialPrompts = [];
 
+    // --- THIS IS THE KEY LOGIC CHANGE ---
     if (persona === 'connor') {
+        // For Connor, we don't show initial prompts in the box.
+        // Instead, we kick off his specific conversational flow immediately.
         runAriaSequence("Give me my CRO daily briefing.", true);
-        return;
+        return; // Stop the function here for Connor
     } else if (persona === 'maya') {
         runAriaSequence("What are my priority renewals for this week?", true);
-        return;
-    } else if (companyId === 'techflow-solutions') {
-        suggestedPrompts = ["Provide an overview of the current registered anomalies.", "What is the impact of the 1-day delay on the critical path?", "Summarize the key findings from the Commercial diligence."];
+        return; // Stop the function here for Maya
+    }
+    
+    // Logic for other personas remains the same
+    if (companyId === 'techflow-solutions') {
+        initialPrompts = ["Provide an overview of the current registered anomalies.", "What is the impact of the 1-day delay on the critical path?", "Summarize the key findings from the Commercial diligence."];
     } else if (companyId === 'cloudvantage') {
-        // --- THIS IS THE NEW LOGIC FOR CLOUDVANTAGE (ADRIAN/EVELYN) ---
-        suggestedPrompts = [
+        initialPrompts = [
             "Give me a summary of CloudVantage's Q2 business performance.",
             "What are the key risks to achieving the annual plan?",
             "Analyze the key drivers of our Net Revenue Retention."
         ];
-    } else { // Portfolio 'all' view
-        suggestedPrompts = [
+    } else { 
+        initialPrompts = [
             "How did the portfolio perform over the past 12 months?",
             "Show me the priority alerts across the portfolio.",
             "Forecast portfolio ARR for the next 6 months."
         ];
     }
     
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts, contextualPills);
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(initialPrompts, contextualPills);
 }
 
 async function typeWords(element, text, callback) {
@@ -356,12 +321,15 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
     const componentInfo = generativeComponentMap[promptText];
     let staticResponseData = allStaticResponses[promptText];
 
-    // State management for sticky pills
-    if (staticResponseData && staticResponseData.followUpQuestions) {
+// State management for sticky pills
+    const followUps = staticResponseData?.followUpQuestions;
+    if (followUps && followUps.length > 0 && typeof followUps[0] === 'object') {
+        // ONLY update sticky pills if the follow-ups are a new set of pill objects.
         if (!state.aria) state.aria = {};
-        state.aria.activeContextualPills = staticResponseData.followUpQuestions;
+        state.aria.activeContextualPills = followUps;
         saveState(state);
     } else if (isInitialBriefing) { 
+        // Clear sticky pills on any initial briefing.
         if (!state.aria) state.aria = {};
         state.aria.activeContextualPills = null;
         saveState(state);
@@ -451,24 +419,18 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
         targetElement.appendChild(responseContentWrapper); 
     }
 
-    // This outer loop processes each major section (e.g., the risk list, the context box, etc.)
     for (const item of buildItems) {
         responseContentWrapper.appendChild(item);
         await new Promise(r => setTimeout(r, 100));
         item.classList.add('visible');
         scrollToConversationBottom();
 
-        // --- THIS IS THE CRITICAL NEW LOGIC ---
-        // Find ALL elements that need typing within the current section
         const typingElements = item.querySelectorAll('[data-typing-text]');
         
-        // Loop through EACH paragraph and type it out before moving on
         for (const el of typingElements) {
             await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
         }
-        // --- END OF CRITICAL NEW LOGIC ---
         
-        // This part for charts is also important to keep
         if (responseData.chartId && responseData.chartConfig) {
             const chartCanvas = document.getElementById(responseData.chartId);
             if (chartCanvas) {
@@ -495,7 +457,6 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
         }
     }
 
-    // The rest of the function remains the same
     const responseBubble = targetElement.closest('.aria-response-bubble');
     const footer = responseBubble.querySelector('.response-actions-footer');
     if (footer) {
@@ -503,17 +464,30 @@ async function runAriaBuildingSequence(responseData, targetElement, promptWrappe
         footer.classList.add('visible');
     }
 
-    const stickyPills = (state.aria && state.aria.activeContextualPills)
-        ? { title: "Explore Disciplines:", pills: state.aria.activeContextualPills }
-        : null;
+    // --- START OF THE FIX ---
+    let suggestedPrompts = [];
+    // By default, get the main contextual pills for the current persona and company.
+    let contextualPills = getContextualPillsForCompany(state.selectedCompanyId); 
 
-    const newSuggestedPrompts = responseData.suggestedPrompts || [];
+    const followUps = responseData.followUpQuestions || [];
 
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(newSuggestedPrompts, stickyPills);
+    // Check if the follow-ups are simple text prompts (strings) or a new set of pills (objects).
+    if (followUps.length > 0 && typeof followUps[0] === 'string') {
+        // Case 1: The follow-ups are text prompts. Use them alongside the main persona pills.
+        // This is the correct flow for Connor's daily briefing.
+        suggestedPrompts = followUps;
+    } else if (followUps.length > 0 && typeof followUps[0] === 'object') {
+        // Case 2: The follow-ups are a new set of contextual pills.
+        // Overwrite the main pills with this more specific set. This is for Evelyn's drill-down.
+        contextualPills = { title: "Explore Disciplines:", pills: followUps };
+    }
+
+    // Render the prompt box with the correctly sorted data.
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(suggestedPrompts, contextualPills);
+    // --- END OF THE FIX ---
     
     setTimeout(() => scrollToConversationBottom(), 50);
 }
-
 function getResponseFooterHTML(responseId) {
     // Load the current state to check if this response has already been flagged
     const state = loadState();
@@ -611,8 +585,7 @@ function initializeAriaEventListeners() {
             case 'toggle-settings-modal':
                 state.ariaSettings.isModalOpen = !state.ariaSettings.isModalOpen;
                 saveState(state);
-                updatePromptContainer(state);
-                break;
+                               break;
 case 'toggle-settings-modal':
     document.getElementById('settings-modal')?.classList.toggle('visible');
     break;
@@ -730,7 +703,6 @@ case 'toggle-settings-modal':
             state.ariaSettings[key] = target.checked;
         }
         saveState(state);
-        updatePromptContainer(state);
     });
 
     document.addEventListener('input', e => {
@@ -746,23 +718,7 @@ case 'toggle-settings-modal':
     document.addEventListener('change', handleFileAttachment);
 }
 
-function updatePromptContainer(state) {
-    const promptWrapper = document.getElementById('aria-prompt-wrapper');
-    if (!promptWrapper) return;
-    
-    const lastResponseBubble = [...document.querySelectorAll('.aria-response-bubble')].pop();
-    let followUpQuestions = [];
-    if (lastResponseBubble) {
-        const responseId = lastResponseBubble.id;
-        const companyResponses = companyDataMap[state.selectedCompanyId]?.ariaResponses || {};
-        const responseKey = Object.keys(companyResponses).find(key => `response-${companyResponses[key].id}` === responseId);
-        if (responseKey) {
-            followUpQuestions = companyResponses[responseKey].followUpQuestions;
-        }
-    }
-    
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(followUpQuestions);
-} 
+
 
 function handleFileAttachment(e) {
     if (e.target.id !== 'file-attachment-input') return;

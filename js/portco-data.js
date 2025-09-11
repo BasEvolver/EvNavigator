@@ -85,10 +85,6 @@ const projectPlanUtils = {
     }
 };
 
-const FILTER_DATA = {
-    workstreams: [ { label: 'Business & Strategy' }, { label: 'Commercial & Customer' }, { label: 'Technology & Operations' }, { label: 'Financial & Risk' }, { label: 'Synthesis' }, { label: 'Value Creation' }, { label: 'Investment Committee' }, { label: 'Final Deliverables' } ],
-    statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
-};
 
 const ceoDashboardData = {
     kpis: {
@@ -122,35 +118,7 @@ const ceoDashboardData = {
 
 // CORRECTED: This is now the single source of truth for CRO-related data.
 // The old, conflicting `croRenewalData` object has been removed.
-const croData = {
-    // PLAY 1: RENEWAL & RE-SEGMENTATION (12 Customers)
-renewalOpportunities: [
-        { account: 'Global Enterprises Inc.', legacySegment: 'Tier 1', proposedSegment: 'Gold', rationale: 'High usage, strategic account', currentARR: 80000, health: 'At Risk', renewalDate: '2025-10-28', owner: 'Maya Singh' },
-        { account: 'Apex Solutions', legacySegment: 'Key Account', proposedSegment: 'Gold', rationale: 'High ARR, multi-product', currentARR: 150000, health: 'Healthy', renewalDate: '2025-11-05', owner: 'Maya Singh' },
-        { account: 'Stellar Technologies', legacySegment: 'Tier 1', proposedSegment: 'Silver', rationale: 'Consistent usage, mid-market', currentARR: 75000, health: 'Healthy', renewalDate: '2025-11-12', owner: 'John Chen' },
-        { account: 'Fusion Micro', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Low usage, basic needs', currentARR: 25000, health: 'Healthy', renewalDate: '2025-11-18', owner: 'Anna Wong' },
-        { account: 'Horizon Solutions', legacySegment: 'Key Account', proposedSegment: 'Silver', rationale: 'Growth potential', currentARR: 95000, health: 'Healthy', renewalDate: '2025-11-22', owner: 'Maya Singh' },
-        { account: 'Nimbus Data', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Low usage, stable', currentARR: 30000, health: 'At Risk', renewalDate: '2025-12-01', owner: 'Anna Wong' },
-        { account: 'Velocity Partners', legacySegment: 'Tier 2', proposedSegment: 'Silver', rationale: 'Mid-market, steady usage', currentARR: 65000, health: 'Healthy', renewalDate: '2025-12-05', owner: 'John Chen' },
-        { account: 'Quantum Systems', legacySegment: 'Tier 1', proposedSegment: 'Silver', rationale: 'High usage, but lower ARR', currentARR: 85000, health: 'Healthy', renewalDate: '2025-12-11', owner: 'Maya Singh' },
-        { account: 'Echo Analytics', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Basic feature set user', currentARR: 45000, health: 'Healthy', renewalDate: '2025-12-19', owner: 'Anna Wong' },
-        { account: 'Pioneer Labs', legacySegment: 'Key Account', proposedSegment: 'Gold', rationale: 'High ARR, strategic partner', currentARR: 210000, health: 'Healthy', renewalDate: '2025-12-28', owner: 'John Chen' },
-        { account: 'Catalyst Corp', legacySegment: 'Tier 2', proposedSegment: 'Silver', rationale: 'Growth potential, mid-market', currentARR: 70000, health: 'At Risk', renewalDate: '2026-01-05', owner: 'Maya Singh' },
-        { account: 'Momentum Inc.', legacySegment: 'Tier 1', proposedSegment: 'Gold', rationale: 'High usage, recent expansion', currentARR: 180000, health: 'Healthy', renewalDate: '2026-01-15', owner: 'Maya Singh' }
-    ],
-    // PLAY 2: PROACTIVE UPSELL (Mid-Contract)
-    upsellOpportunities: [
-        { account: 'Digital Wave', currentPlan: 'Professional', usageMetric: '98% of API Calls', metricValue: '9.8M / 10M', contractEnd: '18 months', potentialARR: 45000 },
-        { account: 'Summit Financial', currentPlan: 'Professional', usageMetric: '95% of User Licenses', metricValue: '95 / 100', contractEnd: '24 months', potentialARR: 50000 },
-        { account: 'Meridian Health', currentPlan: 'Enterprise', usageMetric: '99% of Data Storage', metricValue: '9.9TB / 10TB', contractEnd: '14 months', potentialARR: 75000 }
-    ],
-    // PLAY 3: CROSS-SELL (NewCo Offering)
-    crossSellOpportunities: [
-        { account: 'Innovate Labs', pastRequest: 'Advanced Data Governance', newcoProduct: 'NewCo Govern', potentialARR: 60000 },
-        { account: 'NextGen Pharma', pastRequest: 'Real-time Compliance Reporting', newcoProduct: 'NewCo Comply', potentialARR: 85000 },
-        { account: 'Anchor Bank', pastRequest: 'Data Lineage Tracking', newcoProduct: 'NewCo Govern', potentialARR: 70000 }
-    ]
-};
+
 
 const commandCenterData = {
     techflow: {

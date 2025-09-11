@@ -380,67 +380,6 @@ const flaggedAnomalies = [
     { id: 'maint-fee', title: 'Inconsistent Maintenance Fee Structure', severity: 'HIGH' }
 ];
 
-// =================================================================
-// CONSOLIDATED RESPONSE MAPS
-// =================================================================
-
-const commandCenterAriaResponses = {
-    "Provide an overview of the TechFlow Due Diligence activities.": {
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item"><h3 class="response-title">TechFlow Due Diligence Overview</h3></div>
-            <div class="build-item"><p class="response-text" data-typing-text="We are currently on **Day 9 of a 17-day** diligence plan for the TechFlow Solutions acquisition. The process is structured across four key workstreams. My analysis indicates the project is **65% complete** but is currently **'At Risk'** due to a critical blocker in the Technology workstream."></p></div>
-            <div class="build-item workstream-grid mt-4">
-                <div class="workstream-card alert" data-action="run-suggested-prompt" data-question="Show me the Technology & Operations workstream."><div class="workstream-alert-dot"></div><h4 class="workstream-title">Technology & Operations</h4><div class="workstream-metrics"><div><p class="workstream-value">45%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-error">Blocked</p><p class="workstream-label">Status</p></div></div></div>
-                <div class="workstream-card" data-action="run-suggested-prompt" data-question="Show me the Commercial & Customer workstream."><h4 class="workstream-title">Commercial & Customer</h4><div class="workstream-metrics"><div><p class="workstream-value">80%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-success">On Track</p><p class="workstream-label">Status</p></div></div></div>
-                <div class="workstream-card" data-action="run-suggested-prompt" data-question="Show me the Financial & Risk workstream."><h4 class="workstream-title">Financial & Risk</h4><div class="workstream-metrics"><div><p class="workstream-value">70%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-success">On Track</p><p class="workstream-label">Status</p></div></div></div>
-                <div class="workstream-card" data-action="run-suggested-prompt" data-question="Show me the Business & Strategy workstream."><h4 class="workstream-title">Business & Strategy</h4><div class="workstream-metrics"><div><p class="workstream-value">90%</p><p class="workstream-label">Complete</p></div><div><p class="workstream-value text-success">On Track</p><p class="workstream-label">Status</p></div></div></div>
-            </div>
-        </div>`,
-        followUpQuestions: ["What is the blocker in the Technology workstream?", "Show me the key findings from the Commercial diligence.", "What is the current valuation model?"]
-    },
-    "How is the NewCo integration going for CloudVantage?": {
-        renderFunc: () => {
-            const integrationPriorities = [ { name: 'NewCo Integration', progress: 85, status: 'On Track', statusClass: 'status-completed' }, { name: 'AI Feature Launch', progress: 30, status: 'At Risk', statusClass: 'status-warning' }, { name: 'Enterprise GTM Push', progress: 75, status: 'On Track', statusClass: 'status-completed' } ];
-            const prioritiesHTML = integrationPriorities.map(p => createProgressBarHTML(p.name, p.progress, p.status, p.statusClass)).join('');
-            return `<div class="aria-response-content"><div class="build-item"><h3 class="response-title">CloudVantage: NewCo Integration Status</h3></div><div class="build-item"><p class="response-text" data-typing-text="The NewCo integration is progressing well and is currently rated **'On Track'**. We are 60 days into the 100-day plan. Financial system consolidation is complete, and the sales team has been enabled on cross-selling NewCo products, which is already contributing to the strong NRR performance."></p></div><div class="build-item card-base mt-4"><h4 class="response-section-title">Strategic Priority Progress</h4><div class="mt-4">${prioritiesHTML}</div></div><div class="build-item judgement-box warning mt-4"><p class="judgement-title">Key Risk:</p><p class="judgement-text" data-typing-text="The primary risk is the timeline for integrating NewCo's legacy data models into the main CloudVantage platform. This is the root cause of the delay in the **AI-Powered Feature Launch** and requires close monitoring."></p></div></div>`;
-        },
-        followUpQuestions: ["Generate a risk mitigation plan for the AI feature delay.", "Analyze the key drivers of our Net Revenue Retention.", "Draft a board update on the NewCo integration."]
-    },
-    "Give me a deep dive on TechFlow's financial health score.": {
-        renderFunc: () => {
-            const anomaly1 = techflow_anomalies.find(a => a.id === 'arr-comp');
-            const anomaly2 = techflow_anomalies.find(a => a.id === 'maint-fee');
-            return `<div class="aria-response-content">
-                <div class="build-item"><h3 class="response-title">Deep Dive: Financial Health Score (8.4)</h3></div>
-                <div class="build-item"><p class="response-text" data-typing-text="TechFlow's Financial Health score is currently stable at 8.4. However, this score is based on reported financials. My analysis has flagged two underlying anomalies in the source data that present a risk to this score:"></p></div>
-                <div class="build-item card-base p-4 mt-4">
-                    <h3 class="font-bold text-lg">${anomaly1.title}</h3>
-                    <p class="text-sm text-secondary">${anomaly1.issue}</p>
-                    <div class="analysis-box mt-2"><p class="response-text"><span class="font-bold">Analysis:</span> ${anomaly1.analysis}</p></div>
-                </div>
-                <div class="build-item card-base p-4 mt-4">
-                    <h3 class="font-bold text-lg">${anomaly2.title}</h3>
-                    <p class="text-sm text-secondary">${anomaly2.issue}</p>
-                    <div class="analysis-box mt-2"><p class="response-text"><span class="font-bold">Analysis:</span> ${anomaly2.analysis}</p></div>
-                </div>
-            </div>`;
-        },
-        followUpQuestions: ["Model the financial impact of the ARR re-statement.", "Draft an email to the CFO about these findings."]
-    },
-    "Tell me more about the 'Valuation Model Complete' activity.": {
-        renderFunc: () => `<div class="aria-response-content"><div class="build-item card-base"><h4 class="response-title">Activity Detail: Valuation Model Complete</h4><p class="response-text" data-typing-text="The base case valuation model for TechFlow Solutions was completed by the deal team 2 hours ago. The preliminary valuation is pegged at **$150M**, assuming the successful mitigation of the flagged financial anomalies. The model has been uploaded to the data room."></p></div></div>`,
-        followUpQuestions: ["Show me the key assumptions in the valuation model.", "Run a scenario with 25% lower synergy realization."]
-    },
-    "Tell me more about the 'Customer Churn Anomaly Detected' activity.": {
-        renderFunc: () => `<div class="aria-response-content"><div class="build-item"><h3 class="response-title">Deep Dive: Customer Churn Anomaly</h3></div><div class="build-item"><p class="response-text" data-typing-text="On August 14th, I detected a **5% increase in logo churn** that deviates from the 12-month historical average. Analysis of the 8 recently churned accounts indicates a common theme: they were all heavy users of the 'Advanced Reporting Module,' a feature set that was deprecated in the last product release. This suggests the churn was driven by a product decision."></p></div><div class="build-item judgement-box error mt-4"><p class="judgement-title">Actionable Insight:</p><p class="judgement-text" data-typing-text="This churn is likely preventable. I recommend immediately generating a list of remaining customers who are also heavy users of this deprecated module. A proactive outreach campaign from Customer Success could mitigate further churn."></p></div></div>`,
-        followUpQuestions: ["Generate a list of at-risk customers.", "Draft an email to the Head of Product about this finding."]
-    },
-    "Tell me more about the 'Synergy Analysis Updated' activity.": {
-        renderFunc: () => `<div class="aria-response-content"><div class="build-item card-base"><h4 class="response-title">Activity Detail: Synergy Analysis Updated</h4><p class="response-text" data-typing-text="The synergy analysis for the TechFlow acquisition was updated 6 hours ago. The total identifiable cost synergies have been revised down from $2.5M to **$2.1M** due to higher-than-expected costs for retaining key technical personnel."></p></div></div>`,
-        followUpQuestions: ["What is the impact of this on the valuation model?", "Which cost synergy category was revised?"]
-    }
-};
-
 
 
 
@@ -493,7 +432,7 @@ const ariaResponseMap = {
     // ===========================================================
     // CONTEXT: All Portfolio Companies
     // ===========================================================
-     'all': {
+        'all': {
         "Show me the priority alerts.": {
             renderFunc: function() { return `<div class="aria-response-content"><div class="build-item"><h2 class="response-title">Top 3 Priority Alerts</h2><div class="aria-action-list mt-4"><button class="aria-action-card" data-action="run-suggested-prompt" data-question="Drill down on the TechFlow diligence block."><div class="flex items-start gap-3"><span class="list-number text-error mt-1">1</span><div><h4 class="list-title">[TechFlow] Technical Diligence Blocked</h4><p class="list-text">The 'Code Scan' (DD-16) task is late and blocking the Technology workstream. We are waiting for the target's CTO to provide GitHub credentials.</p></div></div></button><button class="aria-action-card" data-action="run-suggested-prompt" data-question="Analyze the critical anomalies at TechFlow."><div class="flex items-start gap-3"><span class="list-number text-error mt-1">2</span><div><h4 class="list-title">[TechFlow] Critical Anomalies Discovered</h4><p class="list-text">ARIA has flagged 2 critical anomalies: Non-Standard ARR Composition and Failed Recent Product Launches. These could materially impact valuation.</p></div></div></button><button class="aria-action-card" data-action="run-suggested-prompt" data-question="Assess the CloudVantage AI feature delay."><div class="flex items-start gap-3"><span class="list-number text-warning mt-1">3</span><div><h4 class="list-title">[CloudVantage] AI Feature Launch At Risk</h4><p class="list-text">The 'AI-Powered Feature' development is behind schedule due to technical complexities. This puts the critical Q4 launch at risk.</p></div></div></button></div></div>${renderRecommendedActionsHTML(this.recommendedActions)}</div>`},
             recommendedActions: [ { text: "Draft escalation email to TechFlow CTO", description: "Generate an email to the CTO regarding the urgent need for GitHub credentials.", prompt: "Action: Draft escalation to TechFlow CTO" }, { text: "Generate risk mitigation plan for CloudVantage", description: "Use ARIA to create a plan to get the delayed AI feature back on track.", prompt: "Generate a risk mitigation plan for the AI feature delay." }, { text: "View full anomaly report for TechFlow", description: "Navigate to the ARIA workspace to see the detailed anomaly findings.", prompt: "Provide an overview of the current registered anomalies." } ],
@@ -1028,9 +967,7 @@ renderFunc: () => `<div class="aria-response-content">
         renderFunc: () => `<div class="aria-response-content"><div class="build-item"><div class="portfolio-response-card"><h4 class="response-title">Team for DD-13: Architecture Review</h4><p class="response-text" data-typing-text="This is a specialized task led by our internal and external technology experts:"></p><div class="data-table-container mt-2"><table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Responsibility</th></tr></thead><tbody><tr><td>Peter Wood</td><td>Sr. Director, Digital Value Creation</td><td>Lead reviewer, focus on scalability and PE value levers.</td></tr><tr><td>AWS</td><td>Partner</td><td>Provide Well-Architected Framework review and cloud-readiness assessment.</td></tr><tr><td>Alex Johnson (CTO)</td><td>Target</td><td>Provide documentation and answer technical questions.</td></tr></tbody></table></div></div></div></div>`,
         followUpQuestions: ["What are the dependencies for the 'Architecture Review' task?", "Draft an email to the CTO about the DD-12 deliverable."]
     }
-    
     },
-
     // ===========================================================
     // CONTEXT: CloudVantage
     // ===========================================================
@@ -1234,26 +1171,28 @@ renderFunc: () => `<div class="aria-response-content">
     // --- CONNOR (CRO) WORKFLOWS ---
 
     // FIX #1: This is the NEW initial briefing for Connor. It runs automatically when he lands on the ARIA page.
-    "Give me my CRO daily briefing.": {
-        id: 'cro-daily-briefing',
-        renderFunc: () => `<div class="aria-response-content">
-            <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
-                <h3 class="response-title">CRO Daily Briefing</h3>
-                <p class="response-text" data-typing-text="Good morning, Connor. Here is the current state of the business. Overall performance is strong, led by North America's successful cross-selling of NewCo products. However, two key areas require your attention: the underperformance of the EMEA region and increasing competitive pressure from AgileCloud in the mid-market."></p>
-            </div>
-            <div class="build-item aria-kpi-grid">
-                <div class="aria-kpi-card"><p class="aria-kpi-label">Global Quota Attainment</p><p class="aria-kpi-value text-success">103%</p></div>
-                <div class="aria-kpi-card"><p class="aria-kpi-label">Net Revenue Retention</p><p class="aria-kpi-value text-success">128%</p></div>
-                <div class="aria-kpi-card"><p class="aria-kpi-label">Win Rate vs. AgileCloud</p><p class="aria-kpi-value text-error">35%</p></div>
-            </div>
-            <div class="build-item">
-                <h4 class="response-section-title">Priority Focus Areas</h4>
-                <div class="aria-list">
-                    <div class="aria-list-item"><span>1.</span><div><h4>EMEA Region Turnaround:</h4><p>The region is at 75% of quota due to a 9% drop in logo retention. A new VP is needed to stabilize the team.</p></div></div>
-                    <div class="aria-list-item"><span>2.</span><div><h4>Upcoming NewCo Renewals:</h4><p>There is a cohort of 12 NewCo customers up for renewal, representing a significant opportunity to standardize contracts and capture price uplift.</p></div></div>
-                </div>
-            </div>
-        </div>`,
+"Give me my CRO daily briefing.": {
+            id: 'cro-daily-briefing',
+            renderFunc: () => `<div class="aria-response-content">
+    <div class="build-item themed-synthesis-box" style="--theme-color: var(--accent-blue);">
+        <div class="synthesis-content-wrapper">
+            <h3 class="response-title">CRO Daily Briefing</h3>
+            <p class="response-text" data-typing-text="Good morning, Connor. Here is the current state of the business. Overall performance is strong, led by North America's successful cross-selling of NewCo products. However, two key areas require your attention: the underperformance of the EMEA region and increasing competitive pressure from AgileCloud in the mid-market."></p>
+        </div>
+    </div>
+    <div class="build-item aria-kpi-grid">
+        <div class="aria-kpi-card"><p class="aria-kpi-label">GLOBAL QUOTA ATTAINMENT</p><p class="aria-kpi-value text-success">103%</p></div>
+        <div class="aria-kpi-card"><p class="aria-kpi-label">NET REVENUE RETENTION</p><p class="aria-kpi-value text-success">128%</p></div>
+        <div class="aria-kpi-card"><p class="aria-kpi-label">WIN RATE VS. AGILECLOUD</p><p class="aria-kpi-value text-error">35%</p></div>
+    </div>
+    <div class="build-item">
+        <h4 class="response-section-title">Priority Focus Areas</h4>
+        <div class="aria-list">
+            <div class="aria-list-item"><span>1.</span><div><h4>EMEA Region Turnaround:</h4><p>The region is at 75% of quota due to a 9% drop in logo retention. A new VP is needed to stabilize the team.</p></div></div>
+            <div class="aria-list-item"><span>2.</span><div><h4>Upcoming NewCo Renewals:</h4><p>There is a cohort of 12 NewCo customers up for renewal, representing a significant opportunity to standardize contracts and capture price uplift.</p></div></div>
+        </div>
+    </div>
+</div>`,
         followUpQuestions: ["What is the plan to address the EMEA performance issue?", "Let's process the upcoming renewals.", "What are the biggest risks in the current sales pipeline?"]
     },
 
@@ -1674,19 +1613,36 @@ renderFunc: () => `<div class="aria-response-content">
 };
 
 const croData = {
-    renewalOpportunities: [
-        { account: 'Global Enterprises Inc.', owner: 'Maya Singh', legacySegment: 'Tier 1', currentARR: 80000, renewalDate: '2025-11-10', health: 'At Risk', proposedSegment: 'Gold', rationale: 'High usage of enterprise features & strategic importance.' },
-        { account: 'Catalyst Corp', owner: 'Maya Singh', legacySegment: 'Key Account', currentARR: 120000, renewalDate: '2025-11-28', health: 'Healthy', proposedSegment: 'Gold', rationale: 'Consistent high usage and multiple product adoption.' },
-        { account: 'Momentum Solutions', owner: 'Maya Singh', legacySegment: 'Tier 1', currentARR: 65000, renewalDate: '2025-12-05', health: 'Healthy', proposedSegment: 'Silver', rationale: 'Steady usage, potential for future upsell.' },
-        { account: 'Stellar Technologies', owner: 'John Chen', legacySegment: 'Tier 2', currentARR: 95000, renewalDate: '2025-12-12', health: 'Healthy', proposedSegment: 'Silver', rationale: 'Standard renewal, low churn risk.' },
-        // Add 8 more opportunities to make a total of 12 for Connor's view
+    // PLAY 1: RENEWAL & RE-SEGMENTATION (12 Customers)
+renewalOpportunities: [
+        { account: 'Global Enterprises Inc.', legacySegment: 'Tier 1', proposedSegment: 'Gold', rationale: 'High usage, strategic account', currentARR: 80000, health: 'At Risk', renewalDate: '2025-10-28', owner: 'Maya Singh' },
+        { account: 'Apex Solutions', legacySegment: 'Key Account', proposedSegment: 'Gold', rationale: 'High ARR, multi-product', currentARR: 150000, health: 'Healthy', renewalDate: '2025-11-05', owner: 'Maya Singh' },
+        { account: 'Stellar Technologies', legacySegment: 'Tier 1', proposedSegment: 'Silver', rationale: 'Consistent usage, mid-market', currentARR: 75000, health: 'Healthy', renewalDate: '2025-11-12', owner: 'John Chen' },
+        { account: 'Fusion Micro', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Low usage, basic needs', currentARR: 25000, health: 'Healthy', renewalDate: '2025-11-18', owner: 'Anna Wong' },
+        { account: 'Horizon Solutions', legacySegment: 'Key Account', proposedSegment: 'Silver', rationale: 'Growth potential', currentARR: 95000, health: 'Healthy', renewalDate: '2025-11-22', owner: 'Maya Singh' },
+        { account: 'Nimbus Data', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Low usage, stable', currentARR: 30000, health: 'At Risk', renewalDate: '2025-12-01', owner: 'Anna Wong' },
+        { account: 'Velocity Partners', legacySegment: 'Tier 2', proposedSegment: 'Silver', rationale: 'Mid-market, steady usage', currentARR: 65000, health: 'Healthy', renewalDate: '2025-12-05', owner: 'John Chen' },
+        { account: 'Quantum Systems', legacySegment: 'Tier 1', proposedSegment: 'Silver', rationale: 'High usage, but lower ARR', currentARR: 85000, health: 'Healthy', renewalDate: '2025-12-11', owner: 'Maya Singh' },
+        { account: 'Echo Analytics', legacySegment: 'Standard', proposedSegment: 'Bronze', rationale: 'Basic feature set user', currentARR: 45000, health: 'Healthy', renewalDate: '2025-12-19', owner: 'Anna Wong' },
+        { account: 'Pioneer Labs', legacySegment: 'Key Account', proposedSegment: 'Gold', rationale: 'High ARR, strategic partner', currentARR: 210000, health: 'Healthy', renewalDate: '2025-12-28', owner: 'John Chen' },
+        { account: 'Catalyst Corp', legacySegment: 'Tier 2', proposedSegment: 'Silver', rationale: 'Growth potential, mid-market', currentARR: 70000, health: 'At Risk', renewalDate: '2026-01-05', owner: 'Maya Singh' },
+        { account: 'Momentum Inc.', legacySegment: 'Tier 1', proposedSegment: 'Gold', rationale: 'High usage, recent expansion', currentARR: 180000, health: 'Healthy', renewalDate: '2026-01-15', owner: 'Maya Singh' }
     ],
+    // PLAY 2: PROACTIVE UPSELL (Mid-Contract)
     upsellOpportunities: [
-        { account: 'Summit Financial', owner: 'John Chen', currentPlan: 'Professional', usageMetric: 'API Calls', metricValue: '180% of limit', contractEnd: '2026-06-30', potentialARR: 75000 },
-        { account: 'Apex Digital', owner: 'Anna Wong', currentPlan: 'Professional', usageMetric: 'Users', metricValue: '50/25 seats', contractEnd: '2026-08-15', potentialARR: 50000 },
+        { account: 'Digital Wave', currentPlan: 'Professional', usageMetric: '98% of API Calls', metricValue: '9.8M / 10M', contractEnd: '18 months', potentialARR: 45000 },
+        { account: 'Summit Financial', currentPlan: 'Professional', usageMetric: '95% of User Licenses', metricValue: '95 / 100', contractEnd: '24 months', potentialARR: 50000 },
+        { account: 'Meridian Health', currentPlan: 'Enterprise', usageMetric: '99% of Data Storage', metricValue: '9.9TB / 10TB', contractEnd: '14 months', potentialARR: 75000 }
     ],
+    // PLAY 3: CROSS-SELL (NewCo Offering)
     crossSellOpportunities: [
-        { account: 'Anchor Bank', owner: 'John Chen', pastRequest: 'Advanced data masking', newcoProduct: 'NewCo Govern', potentialARR: 120000 },
-        { account: 'Innovate Labs', owner: 'Anna Wong', pastRequest: 'Better compliance reporting', newcoProduct: 'NewCo Govern', potentialARR: 95000 },
+        { account: 'Innovate Labs', pastRequest: 'Advanced Data Governance', newcoProduct: 'NewCo Govern', potentialARR: 60000 },
+        { account: 'NextGen Pharma', pastRequest: 'Real-time Compliance Reporting', newcoProduct: 'NewCo Comply', potentialARR: 85000 },
+        { account: 'Anchor Bank', pastRequest: 'Data Lineage Tracking', newcoProduct: 'NewCo Govern', potentialARR: 70000 }
     ]
+};
+
+const FILTER_DATA = {
+    workstreams: [ { label: 'Business & Strategy' }, { label: 'Commercial & Customer' }, { label: 'Technology & Operations' }, { label: 'Financial & Risk' }, { label: 'Synthesis' }, { label: 'Value Creation' }, { label: 'Investment Committee' }, { label: 'Final Deliverables' } ],
+    statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
 };
