@@ -461,31 +461,26 @@ const Navigation = {
 // =================================================================
 // In js/shared.js
 
+// js/shared.js - Find and REPLACE the `getAdvancedPromptBoxHTML` function
+
+// js/shared.js - Find and REPLACE the `getAdvancedPromptBoxHTML` function
+// js/shared.js - REPLACE this entire function
+
 function getAdvancedPromptBoxHTML(questions = [], contextualPills = null) {
     const state = loadState();
 
-    // MODIFIED: This function now intelligently handles both simple text prompts
-    // and rich pill objects with custom labels and colors.
     const promptsHTML = (Array.isArray(questions) ? questions : [])
-        .map(q => {
-            // If the item is a rich object with a label, prompt, and color
-            if (typeof q === 'object' && q.label && q.prompt && q.color) {
-                return `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${q.prompt}" style="background-color: ${q.color}20; border-color: ${q.color}; color: ${q.color};">
-                    ${q.label}
-                </button>`;
-            }
-            // Fallback for simple text prompts
-            return `<button class="suggestion-pill ${!isPromptModeled(q) ? 'unmodeled' : ''}" data-action="run-suggested-prompt" data-question="${q}">${q}</button>`;
-        })
+        .map(q => `<button class="suggestion-pill ${!isPromptModeled(q) ? 'unmodeled' : ''}" data-action="run-suggested-prompt" data-question="${q}">${q}</button>`)
         .join('');
 
     let contextualPillsHTML = '';
-    if (contextualPills && Array.isArray(contextualPills.pills)) {
-        const pillButtons = contextualPills.pills.map(p => 
-            `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${p.prompt}" style="background-color: ${p.color}20; border-color: ${p.color}; color: ${p.color};">
+    if (contextualPills && Array.isArray(contextualPills.pills) && contextualPills.pills.length > 0) {
+        const pillButtons = contextualPills.pills.map(p => {
+            if (typeof p !== 'object' || !p.label) return '';
+            return `<button class="suggestion-pill" data-action="run-suggested-prompt" data-question="${p.prompt}" style="background-color: ${p.color}20; border-color: ${p.color}; color: ${p.color};">
                 ${p.label}
-            </button>`
-        ).join('');
+            </button>`;
+        }).join('');
         contextualPillsHTML = `
             <div class="flex items-center gap-3 mb-2">
                 <h4 class="list-header !mb-0">${contextualPills.title}</h4>
@@ -500,12 +495,34 @@ function getAdvancedPromptBoxHTML(questions = [], contextualPills = null) {
     return `
         <div id="aria-prompt-container" class="mt-auto pt-4 flex-shrink-0">
             <div class="prompt-area-large-v4">
-                ${contextualPillsHTML ? `<div class="pills-group-wrapper">${contextualPillsHTML}</div>` : ''}
+                ${contextualPillsHTML}
                 <div class="suggestion-pills-container ${contextualPillsHTML ? 'pt-4 border-t border-border-color' : ''}">${promptsHTML}</div>
                 <textarea id="${inputId}" class="prompt-textarea" rows="1" placeholder="Ask a follow-up..."></textarea>
                 <div id="file-attachment-display" class="file-attachment-display"></div>
+                
                 <div class="prompt-actions-bottom-bar">
-                    <!-- ... actions remain the same ... -->
+                    <!-- ICONS ON THE LEFT -->
+                    <div class="prompt-actions-left">
+                        <div class="relative">
+                            <button class="prompt-action-button" data-action="toggle-settings-modal" title="Toggle Data Sources">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                            </button>
+                            ${renderSettingsModal(state.ariaSettings)}
+                        </div>
+                        <button class="prompt-action-button" data-action="attach-file" title="Attach Files">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <!-- ICONS ON THE RIGHT -->
+                    <div class="prompt-actions-right">
+                        <button class="prompt-action-button" data-action="restart-conversation" title="Restart Conversation">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        </button>
+                        <button class="prompt-send-button" data-action="${sendAction}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

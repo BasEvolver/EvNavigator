@@ -25,25 +25,52 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initializeModelingPage() {
     let state = loadState();
     const companyId = state.selectedCompanyId;
+    
+    // Perform the initial data loading
     await loadSharedComponents();
     await loadMaturityModelFromAPI();
     await loadAvailableAssessments(companyId);
     
-    state = loadState(); // Reload state after async operations
+    // --- THIS IS THE CORRECTED LOGIC ---
+    // 1. Read the deep-link instruction from the URL
+    const params = new URLSearchParams(window.location.search);
+    const targetCapabilityId = params.get('capability');
+
+    if (targetCapabilityId) {
+        const item = findItemInModel(targetCapabilityId);
+        if (item) {
+            // 2. Apply the deep-link instructions to the state object
+            state.modeling.selectedItemId = targetCapabilityId;
+            state.modeling.isVccCollapsed = false;
+            state.modeling.expandedNodes = {};
+            let parent = findParent(targetCapabilityId);
+            while (parent) {
+                state.modeling.expandedNodes[parent.id] = true;
+                parent = findParent(parent.id);
+            }
+            
+            // 3. CRITICAL: Save the updated state IMMEDIATELY
+            saveState(state);
+            console.log(`Deep link applied for ${targetCapabilityId} and state saved.`);
+        }
+    }
+
+    // 4. NOW, continue with the rest of the setup using the potentially updated state
+    //    We removed the faulty `state = loadState()` call that was overwriting our changes.
     if (!state.selectedAssessmentId && state.availableAssessments.length > 0) {
         const sortedAssessments = state.availableAssessments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         state.selectedAssessmentId = sortedAssessments[0].assessment_id;
-        saveState(state);
+        saveState(state); // Save again after setting a default assessment
     }
 
     if (state.selectedAssessmentId) {
-        // THE FIX: Load both scores AND scope when an assessment is selected
         await Promise.all([
             loadAssessmentScores(state.selectedAssessmentId),
             loadAssessmentScope(state.selectedAssessmentId) 
         ]);
     }
-
+    
+    // 5. Render the page using the final, correct state
     renderCompassPageV3(loadState());
     initializeModelingEventListeners();
 }

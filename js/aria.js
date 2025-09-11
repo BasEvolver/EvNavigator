@@ -1,5 +1,119 @@
 // js/aria.js - Central Conversational Engine for the Navigator Application (Persona-Aware Hub Version)
 
+function renderCroHub() {
+    const ariaView = document.getElementById('aria-main-view');
+    if (!ariaView) return;
+
+    const initialPrompts = [
+        "Give me a breakdown of our current sales performance against targets.",
+        "What are the biggest risks and opportunities in the current sales pipeline?",
+        "Analyze the key drivers of our Net Revenue Retention."
+    ];
+
+    ariaView.innerHTML = `
+        <div class="persona-dashboard-layout">
+            <div class="persona-main-column">
+                <div class="portco-card">
+                    <h3 class="card-title">Key Performance Indicators (YTD)</h3>
+                    <div class="kpi-grid-modeling">
+                        <div class="kpi-card-modeling"><div class="kpi-info"><p class="kpi-label-modeling">Global Quota Attainment</p><p class="kpi-value-modeling text-success">103%</p></div></div>
+                        <div class="kpi-card-modeling"><div class="kpi-info"><p class="kpi-label-modeling">Net Revenue Retention</p><p class="kpi-value-modeling text-success">128%</p></div></div>
+                        <div class="kpi-card-modeling"><div class="kpi-info"><p class="kpi-label-modeling">Win Rate vs. AgileCloud</p><p class="kpi-value-modeling text-error">35%</p></div></div>
+                    </div>
+                </div>
+                <div class="portco-card">
+                    <h3 class="card-title">Top Pipeline Risks & Opportunities</h3>
+                     <div class="data-table-container">
+                        <table class="data-table">
+                            <thead><tr><th>Account</th><th>ARR</th><th>Stage</th><th>Risk/Opportunity</th></tr></thead>
+                            <tbody>
+                                <tr><td>Apex Solutions</td><td>$2.8M</td><td>Negotiation</td><td class="text-error">Stalled (14 months in cycle)</td></tr>
+                                <tr><td>Stellar Technologies</td><td>$925k</td><td>Proposal</td><td class="text-warning">Competing with AgileCloud</td></tr>
+                                <tr><td>Global Enterprises Inc.</td><td>$3.2M</td><td>Verbal Commit</td><td class="text-success">Opportunity to upsell Security Module</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="persona-sidebar-column">
+                <div class="portco-card">
+                    <h3 class="card-title">ARIA Assistant</h3>
+                    <div id="aria-conversation-container" class="space-y-4">
+                        <!-- Initial briefing will be loaded by runAriaSequence -->
+                    </div>
+                    <div id="aria-prompt-wrapper" class="mt-4">${getAdvancedPromptBoxHTML(initialPrompts)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    // Kick off Connor's specific conversational narrative
+    runAriaSequence("Give me my CRO daily briefing.", true);
+}
+
+function renderAmActionCenter() {
+    const ariaView = document.getElementById('aria-main-view');
+    if (!ariaView) return;
+
+    const myRenewal = croData.renewalOpportunities.find(r => r.account === 'Global Enterprises Inc.');
+    const initialPrompts = [
+        "Generate a conversation guide for my call with Global Enterprises Inc.",
+        "I want to introduce our Platinum Support Offer, please generate a deck for Global outlining the specific benefits that would have helped them last term and what additional benefits they can leverage in the new term.",
+    ];
+    ariaView.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Contract Renewal Action Center</h2>
+        <div class="am-action-center-layout">
+            <div class="persona-main-column">
+                <div class="portco-card">
+                    <h3 class="card-title">Account Details</h3>
+                    <div class="account-details-grid">
+                        <div class="detail-item"><label>Account Name</label><p>${myRenewal.account}</p></div>
+                        <div class="detail-item"><label>Health Score</label><p class="${myRenewal.health === 'At Risk' ? 'text-error' : 'text-success'}">${myRenewal.health}</p></div>
+                        <div class="detail-item"><label>Current ARR</label><p>$${myRenewal.currentARR.toLocaleString()}</p></div>
+                        <div class="detail-item"><label>Renewal Date</label><p>${myRenewal.renewalDate}</p></div>
+                    </div>
+                </div>
+                <div class="portco-card">
+                    <h3 class="card-title">Contract Renewal Options</h3>
+                     <div class="renewal-options-grid">
+                        <div class="option-card">
+                            <h5>Current</h5>
+                            <p class="price">$80,000</p>
+                            <ul><li>Standard Package</li><li>100 Users</li></ul>
+                            <p class="support-tier">Premium Support</p>
+                            <button class="secondary-button">View Contract</button>
+                        </div>
+                        <div class="option-card recommended">
+                            <h5>Recommended</h5>
+                            <p class="price">$96,000</p>
+                            <ul><li>Standard Package</li><li>+50 Users</li></ul>
+                            <p class="support-tier">Platinum Support</p>
+                            <button class="primary-button">Generate Proposal</button>
+                        </div>
+                        <div class="option-card">
+                            <h5>Enterprise</h5>
+                            <p class="price">$120,000</p>
+                            <ul><li>Enterprise Package</li><li>+150 Users</li></ul>
+                            <p class="support-tier">Platinum Support</p>
+                            <button class="primary-button">Generate Proposal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="persona-sidebar-column">
+                <div class="portco-card">
+                    <h3 class="card-title">ARIA Assistant</h3>
+                    <div id="aria-conversation-container" class="space-y-4">
+                        <!-- Initial briefing will be loaded by runAriaSequence -->
+                    </div>
+                    <div id="aria-prompt-wrapper" class="mt-4">${getAdvancedPromptBoxHTML(initialPrompts)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    // Kick off Maya's specific conversational narrative
+    runAriaSequence("What are my priority renewals for this week?", true);
+}
+
 const generativeComponentMap = {
     "Show me the TechFlow diligence plan.": {
         script: 'js/modules/diligence-hub-component.js',
@@ -111,36 +225,43 @@ function initializeAriaPage() {
     let state = loadState();
     const companyId = params.get('company') || state.selectedCompanyId || 'techflow-solutions';
     state.selectedCompanyId = companyId;
+
+    if (!state.aria) state.aria = {};
+    state.aria.activeContextualPills = null;
     saveState(state);
 
     const { activePersona } = state;
-
     Navigation.updateCompanySelector();
-
-    const conversationContainer = document.getElementById('aria-conversation-container');
-    if (!conversationContainer) return;
     
-    // Clear the container for a fresh start
-    conversationContainer.innerHTML = '';
-
-    if (contextSource) {
-        try {
-            const contextData = JSON.parse(atob(contextSource));
-            renderContextualHeader(contextData);
-        } catch (e) {
-            console.error("Failed to parse context source:", e);
-        }
-    }
-
-    if (prompt) {
-        if (workstream) {
-            state.techflowAria.activeWorkstream = workstream;
-            saveState(state);
-        }
-        runAriaSequence(prompt);
+    // --- THIS IS THE PERSONA ROUTER ---
+    if (activePersona === 'connor') {
+        renderCroHub(); // Route to Connor's custom dashboard
+    } else if (activePersona === 'maya') {
+        renderAmActionCenter(); // Route to Maya's custom dashboard
     } else {
-        // --- FIX: RENDER PERSONA-SPECIFIC STARTING VIEWS ---
-        renderAriaCleanSlate(companyId, activePersona);
+        // All other personas (Adrian, Evelyn) get the default conversational view
+        const conversationContainer = document.getElementById('aria-conversation-container');
+        if (!conversationContainer) return;
+        conversationContainer.innerHTML = '';
+
+        if (contextSource) {
+            try {
+                const contextData = JSON.parse(atob(contextSource));
+                renderContextualHeader(contextData);
+            } catch (e) {
+                console.error("Failed to parse context source:", e);
+            }
+        }
+
+        if (prompt) {
+            if (workstream) {
+                state.techflowAria.activeWorkstream = workstream;
+                saveState(state);
+            }
+            runAriaSequence(prompt);
+        } else {
+            renderAriaCleanSlate(companyId, activePersona);
+        }
     }
 }
 
@@ -210,61 +331,18 @@ async function typeWords(element, text, callback) {
     }, 30);
 }
 
-async function runAriaBuildingSequence(responseData, targetElement, promptWrapper) {
-    let state = loadState();
-    
-    const fullHTML = responseData.renderFunc(state);
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = fullHTML;
-
-    const buildItems = Array.from(tempContainer.querySelectorAll('.build-item'));
-    const responseContentWrapper = tempContainer.querySelector('.aria-response-content');
-    if (responseContentWrapper) {
-        responseContentWrapper.innerHTML = ''; 
-        targetElement.appendChild(responseContentWrapper); 
-    }
-
-    for (const item of buildItems) {
-        // ... (the animation and chart rendering logic inside this loop remains exactly the same)
-    }
-
-    const responseBubble = targetElement.closest('.aria-response-bubble');
-    const footer = responseBubble.querySelector('.response-actions-footer');
-    if (footer) {
-        await new Promise(r => setTimeout(r, 300));
-        footer.classList.add('visible');
-    }
-
-    // --- THIS IS THE CRITICAL FIX ---
-    // It now correctly builds the next prompt box based on our new data structure.
-
-    // 1. The new colorful pills are the `followUpQuestions` from our response object.
-    const newContextualPills = {
-        title: "Explore Disciplines:", // This title is now dynamic
-        pills: responseData.followUpQuestions || []
-    };
-
-    // 2. The new grey suggested prompts come from the new `suggestedPrompts` property.
-    const newSuggestedPrompts = responseData.suggestedPrompts || [];
-
-    // 3. We pass both to the rendering function.
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(newSuggestedPrompts, newContextualPills);
-    
-    setTimeout(() => scrollToConversationBottom(), 50);
-}
-
 async function runAriaSequence(promptText, isInitialBriefing = false) {
     if (!promptText) return;
     let state = loadState();
     const companyId = state.selectedCompanyId;
     
-const allStaticResponses = ariaResponseMap[companyId] || {};
+    const allStaticResponses = ariaResponseMap[companyId] || {};
 
     const conversationContainer = document.getElementById('aria-conversation-container');
     const promptWrapper = document.getElementById('aria-prompt-wrapper');
     if (!conversationContainer || !promptWrapper) return;
 
-    promptWrapper.innerHTML = getAdvancedPromptBoxHTML([]); 
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML([], null); // Clear prompts while ARIA "thinks"
 
     if (!isInitialBriefing) {
         const persona = PERSONAS[state.activePersona];
@@ -275,45 +353,24 @@ const allStaticResponses = ariaResponseMap[companyId] || {};
         scrollToConversationBottom();
     }
     
-    const contextualPillsForPromptBox = getContextualPillsForCompany(companyId);
     const componentInfo = generativeComponentMap[promptText];
     let staticResponseData = allStaticResponses[promptText];
 
-    const getResponseFooterHTML = (responseId) => {
-        const isFlagged = state.diligenceWorkspace.keyRisks[responseId];
-        return `
-            <div class="response-actions-footer">
-                <div class="workspace-controls">
-                    <button class="feedback-icon ${isFlagged ? 'filled' : ''}" data-action="flag-response" data-response-id="${responseId}">
-                        <span class="tooltip-text tooltip-bottom">Add to Workspace</span>
-                        <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001M14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21 21 0 0 0 3 1.845v6.433c.22-.078.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01C9.32 8.29 9.86 8.5 10.5 8.5c.668 0 1.606-.229 2.415-.478A21 21 0 0 0 14 7.655V1.222z"/></svg></span>
-                        <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001z"/></svg></span>
-                    </button>
-                </div>
-                <div class="feedback-controls">
-                    <button class="feedback-icon" data-action="feedback">
-                        <span class="tooltip-text tooltip-bottom">Provide Feedback</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H1a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM1 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/></svg>
-                    </button>
-                    <button class="feedback-icon" data-action="thumb-down">
-                        <span class="tooltip-text tooltip-bottom">Bad response</span>
-                        <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041-.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1"/></svg></span>
-                        <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.956 14.534c.065.936.952 1.659 1.908 1.42l.261-.065a1.38 1.38 0 0 0 1.012-.965c.22-.816.533-2.512.062-4.51q.205.03.443.051c.713.065 1.669.071 2.516-.211.518-.173.994-.68 1.2-1.272a1.9 1.9 0 0 0-.234-1.734c.058-.118.103-.242.138-.362.077-.27.113-.568.113-.856 0-.29-.036-.586-.113-.857a2 2 0 0 0-.16-.403c.169-.387.107-.82-.003-1.149a3.2 3.2 0 0 0-.488-.9c.054-.153.076-.313.076-.465a1.86 1.86 0 0 0-.253-.912C13.1 .757 12.437.28 11.5.28H8c-.605 0-1.07.08-1.466.217a4.8 4.8 0 0 0-.97.485l-.048.029c-.504.308-.999.61-2.068-.723C2.682 1.815 2 2.434 2 3.279v4c0 .851.685 1.433 1.357 1.616.849.232 1.574.787 2.132 1.41.56.626.914 1.28 1.039 1.638.199.575.356 1.54.428 2.591"/></svg></span>
-                    </button>
-                    <button class="feedback-icon" data-action="thumb-up">
-                        <span class="tooltip-text tooltip-bottom">Good response</span>
-                        <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111-.273-.154-.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/></svg></span>
-                            <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.638.199-.575.356-1.539.428-2.59z"/></svg></span>
-                        </button>
-                    </div>
-                </div>
-            `;
-    };
+    // State management for sticky pills
+    if (staticResponseData && staticResponseData.followUpQuestions) {
+        if (!state.aria) state.aria = {};
+        state.aria.activeContextualPills = staticResponseData.followUpQuestions;
+        saveState(state);
+    } else if (isInitialBriefing) { 
+        if (!state.aria) state.aria = {};
+        state.aria.activeContextualPills = null;
+        saveState(state);
+    }
 
     if (componentInfo || staticResponseData) {
- const responseId = `aria-content-target-${Date.now()}`;
+        // --- This block handles your PRE-DEFINED, CURATED responses ---
+        const responseId = `aria-content-target-${Date.now()}`;
         const responseDataId = staticResponseData?.id || 'component-response';
-        
         const ariaHeaderHTML = `
             <div class="aria-response-wrapper">
                 <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
@@ -331,46 +388,165 @@ const allStaticResponses = ariaResponseMap[companyId] || {};
         if (componentInfo) {
             await loadScript(componentInfo.script);
             window[componentInfo.renderer].render(targetElement, companyId);
-            promptWrapper.innerHTML = getAdvancedPromptBoxHTML(componentInfo.followUpQuestions, contextualPillsForPromptBox);
+            runAriaBuildingSequence({ suggestedPrompts: componentInfo.followUpQuestions }, targetElement, promptWrapper);
         } else if (staticResponseData) {
             runAriaBuildingSequence(staticResponseData, targetElement, promptWrapper);
         }
     } else {
-        // Fallback for unknown prompts
+        // --- THIS IS THE DEFINED FALLBACK LOGIC for un-scripted prompts ---
         const responseId = `aria-content-target-${Date.now()}`;
-        const typingIndicatorHTML = `<div class="aria-response-wrapper"><div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div><div class="aria-response-bubble"><div id="${responseId}" class="response-text"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div></div>`;
+        const typingIndicatorHTML = `
+            <div class="aria-response-wrapper">
+                <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
+                <div class="aria-response-bubble">
+                    <p class="font-semibold">Aria:</p>
+                    <div id="${responseId}" class="response-text">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         conversationContainer.insertAdjacentHTML('beforeend', typingIndicatorHTML);
         const targetElement = document.getElementById(responseId);
+        scrollToConversationBottom();
         
-        await new Promise(r => setTimeout(r, 1000)); // Simulate thinking
-        targetElement.innerHTML = `<p>Sorry, I don't have a pre-defined response for that query. My capabilities are still expanding.</p>`;
+        // Simulate an API call and provide a graceful fallback message
+        await new Promise(r => setTimeout(r, 1500)); 
         
-        // --- FIX START: Make fallback prompts company-aware ---
-        let fallbackPrompts = [];
-        if (companyId === 'techflow-solutions') {
-            fallbackPrompts = [
-                "Show me the TechFlow diligence plan.",
-                "Provide an overview of the current registered anomalies."
-            ];
-        } else if (companyId === 'cloudvantage') {
-            fallbackPrompts = [
-                "How is the NewCo integration going for CloudVantage?",
-                "Analyze the key drivers of our Net Revenue Retention."
-            ];
-        } else {
-            fallbackPrompts = [
-                "How did the portfolio perform over the past 12 months?",
-                "Forecast portfolio ARR for the next 6 months."
-            ];
-        }
-        // --- FIX END ---
+        targetElement.innerHTML = `<p>I am currently configured to handle pre-defined conversational paths. The ability to answer dynamic questions like that is part of my future development roadmap.</p>`;
+
+        // Provide helpful next steps to get the user back on a known path
+        const fallbackPrompts = [
+            "Show me the priority alerts.",
+            "How did the portfolio perform over the past 12 months?",
+            "Forecast portfolio ARR for the next 6 months."
+        ];
         
-        promptWrapper.innerHTML = getAdvancedPromptBoxHTML(fallbackPrompts, contextualPillsForPromptBox);
+        const stickyPills = (state.aria && state.aria.activeContextualPills)
+            ? { title: "Explore Disciplines:", pills: state.aria.activeContextualPills }
+            : null;
+        
+        promptWrapper.innerHTML = getAdvancedPromptBoxHTML(fallbackPrompts, stickyPills);
+        // --- END OF DEFINED FALLBACK LOGIC ---
     }
     
     setTimeout(() => scrollToConversationBottom(), 100);
 }
 
+// js/aria.js - REPLACE this entire function
+
+async function runAriaBuildingSequence(responseData, targetElement, promptWrapper) {
+    let state = loadState();
+    
+    const fullHTML = responseData.renderFunc(state);
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = fullHTML;
+
+    const buildItems = Array.from(tempContainer.querySelectorAll('.build-item'));
+    const responseContentWrapper = tempContainer.querySelector('.aria-response-content');
+    
+    if (responseContentWrapper) {
+        responseContentWrapper.innerHTML = ''; 
+        targetElement.appendChild(responseContentWrapper); 
+    }
+
+    // This outer loop processes each major section (e.g., the risk list, the context box, etc.)
+    for (const item of buildItems) {
+        responseContentWrapper.appendChild(item);
+        await new Promise(r => setTimeout(r, 100));
+        item.classList.add('visible');
+        scrollToConversationBottom();
+
+        // --- THIS IS THE CRITICAL NEW LOGIC ---
+        // Find ALL elements that need typing within the current section
+        const typingElements = item.querySelectorAll('[data-typing-text]');
+        
+        // Loop through EACH paragraph and type it out before moving on
+        for (const el of typingElements) {
+            await new Promise(resolve => typeWords(el, el.dataset.typingText, resolve));
+        }
+        // --- END OF CRITICAL NEW LOGIC ---
+        
+        // This part for charts is also important to keep
+        if (responseData.chartId && responseData.chartConfig) {
+            const chartCanvas = document.getElementById(responseData.chartId);
+            if (chartCanvas) {
+                const themeColors = {
+                    THEME_ACCENT_BLUE: getThemeColor('--accent-blue'),
+                    THEME_ACCENT_TEAL: getThemeColor('--accent-teal'),
+                    THEME_PURPLE: getThemeColor('--purple'),
+                    THEME_STATUS_SUCCESS: getThemeColor('--status-success'),
+                    THEME_STATUS_ERROR: getThemeColor('--status-error'),
+                    THEME_TEXT_SECONDARY: getThemeColor('--text-secondary'),
+                    THEME_TEXT_MUTED: getThemeColor('--text-muted'),
+                    THEME_BORDER_COLOR: getThemeColor('--border-color'),
+                    THEME_ACCENT_BLUE_TRANSLUCENT: getThemeColor('--accent-blue-translucent'),
+                    THEME_ACCENT_TEAL_TRANSLUCENT: getThemeColor('--accent-teal-translucent'),
+                    THEME_STATUS_ERROR_TRANSLUCENT: getThemeColor('--status-error-translucent'),
+                };
+                let chartString = JSON.stringify(responseData.chartConfig);
+                for (const [key, value] of Object.entries(themeColors)) {
+                    chartString = chartString.replace(new RegExp(`"${key}"`, 'g'), `"${value}"`);
+                }
+                const dynamicConfig = JSON.parse(chartString);
+                new Chart(chartCanvas.getContext('2d'), dynamicConfig);
+            }
+        }
+    }
+
+    // The rest of the function remains the same
+    const responseBubble = targetElement.closest('.aria-response-bubble');
+    const footer = responseBubble.querySelector('.response-actions-footer');
+    if (footer) {
+        await new Promise(r => setTimeout(r, 300));
+        footer.classList.add('visible');
+    }
+
+    const stickyPills = (state.aria && state.aria.activeContextualPills)
+        ? { title: "Explore Disciplines:", pills: state.aria.activeContextualPills }
+        : null;
+
+    const newSuggestedPrompts = responseData.suggestedPrompts || [];
+
+    promptWrapper.innerHTML = getAdvancedPromptBoxHTML(newSuggestedPrompts, stickyPills);
+    
+    setTimeout(() => scrollToConversationBottom(), 50);
+}
+
+function getResponseFooterHTML(responseId) {
+    // Load the current state to check if this response has already been flagged
+    const state = loadState();
+    const isFlagged = (state.diliggingWorkspace && state.diligenceWorkspace.keyRisks[responseId]) ? 'filled' : '';
+
+    return `
+        <div class="response-actions-footer">
+            <div class="workspace-controls">
+                <button class="feedback-icon ${isFlagged}" data-action="flag-response" data-response-id="${responseId}">
+                    <span class="tooltip-text tooltip-bottom">Add to Workspace</span>
+                    <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001M14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21 21 0 0 0 3 1.845v6.433c.22-.078.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01C9.32 8.29 9.86 8.5 10.5 8.5c.668 0 1.606-.229 2.415-.478A21 21 0 0 0 14 7.655V1.222z"/></svg></span>
+                    <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001z"/></svg></span>
+                </button>
+            </div>
+            <div class="feedback-controls">
+                <button class="feedback-icon" data-action="feedback">
+                    <span class="tooltip-text tooltip-bottom">Provide Feedback</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H1a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM1 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/></svg>
+                </button>
+                <button class="feedback-icon" data-action="thumb-down">
+                    <span class="tooltip-text tooltip-bottom">Bad response</span>
+                    <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.997 2.614 1.709.635.71 1.064 1.475 1.238 1.977.243.7.407 1.768.482 2.85.025.362.36.595.667.518l.262-.065c.16-.04.258-.144.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.003l.014.004.058.013a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.301.57-.651.107-.308.087-.67-.266-1.021L12.793 7l.353-.354c.043-.042.105-.14.154-.315.048-.167.075-.37.075-.581s-.027-.414-.075-.581c-.05-.174-.111-.273-.154-.315l-.353-.354.353-.354c.047-.047.109-.176.005-.488a2.2 2.2 0 0 0-.505-.804l-.353-.354.353-.354c.006-.005.041-.05.041-.17a.9.9 0 0 0-.121-.415C12.4 1.272 12.063 1 11.5 1"/></svg></span>
+                    <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.956 14.534c.065.936.952 1.659 1.908 1.42l.261-.065a1.38 1.38 0 0 0 1.012-.965c.22-.816.533-2.512.062-4.51q.205.03.443.051c.713.065 1.669.071 2.516-.211.518-.173.994-.68 1.2-1.272a1.9 1.9 0 0 0-.234-1.734c.058-.118.103-.242.138-.362.077-.27.113-.568.113-.856 0-.29-.036-.586-.113-.857a2 2 0 0 0-.16-.403c.169-.387.107-.82-.003-1.149a3.2 3.2 0 0 0-.488-.9c.054-.153.076-.313.076-.465a1.86 1.86 0 0 0-.253-.912C13.1 .757 12.437.28 11.5.28H8c-.605 0-1.07.08-1.466.217a4.8 4.8 0 0 0-.97.485l-.048.029c-.504.308-.999.61-2.068-.723C2.682 1.815 2 2.434 2 3.279v4c0 .851.685 1.433 1.357 1.616.849.232 1.574.787 2.132 1.41.56.626.914 1.28 1.039 1.638.199.575.356 1.54.428 2.591"/></svg></span>
+                </button>
+                <button class="feedback-icon" data-action="thumb-up">
+                    <span class="tooltip-text tooltip-bottom">Good response</span>
+                    <span class="icon-unfilled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064 1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111-.273-.154-.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/></svg></span>
+                    <span class="icon-filled"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.638.199-.575.356-1.539.428-2.59z"/></svg></span>
+                </button>
+            </div>
+        </div>
+    `;
+}
 
 function initializeAriaEventListeners() {
     if (document.body.dataset.ariaListenerAttached) return;
@@ -403,12 +579,13 @@ function initializeAriaEventListeners() {
             // --- FIX END ---
 
             
-            case 'run-suggested-prompt':
+       case 'run-suggested-prompt':
                 const question = target.dataset.question;
                 if (question) {
                     runAriaSequence(question);
                 }
                 break;
+
             case 'ask-aria':
                 const input = document.getElementById('aria-prompt-input');
                 const promptText = input ? input.value.trim() : '';
@@ -417,35 +594,40 @@ function initializeAriaEventListeners() {
                     runAriaSequence(promptText);
                 }
                 break;
+
             case 'restart-conversation':
                 const conversationContainer = document.getElementById('aria-conversation-container');
                 if(conversationContainer) conversationContainer.innerHTML = '';
+                if (state.aria) state.aria.activeContextualPills = null; // Clear sticky pills
+                saveState(state);
+
                 const url = new URL(window.location);
                 url.searchParams.delete('prompt');
                 url.searchParams.delete('contextSource');
                 window.history.pushState({}, '', url);
-                initializeAriaPage();
+                renderAriaCleanSlate(state.selectedCompanyId, state.activePersona);
+                break;
+
+            case 'toggle-settings-modal':
+                state.ariaSettings.isModalOpen = !state.ariaSettings.isModalOpen;
+                saveState(state);
+                updatePromptContainer(state);
                 break;
 case 'toggle-settings-modal':
     document.getElementById('settings-modal')?.classList.toggle('visible');
     break;
-case 'toggle-category':
-    // 1. Update and save the state correctly (this part is fine)
-    const categoryKey = target.dataset.category;
-    if (!state.ariaSettings.expandedCategories) state.ariaSettings.expandedCategories = {};
-    state.ariaSettings.expandedCategories[categoryKey] = !state.ariaSettings.expandedCategories[categoryKey];
-    saveState(state);
-
-    // 2. Instead of re-rendering, just toggle the classes on the elements
-    const contentDiv = target.nextElementSibling;
-    const chevronIcon = target.querySelector('svg');
-
-    if (contentDiv && chevronIcon) {
-        contentDiv.classList.toggle('expanded');
-        // The CSS uses rotate-90 for the expanded state
-        chevronIcon.classList.toggle('rotate-90'); 
-    }
-    break;
+            case 'toggle-category':
+                const categoryKey = target.dataset.category;
+                if (!state.ariaSettings.expandedCategories) state.ariaSettings.expandedCategories = {};
+                state.ariaSettings.expandedCategories[categoryKey] = !state.ariaSettings.expandedCategories[categoryKey];
+                saveState(state);
+                const contentDiv = target.nextElementSibling;
+                const chevronIcon = target.querySelector('svg');
+                if (contentDiv && chevronIcon) {
+                    contentDiv.classList.toggle('expanded');
+                    chevronIcon.classList.toggle('rotate-90');
+                }
+                break;
                       case 'flag-response':
                 const responseId = target.dataset.responseId;
                 if (!responseId) break;
