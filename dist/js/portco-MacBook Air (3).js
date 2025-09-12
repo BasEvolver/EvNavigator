@@ -581,9 +581,6 @@ function initializePortcoEventListeners() {
                 const ceoCompanyId = target.dataset.companyId;
                 window.location.href = `portco.html?company=${ceoCompanyId}`;
                 break;
-                    case 'navigate':
-                if(target.dataset.link) window.location.href = target.dataset.link;
-                break;
             case 'switch-diligence-tab':
                 document.querySelectorAll('.diligence-pills .pill').forEach(p => p.classList.remove('active'));
                 target.classList.add('active');

@@ -361,7 +361,7 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
             runAriaBuildingSequence(staticResponseData, targetElement, promptWrapper);
         }
     } else {
-        // --- THIS IS THE DEFINED FALLBACK LOGIC for un-scripted prompts ---
+        // --- NEW LIVE API FALLBACK LOGIC ---
         const responseId = `aria-content-target-${Date.now()}`;
         const typingIndicatorHTML = `
             <div class="aria-response-wrapper">
@@ -379,24 +379,36 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
         const targetElement = document.getElementById(responseId);
         scrollToConversationBottom();
         
-        // Simulate an API call and provide a graceful fallback message
-        await new Promise(r => setTimeout(r, 1500)); 
-        
-        targetElement.innerHTML = `<p>I am currently configured to handle pre-defined conversational paths. The ability to answer dynamic questions like that is part of my future development roadmap.</p>`;
+        // Use a try/catch block to call the real API
+        try {
+            const apiResponse = await fetch('/api/ask-gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: promptText }),
+            });
 
-        // Provide helpful next steps to get the user back on a known path
-        const fallbackPrompts = [
-            "Show me the priority alerts.",
-            "How did the portfolio perform over the past 12 months?",
-            "Forecast portfolio ARR for the next 6 months."
-        ];
+            if (!apiResponse.ok) {
+                const err = await apiResponse.json();
+                throw new Error(err.error || `HTTP error! status: ${apiResponse.status}`);
+            }
+
+            const data = await apiResponse.json();
+            // Display the live response from Gemini
+            // We use a <p> tag and replace newlines with <br> for better formatting
+            targetElement.innerHTML = `<p>${data.text.replace(/\n/g, '<br>')}</p>`;
+
+            // After a successful response, show the default contextual pills again
+            const contextualPills = getContextualPillsForCompany(state.selectedCompanyId);
+            promptWrapper.innerHTML = getAdvancedPromptBoxHTML([], contextualPills);
+
+        } catch (error) {
+            console.error("Error calling live Gemini API from Aria:", error);
+            // Display a user-friendly error message in the chat
+            targetElement.innerHTML = `<p class="text-error">Sorry, I encountered an error trying to connect to the live AI service. Please try again.</p>`;
+        }
         
-        const stickyPills = (state.aria && state.aria.activeContextualPills)
-            ? { title: "Explore Disciplines:", pills: state.aria.activeContextualPills }
-            : null;
-        
-        promptWrapper.innerHTML = getAdvancedPromptBoxHTML(fallbackPrompts, stickyPills);
-        // --- END OF DEFINED FALLBACK LOGIC ---
+        scrollToConversationBottom();
+        // --- END OF NEW LIVE API FALLBACK LOGIC ---
     }
     
     setTimeout(() => scrollToConversationBottom(), 100);

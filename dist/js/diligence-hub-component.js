@@ -50,9 +50,10 @@ window.DiligenceHubComponent = {
             }
         }
         
-        const ganttHTML = this._generateGanttHTML(modifiedPlan, this.state);
+const ganttHTML = this._generateGanttHTML(modifiedPlan, this.state);
         this.targetElement.innerHTML = ganttHTML;
         this._initializeGanttHoverAndScroll(this.targetElement);
+        this._initializeListeners(); // <-- ADD THIS LINE
     },
     
     _initializeGanttHoverAndScroll: function(container) {
@@ -160,8 +161,7 @@ window.DiligenceHubComponent = {
                             <h4 class="modal-section-title">Aria's Status Assessment</h4>
                             <div class="modal-status-assessment">
                                 <p>${statusDetails.text}</p>
-                                ${statusDetails.actions.length > 0 ? `<div class="modal-suggested-actions">${statusDetails.actions.map(action => `<button class="modal-action-button" data-action="run-suggested-prompt" data-question="${action.prompt}">${action.text}</button>`).join('')}</div>` : ''}
-                            </div>
+ ${statusDetails.actions.length > 0 ? `<div class="modal-suggested-actions">${statusDetails.actions.map(action => `<button class="modal-action-button ${!isPromptModeled(action.prompt) ? 'unmodeled' : ''}" data-action="run-suggested-prompt" data-question="${action.prompt}">${action.text}</button>`).join('')}</div>` : ''}                            </div>
                         </div>
                         <div class="modal-description"><h4 class="modal-section-title">Description</h4><p>${task.description || 'No description provided.'}</p></div>
                         <div class="modal-description"><h4 class="modal-section-title">Expected Output</h4><p>${task.output || 'No output specified.'}</p></div>
@@ -190,7 +190,13 @@ window.DiligenceHubComponent = {
                 <p class="synthesis-text">Analysis of the <strong>${workstreamName}</strong> workstream has surfaced ${relevantFindings.length} key findings that require attention. The primary areas of concern are [Example: non-standard revenue recognition and high customer concentration]. There are currently ${openQuestions.length} open items from the diligence plan for this area.</p>
             </div>
             <div class="finding-cards-grid">
-                ${relevantFindings.length > 0 ? relevantFindings.map(finding => `<div class="finding-card"><div class="finding-card-header"><span class="font-semibold">${finding.title || finding.text}</span>${finding.severity ? `<span class="ws-item-badge severity-${finding.severity.toLowerCase()}">${finding.severity}</span>` : ''}</div><p class="finding-card-body">${finding.impact || finding.description || ''}</p><div class="finding-card-actions"><button class="card-action-button" data-action="run-prompt" data-prompt="Model the financial impact of '${finding.title || finding.text}'">Model Impact</button><button class="card-action-button" data-action="run-prompt" data-prompt="Draft an email to the CFO about '${finding.title || finding.text}'">Draft Email</button><button class="card-action-button" data-action="run-prompt" data-prompt="Add '${finding.title || finding.text}' to the IC memo">Add to Memo</button></div></div>`).join('') : '<p class="text-secondary">No specific findings flagged for this workstream yet.</p>'}
+                ${relevantFindings.length > 0 ? relevantFindings.map(finding => `<div class="finding-card"><div class="finding-card-header"><span class="font-semibold">${finding.title || finding.text}</span>${finding.severity ? `<span class="ws-item-badge severity-${finding.severity.toLowerCase()}">${finding.severity}</span>` : ''}</div><p class="finding-card-body">${finding.impact || finding.description || ''}</p>
+                <div class="finding-card-actions">
+    <button class="card-action-button ${!isPromptModeled(`Model the financial impact of '${finding.title || finding.text}'`) ? 'unmodeled' : ''}" data-action="run-prompt" data-prompt="Model the financial impact of '${finding.title || finding.text}'">Model Impact</button>
+    <button class="card-action-button ${!isPromptModeled(`Draft an email to the CFO about '${finding.title || finding.text}'`) ? 'unmodeled' : ''}" data-action="run-prompt" data-prompt="Draft an email to the CFO about '${finding.title || finding.text}'">Draft Email</button>
+    <button class="card-action-button ${!isPromptModeled(`Add '${finding.title || finding.text}' to the IC memo`) ? 'unmodeled' : ''}" data-action="run-prompt" data-prompt="Add '${finding.title || finding.text}' to the IC memo">Add to Memo</button>
+</div>
+</div>`).join('') : '<p class="text-secondary">No specific findings flagged for this workstream yet.</p>'}
             </div>
             <div class="open-questions-box">
                  <h3 class="synthesis-title">Aria's Open Questions</h3>
@@ -288,7 +294,7 @@ window.DiligenceHubComponent = {
         });
     },
 
-    _generateGanttHTML: function(planData, state, statusOverrides = {}) {
+_generateGanttHTML: function(planData, state, statusOverrides = {}) {
         const planWithDates = projectPlanUtils.calculateTaskDates(planData);
         const phaseDefinitions = [{ name: "Phase 1: Foundation", dayRange: [1, 2] }, { name: "Phase 2: Deep Dive", dayRange: [3, 5] }, { name: "Phase 3: Analysis", dayRange: [6, 11] }, { name: "Phase 4: Synthesis & Finalization", dayRange: [12, 17] }];
         const hierarchy = {};
@@ -317,7 +323,9 @@ window.DiligenceHubComponent = {
             Object.values(phase.categories).forEach(category => {
                 category.tasks = category.tasks.filter(task => {
                     const commentary = projectPlanUtils.generateAriaCommentary(task, statusOverrides);
+                    // --- FIX START: Corrected the typo from "diligilenceFilters" to "diligenceFilters" ---
                     return state.diligenceFilters.workstreams.includes(task.workstream) && state.diligenceFilters.statuses.includes(commentary.status);
+                    // --- FIX END ---
                 });
             });
             phase.categories = Object.values(phase.categories).filter(cat => cat.tasks.length > 0);
@@ -351,9 +359,18 @@ window.DiligenceHubComponent = {
                 });
             });
         });
-        const todayBandLeft = (CURRENT_PROJECT_DAY - 1) * 42;
+        
+        const todayBandLeftPercent = ((CURRENT_PROJECT_DAY - 1) / 17) * 100;
+        const todayBandWidthPercent = (1 / 17) * 100;
         
         return `
+            <style>
+                .gantt-right-header, .gantt-timeline-grid {
+                    display: grid;
+                    grid-template-columns: repeat(17, 1fr);
+                    gap: 2px;
+                }
+            </style>
             <div class="gantt-container-v7">
                 <div class="gantt-controls">
                     <h3 class="gantt-main-title">Project Diligence Plan</h3>
@@ -371,7 +388,7 @@ window.DiligenceHubComponent = {
                         <div class="gantt-right-pane">
                             <div class="gantt-right-header">${timelineDates.map(date => `<div class="gantt-day-header ${date.getDay() === 0 || date.getDay() === 6 ? 'weekend' : ''} ${date.toDateString() === today.toDateString() ? 'today' : ''}"><span>${date.toLocaleDateString('en-US', { weekday: 'short' })[0]}</span><span>${date.getDate()}</span></div>`).join('')}</div>
                             <div class="gantt-right-body">
-                                <div class="gantt-today-band" style="left: ${todayBandLeft}px; width: 40px;"></div>
+                                <div class="gantt-today-band" style="left: ${todayBandLeftPercent}%; width: ${todayBandWidthPercent}%;"></div>
                                 ${rightPaneHTML}
                             </div>
                         </div>

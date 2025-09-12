@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist && mkdir dist && cp -r *.html css js components *.png dist/"
+    "build": "rimraf dist && copyfiles -f *.html *.png dist && copyfiles -f \"css/**/*\" dist/css && copyfiles -f \"js/**/*\" dist/js && copyfiles -f \"components/**/*\" dist/components"
   },
   "repository": {
     "type": "git",
