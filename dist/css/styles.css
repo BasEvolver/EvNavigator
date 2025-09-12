@@ -9904,3 +9904,53 @@ body.page-db-inventory #main-content {
     line-height: 1.6;
     color: var(--text-secondary);
 }
+
+/* =============================================== */
+/* === AI-Generated Content Styling (Markdown) === */
+/* =============================================== */
+
+/* This targets the container where the AI's HTML response is rendered. */
+.aria-response-bubble .response-text {
+    /* This creates a bit of space between all direct child elements (p, ul, table, etc.) */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* This is the main spacing control. Adjust as needed. */
+}
+
+/* --- Headings & Paragraphs --- */
+.aria-response-bubble .response-text h1,
+.aria-response-bubble .response-text h2,
+.aria-response-bubble .response-text h3,
+.aria-response-bubble .response-text h4 {
+    font-weight: 600;
+}
+
+/* --- Lists --- */
+.aria-response-bubble .response-text ul,
+.aria-response-bubble .response-text ol {
+    padding-left: 1.5rem; /* Indent lists */
+}
+.aria-response-bubble .response-text li {
+    margin-bottom: 0.5rem; /* Space between list items */
+}
+
+/* --- Tables --- */
+.aria-response-bubble .response-text table {
+    width: 100%;
+    border-collapse: collapse; /* Clean borders */
+}
+
+/* This is the key for your request: ADD PADDING to table cells */
+.aria-response-bubble .response-text th,
+.aria-response-bubble .response-text td {
+    border: 1px solid var(--border-color);
+    padding: 0.75rem; /* Adjust padding here */
+    text-align: left;
+    vertical-align: top;
+}
+
+/* Style the table header to make it stand out */
+.aria-response-bubble .response-text th {
+    background-color: var(--bg-secondary); /* A subtle background for the header */
+    font-weight: 600;
+}

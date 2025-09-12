@@ -393,9 +393,9 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
             }
 
             const data = await apiResponse.json();
-            // Display the live response from Gemini
-            // We use a <p> tag and replace newlines with <br> for better formatting
-            targetElement.innerHTML = `<p>${data.text.replace(/\n/g, '<br>')}</p>`;
+            
+            // --- UPDATE: Use marked.js to parse the Markdown response ---
+            targetElement.innerHTML = marked.parse(data.text);
 
             // After a successful response, show the default contextual pills again
             const contextualPills = getContextualPillsForCompany(state.selectedCompanyId);
