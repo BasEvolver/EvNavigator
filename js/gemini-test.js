@@ -1,6 +1,15 @@
 // js/gemini-test.js
 
-document.addEventListener('DOMContentLoaded', () => {
+// --- NEW: Initialization logic ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load the header, sidebar, and apply theme
+    await loadSharedComponents();
+    
+    // The original test page logic now runs after the layout is loaded
+    initializeTestPage();
+});
+
+function initializeTestPage() {
     const askButton = document.getElementById('ask-button');
     const promptInput = document.getElementById('prompt-input');
     const responseDiv = document.getElementById('response');
@@ -28,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await apiResponse.json();
-            // --- FIX IS ON THE NEXT LINE ---
-            responseDiv.textContent = data.text; // Changed from data.response to data.text
+            // Use the correct key 'text'
+            responseDiv.textContent = data.text; 
 
         } catch (error) {
             console.error('Error:', error);
@@ -46,4 +55,4 @@ document.addEventListener('DOMContentLoaded', () => {
             askGemini();
         }
     });
-});
+}

@@ -9954,3 +9954,21 @@ body.page-db-inventory #main-content {
     background-color: var(--bg-secondary); /* A subtle background for the header */
     font-weight: 600;
 }
+
+/* =============================================== */
+/* === RAG Test Page Dark Mode Fix === */
+/* =============================================== */
+
+[data-theme="dark"] #company-context {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+/* =============================================== */
+/* === Reasoning Simulation Spacing === */
+/* =============================================== */
+
+.reasoning-simulation {
+    margin-top: 0.75rem; /* 12px */
+}

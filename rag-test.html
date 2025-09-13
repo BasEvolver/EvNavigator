@@ -1,0 +1,86 @@
+<!-- rag-test.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Process Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <!-- START: Main Application Layout -->
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <div class="main-content-wrapper">
+            <div id="header-container"></div>
+            <main id="main-content" class="p-8">
+                <!-- Original Page Content Goes Here -->
+                <div class="max-w-7xl mx-auto">
+                    <div class="ai-briefing-card">
+                        <h1 class="briefing-title">RAG Process Test Page</h1>
+                        <p class="briefing-text mt-2">
+                            Test the Retrieval-Augmented Generation process. This page shows how context is retrieved and added to the prompt before being sent to Gemini.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        <!-- INPUT COLUMN -->
+                        <div>
+                            <h2 class="text-lg font-semibold mb-2">1. Input</h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="company-context" class="block text-sm font-medium text-text-secondary mb-1">Company Context</label>
+                                    <select id="company-context" class="w-full px-4 py-2 text-sm font-semibold border rounded-lg focus:ring-2 focus:outline-none">
+                                        <option value="techflow-solutions">TechFlow Solutions</option>
+                                        <option value="cloudvantage">CloudVantage</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="prompt-input" class="block text-sm font-medium text-text-secondary mb-1">User Prompt</label>
+                                    <textarea id="prompt-input" class="prompt-textarea" rows="3" placeholder="Ask a question..."></textarea>
+                                </div>
+                                <button id="run-test-button" class="primary-button w-full">Run RAG Test</button>
+                            </div>
+                        </div>
+
+                        <!-- OUTPUT COLUMN -->
+                        <div>
+                            <h2 class="text-lg font-semibold mb-2">2. Process & Output</h2>
+                            <div class="space-y-6">
+                                <div>
+                                    <h3 class="font-semibold text-text-primary">Retrieved Context</h3>
+                                    <pre id="retrieved-context" class="p-3 mt-1 border border-border-color rounded-lg bg-bg-secondary text-xs whitespace-pre-wrap min-h-[100px]">Context will appear here...</pre>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-text-primary">Master Prompt Sent to Gemini</h3>
+                                    <pre id="master-prompt" class="p-3 mt-1 border border-border-color rounded-lg bg-bg-secondary text-xs whitespace-pre-wrap min-h-[150px]">The full prompt will appear here...</pre>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-text-primary">Final Gemini Response</h3>
+                                    <div id="gemini-response" class="p-3 mt-1 border border-border-color rounded-lg bg-bg-secondary min-h-[150px] prose max-w-none">The final response will appear here...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of Original Page Content -->
+            </main>
+        </div>
+    </div>
+    <!-- END: Main Application Layout -->
+
+    <!-- START: Script Loading -->
+    <script src="js/shared.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/MaturityModel.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/portco-data.js"></script>
+    <script src="js/knowledge-narratives.js"></script>
+    <script src="js/context-assembler.js"></script>
+    <script src="js/rag-test.js"></script>
+    <!-- END: Script Loading -->
+</body>
+</html>

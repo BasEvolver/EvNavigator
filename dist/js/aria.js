@@ -360,10 +360,13 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
         } else if (staticResponseData) {
             runAriaBuildingSequence(staticResponseData, targetElement, promptWrapper);
         }
-    } else {
-        // --- NEW LIVE API FALLBACK LOGIC ---
+     } else {
+        // --- UPGRADED: Reasoning Simulation with Blinking Dots ---
         const responseId = `aria-content-target-${Date.now()}`;
-        const typingIndicatorHTML = `
+        const simulationStepsId = `simulation-steps-${responseId}`; // Unique ID for the steps container
+
+        // New HTML structure with a persistent container for dots and a separate one for steps
+        const simulationHTML = `
             <div class="aria-response-wrapper">
                 <div class="persona-avatar-bubble" style="background-color: #48AADD; color: white;">A</div>
                 <div class="aria-response-bubble">
@@ -372,45 +375,90 @@ async function runAriaSequence(promptText, isInitialBriefing = false) {
                         <div class="typing-indicator">
                             <span></span><span></span><span></span>
                         </div>
+                        <div id="${simulationStepsId}" class="reasoning-simulation">
+                            <!-- Simulation steps will be injected here -->
+                        </div>
                     </div>
                 </div>
             </div>`;
-        conversationContainer.insertAdjacentHTML('beforeend', typingIndicatorHTML);
-        const targetElement = document.getElementById(responseId);
-        scrollToConversationBottom();
+        conversationContainer.insertAdjacentHTML('beforeend', simulationHTML);
         
-        // Use a try/catch block to call the real API
-        try {
-            const apiResponse = await fetch('/api/ask-gemini', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptText }),
-            });
+        // Get references to BOTH the main container and the steps container
+        const fullResponseContainer = document.getElementById(responseId);
+        const stepsContainer = document.getElementById(simulationStepsId);
+        scrollToConversationBottom();
 
-            if (!apiResponse.ok) {
-                const err = await apiResponse.json();
-                throw new Error(err.error || `HTTP error! status: ${apiResponse.status}`);
+        // This async function runs the simulation and fetches the real answer
+        const runSimulationAndFetch = async () => {
+            // --- 1. PRE-FLIGHT: Get the likely tools (no changes here) ---
+            let tools = [];
+            try {
+                const intentResponse = await fetch('/api/recognize-intent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText })
+                });
+                const intentData = await intentResponse.json();
+                tools = intentData.tools || [];
+            } catch (e) {
+                console.error("Frontend intent recognition failed, will use default steps.", e);
             }
 
-            const data = await apiResponse.json();
-            
-            // --- UPDATE: Use marked.js to parse the Markdown response ---
-            targetElement.innerHTML = marked.parse(data.text);
+            // --- 2. BACKGROUND: Start the REAL API call (no changes here) ---
+            const getFinalAnswer = async () => {
+                const persona = state.activePersona;
+                const dynamicContext = getDynamicContext(companyId, persona);
+                const apiResponse = await fetch('/api/ask-aria-agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: promptText,
+                        appContext: { companyId, persona },
+                        staticContext: dynamicContext
+                    }),
+                });
+                const data = await apiResponse.json();
+                if (!apiResponse.ok) {
+                    throw new Error(data.error || `HTTP error! status: ${apiResponse.status}`);
+                }
+                return data.geminiResponse;
+            };
+            const finalAnswerPromise = getFinalAnswer();
 
-            // After a successful response, show the default contextual pills again
-            const contextualPills = getContextualPillsForCompany(state.selectedCompanyId);
-            promptWrapper.innerHTML = getAdvancedPromptBoxHTML([], contextualPills);
+            // --- 3. FOREGROUND: Run the visual simulation ---
+            let steps = [];
+            if (tools.length > 0) {
+                tools.forEach(toolName => {
+                    if (reasoningSteps[toolName]) {
+                        steps.push(...reasoningSteps[toolName]);
+                    }
+                });
+            } else {
+                steps = reasoningSteps._default;
+            }
 
-        } catch (error) {
-            console.error("Error calling live Gemini API from Aria:", error);
-            // Display a user-friendly error message in the chat
-            targetElement.innerHTML = `<p class="text-error">Sorry, I encountered an error trying to connect to the live AI service. Please try again.</p>`;
-        }
-        
-        scrollToConversationBottom();
-        // --- END OF NEW LIVE API FALLBACK LOGIC ---
+            for (const step of steps) {
+                // THIS IS THE KEY CHANGE: We now only update the stepsContainer
+                stepsContainer.innerHTML = `<div class="reasoning-step"><div class="spinner-small"></div><span>${step}</span></div>`;
+                scrollToConversationBottom();
+                await new Promise(r => setTimeout(r, 1500 + Math.random() * 500));
+            }
+
+            // --- 4. FINISH: Await the real answer and render it ---
+            try {
+                const finalAnswer = await finalAnswerPromise;
+                // THIS IS THE KEY CHANGE: We replace the entire content of the parent container
+                // This removes both the dots and the steps container in one go.
+                fullResponseContainer.innerHTML = marked.parse(finalAnswer);
+            } catch (error) {
+                console.error("Error calling Aria Reasoning Agent:", error);
+                fullResponseContainer.innerHTML = `<p class="text-error">Sorry, I encountered an error. Please try again.</p>`;
+            }
+            scrollToConversationBottom();
+        };
+
+        runSimulationAndFetch(); // Kick off the whole process
     }
-    
     setTimeout(() => scrollToConversationBottom(), 100);
 }
 

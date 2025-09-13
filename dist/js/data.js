@@ -353,6 +353,7 @@ const workspaceHeaders = {
     }
 };
 
+
 const workspaceOutputs = {
     'techflow-solutions': [
         { name: 'IC Report', formats: ['word', 'pdf'] },
@@ -1645,4 +1646,39 @@ renewalOpportunities: [
 const FILTER_DATA = {
     workstreams: [ { label: 'Business & Strategy' }, { label: 'Commercial & Customer' }, { label: 'Technology & Operations' }, { label: 'Financial & Risk' }, { label: 'Synthesis' }, { label: 'Value Creation' }, { label: 'Investment Committee' }, { label: 'Final Deliverables' } ],
     statuses: ['In Progress', 'Upcoming', 'Completed', 'Late', 'Blocked']
+};
+
+const curatedKnowledge = {
+    'techflow-solutions': {
+        'anomaly-overview': {
+            topic: "Summary of All Flagged Anomalies",
+            summary: "The Auto Due Diligence Agent has flagged 3 significant anomalies. The most critical are: 1) Non-Standard ARR Composition, where only 59% of reported ARR is true recurring revenue. 2) Failed Recent Product Launches, where 3 new products have generated zero revenue despite a $3.2M investment. 3) Inconsistent Maintenance Fee Structure, which indicates poor pricing discipline."
+        },
+        'strategic-plan-credibility': {
+            topic: "Credibility of 5-Year Strategic Plan",
+            summary: "The management's strategic plan is not credible. It assumes 40% new ARR growth, but the company has only achieved 15% in the last twelve months. The EMEA expansion target is also significantly off-track. The plan lacks concrete initiatives to address known product gaps and competitive pressures. JUDGEMENT: The plan requires a complete overhaul."
+        },
+        'customer-concentration': {
+            topic: "Customer Concentration Risk Analysis",
+            summary: "There is a critical customer concentration risk. The top 2 customers (Global FinCorp and HealthUnited) account for 28% of total ARR. The top 10 customers represent 60% of total ARR. The Global FinCorp contract is up for renewal in 4 months and has non-standard termination clauses."
+        },
+        'architectural-risks': {
+            topic: "Key Architectural Risks",
+            summary: "The core application is a legacy monolith with significant technical debt. This creates scalability risks, slows down developer velocity, and makes hiring difficult. The estimated cost to migrate to a modern microservices architecture is $4.5M over 18-24 months."
+        }
+    },
+    'cloudvantage': {
+        'cro-daily-briefing': {
+            topic: "CRO's Daily Briefing Summary",
+            summary: "Overall sales performance is strong (103% of quota) and NRR is excellent (128%), driven by the NewCo cross-sell. However, there are two priority focus areas: 1) The EMEA region is underperforming at 75% of quota due to a leadership gap. 2) There is increasing competitive pressure from a competitor named AgileCloud."
+        },
+        'emea-turnaround-plan': {
+            topic: "EMEA Sales Turnaround Plan",
+            summary: "The plan to fix the EMEA underperformance has three parts: 1) Fast-track hiring for a new EMEA VP. 2) Assign a dedicated Customer Success Manager to the top 10 at-risk accounts. 3) Implement a short-term sales incentive (SPIF) to boost morale and regain momentum."
+        },
+        'renewal-uplift-model': {
+            topic: "NewCo Renewal Uplift Strategy",
+            summary: "A renewal strategy has been modeled for 12 upcoming NewCo renewals. The plan involves re-segmenting customers into Gold/Silver/Bronze tiers and applying standard playbook price uplifts (20%/10%/5%), with a conservative 5% for at-risk accounts. This strategy is projected to generate a total ARR increase of $142,500."
+        }
+    }
 };
